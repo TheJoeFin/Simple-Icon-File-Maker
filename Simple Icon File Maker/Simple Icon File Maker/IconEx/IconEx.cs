@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace IconConverter.IconEx
@@ -43,7 +39,7 @@ namespace IconConverter.IconEx
         [DllImport("kernel32", CharSet = CharSet.Auto)]
         private extern static IntPtr LoadLibraryEx(
             [MarshalAs(UnmanagedType.LPTStr)]
-			string lpLibFileName,
+            string lpLibFileName,
             IntPtr hFile,
             int dwFlags);
         [DllImport("kernel32")]
@@ -60,7 +56,7 @@ namespace IconConverter.IconEx
         private extern static IntPtr FindResource(
             IntPtr hInstance,
             [MarshalAs(UnmanagedType.LPTStr)]
-			string lpName,
+            string lpName,
             IntPtr lpType);
         [DllImport("kernel32")]
         private extern static int SizeofResource(
@@ -72,7 +68,7 @@ namespace IconConverter.IconEx
         #endregion
 
         #region Constants
-        private const Int16 IMAGE_ICON = 1;
+        private const short IMAGE_ICON = 1;
         private const int LOAD_LIBRARY_AS_DATAFILE = 0x2;
         private const int RT_CURSOR = 1;
         private const int RT_BITMAP = 2;
@@ -89,44 +85,44 @@ namespace IconConverter.IconEx
             public byte height; // Height of the image (times 2)
             public byte colorCount; // Number of colors in image (0 if more than 8bpp)
             public byte reserved; // Reserved
-            public Int16 wPlanes; // Color Planes
-            public Int16 wBitCount; // Bits per pixel
+            public short wPlanes; // Color Planes
+            public short wBitCount; // Bits per pixel
             public int dwBytesInRes; // how many bytes in this resource?
             public int dwImageOffset;// where in the file is this image			
 
             public ICONDIRENTRY(
                 BinaryReader br)
             {
-                this.width = br.ReadByte();
-                this.height = br.ReadByte();
-                this.colorCount = br.ReadByte();
-                this.reserved = br.ReadByte();
-                this.wPlanes = br.ReadInt16();
-                this.wBitCount = br.ReadInt16();
-                this.dwBytesInRes = br.ReadInt32();
-                this.dwImageOffset = br.ReadInt32();
+                width = br.ReadByte();
+                height = br.ReadByte();
+                colorCount = br.ReadByte();
+                reserved = br.ReadByte();
+                wPlanes = br.ReadInt16();
+                wBitCount = br.ReadInt16();
+                dwBytesInRes = br.ReadInt32();
+                dwImageOffset = br.ReadInt32();
             }
 
             public void Write(
                 BinaryWriter br)
             {
-                br.Write(this.width);
-                br.Write(this.height);
-                br.Write(this.colorCount);
-                br.Write(this.reserved);
-                br.Write(this.wPlanes);
-                br.Write(this.wBitCount);
-                br.Write(this.dwBytesInRes);
-                br.Write(this.dwImageOffset);
+                br.Write(width);
+                br.Write(height);
+                br.Write(colorCount);
+                br.Write(reserved);
+                br.Write(wPlanes);
+                br.Write(wBitCount);
+                br.Write(dwBytesInRes);
+                br.Write(dwImageOffset);
             }
 
             public override string ToString()
             {
                 return string.Format(
                     "Size: ({0},{1}), ColorCount: {2}, Reserverd: {7}, Planes: {3}, BitCount {4}, BytesInRes: {5}, ImageOffset {6}",
-                    this.width, this.height, this.colorCount,
-                    this.wPlanes, this.wBitCount,
-                    this.dwBytesInRes, this.dwImageOffset, this.reserved);
+                    width, height, colorCount,
+                    wPlanes, wBitCount,
+                    dwBytesInRes, dwImageOffset, reserved);
             }
         }
 
@@ -136,32 +132,32 @@ namespace IconConverter.IconEx
             public byte height; // Height of the image (times 2)
             public byte colorCount; // Number of colors in image (0 if more than 8bpp)
             public byte reserved; // Reserved
-            public Int16 wPlanes; // Color Planes
-            public Int16 wBitCount; // Bits per pixel
+            public short wPlanes; // Color Planes
+            public short wBitCount; // Bits per pixel
             public int dwBytesInRes; // how many bytes in this resource?
-            public Int16 nID;// resource id of the image
+            public short nID;// resource id of the image
 
             public MEMICONDIRENTRY(
                 IntPtr lPtr,
                 int ofs)
             {
-                this.width = Marshal.ReadByte(lPtr, ofs);
-                this.height = Marshal.ReadByte(lPtr, ofs + 1);
-                this.colorCount = Marshal.ReadByte(lPtr, ofs + 2);
-                this.reserved = Marshal.ReadByte(lPtr, ofs + 3);
-                this.wPlanes = Marshal.ReadInt16(lPtr, ofs + 4);
-                this.wBitCount = Marshal.ReadInt16(lPtr, ofs + 6);
-                this.dwBytesInRes = Marshal.ReadInt32(lPtr, ofs + 8);
-                this.nID = Marshal.ReadInt16(lPtr, ofs + 12);
+                width = Marshal.ReadByte(lPtr, ofs);
+                height = Marshal.ReadByte(lPtr, ofs + 1);
+                colorCount = Marshal.ReadByte(lPtr, ofs + 2);
+                reserved = Marshal.ReadByte(lPtr, ofs + 3);
+                wPlanes = Marshal.ReadInt16(lPtr, ofs + 4);
+                wBitCount = Marshal.ReadInt16(lPtr, ofs + 6);
+                dwBytesInRes = Marshal.ReadInt32(lPtr, ofs + 8);
+                nID = Marshal.ReadInt16(lPtr, ofs + 12);
             }
 
             public override string ToString()
             {
                 return string.Format(
                     "Size: ({0},{1}), ColorCount: {2}, Planes: {3}, BitCount {4}, BytesInRes: {5}, IconResourceID {6}",
-                    this.width, this.height, this.colorCount,
-                    this.wPlanes, this.wBitCount,
-                    this.dwBytesInRes, this.nID);
+                    width, height, colorCount,
+                    wPlanes, wBitCount,
+                    dwBytesInRes, nID);
             }
         }
 
@@ -184,7 +180,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.iconCollection;
+                return iconCollection;
             }
             set
             {
@@ -199,7 +195,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.iconFile;
+                return iconFile;
             }
         }
 
@@ -212,7 +208,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.libraryFile;
+                return libraryFile;
             }
         }
 
@@ -224,7 +220,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.resourceId;
+                return resourceId;
             }
         }
 
@@ -236,7 +232,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.resourceName;
+                return resourceName;
             }
         }
         #endregion
@@ -264,7 +260,7 @@ namespace IconConverter.IconEx
             int resourceId)
         {
             loadInitialise();
-            string resourceName = String.Format("#{0:N0}", resourceId);
+            string resourceName = string.Format("#{0:N0}", resourceId);
             loadFromLibrary(libraryFile, resourceName);
         }
 
@@ -307,8 +303,8 @@ namespace IconConverter.IconEx
                 writeIconFileHeader(bw);
 
                 // write out the icon directory entries:
-                int iconOffset = 6 + 16 * this.iconCollection.Count;
-                foreach (IconDeviceImage idi in this.iconCollection)
+                int iconOffset = 6 + 16 * iconCollection.Count;
+                foreach (IconDeviceImage idi in iconCollection)
                 {
                     int bytesInRes = idi.IconImageDataBytes();
 
@@ -346,13 +342,13 @@ namespace IconConverter.IconEx
 
                     iconOffset += bytesInRes;
                 }
-               
-           //   Console.WriteLine(bw.BaseStream.Length);
+
+                //   Console.WriteLine(bw.BaseStream.Length);
 
                 // write out the icon data:
-                foreach (IconDeviceImage idi in this.iconCollection)
+                foreach (IconDeviceImage idi in iconCollection)
                 {
-                    
+
                     idi.SaveIconBitmapData(bw);
                 }
             }
@@ -381,10 +377,10 @@ namespace IconConverter.IconEx
         #region Private Implementation
         private void loadInitialise()
         {
-            this.iconFile = "";
-            this.resourceId = -1;
-            this.libraryFile = "";
-            this.iconCollection = new IconDeviceImageCollection();
+            iconFile = "";
+            resourceId = -1;
+            libraryFile = "";
+            iconCollection = new IconDeviceImageCollection();
         }
 
         // this method is too long, I'm sorry...
@@ -440,14 +436,14 @@ namespace IconConverter.IconEx
                                 for (int iconEntry = 0; iconEntry < iconCount; iconEntry++)
                                 {
                                     // find the specified icon:
-                                    string resName = String.Format("#{0:N0}", ide[iconEntry].nID);
+                                    string resName = string.Format("#{0:N0}", ide[iconEntry].nID);
                                     hRsrc = FindResource(
                                         hLibrary,
                                         resName,
                                         (IntPtr)RT_ICON);
                                     if (hRsrc == IntPtr.Zero)
                                     {
-                                        msg = String.Format(
+                                        msg = string.Format(
                                             "Could not find the component icon resource with id {0}",
                                             ide[iconEntry].nID);
                                         failed = true;
@@ -461,7 +457,7 @@ namespace IconConverter.IconEx
                                             hRsrc);
                                         if (hGlobal == IntPtr.Zero)
                                         {
-                                            msg = String.Format(
+                                            msg = string.Format(
                                                 "Could not load the component icon resource with id {0}",
                                                 ide[iconEntry].nID);
                                             failed = true;
@@ -481,7 +477,7 @@ namespace IconConverter.IconEx
                                             }
                                             else
                                             {
-                                                msg = String.Format(
+                                                msg = string.Format(
                                                     "Component icon resource with id {0} is corrupt",
                                                     ide[iconEntry].nID);
                                                 failed = true;
@@ -492,7 +488,7 @@ namespace IconConverter.IconEx
                                 if (!failed)
                                 {
                                     // Add the icons to the collection:
-                                    this.iconCollection = new IconDeviceImageCollection(icons);
+                                    iconCollection = new IconDeviceImageCollection(icons);
                                 }
                             }
                             else
@@ -576,7 +572,7 @@ namespace IconConverter.IconEx
                     icons[iconEntry] = new IconDeviceImage(b);
                 }
                 // Add the icons to the collection:
-                this.iconCollection = new IconDeviceImageCollection(icons);
+                iconCollection = new IconDeviceImageCollection(icons);
             }
             catch (Exception ex)
             {
@@ -638,11 +634,11 @@ namespace IconConverter.IconEx
         private void writeIconFileHeader(
             BinaryWriter bw)
         {
-            Int16 idReserved = 0;
+            short idReserved = 0;
             bw.Write(idReserved);
-            Int16 idType = IMAGE_ICON;
+            short idType = IMAGE_ICON;
             bw.Write(idType);
-            Int16 idCount = (Int16)this.Items.Count;
+            short idCount = (short)Items.Count;
             bw.Write(idCount);
 
             Console.WriteLine(string.Format("{0} {1} {2} Iconex", idReserved, idType, idCount));
@@ -702,7 +698,7 @@ namespace IconConverter.IconEx
         }
         public void Dispose()
         {
-            if (this.iconCollection != null)
+            if (iconCollection != null)
             {
                 iconCollection.Dispose();
                 iconCollection = null;
@@ -729,7 +725,7 @@ namespace IconConverter.IconEx
         /// <param name="icon">Icon to add</param>
         public void Add(IconDeviceImage icon)
         {
-            foreach (IconDeviceImage iconExisting in this.InnerList)
+            foreach (IconDeviceImage iconExisting in InnerList)
             {
                 if (icon.IconSize.Equals(iconExisting.IconSize) &&
                     icon.ColorDepth.Equals(iconExisting.ColorDepth))
@@ -737,7 +733,7 @@ namespace IconConverter.IconEx
                     throw new IconExException("An Icon Device Image with the same size and colour depth already exists in this icon");
                 }
             }
-            this.InnerList.Add(icon);
+            InnerList.Add(icon);
         }
         /// <summary>
         /// Gets the IconDevice Image at the specified
@@ -747,7 +743,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return (IconDeviceImage)this.InnerList[index];
+                return (IconDeviceImage)InnerList[index];
             }
         }
         #endregion
@@ -770,18 +766,18 @@ namespace IconConverter.IconEx
         {
             foreach (IconDeviceImage icon in icons)
             {
-                this.InnerList.Add(icon);
+                InnerList.Add(icon);
             }
         }
         public void Dispose()
         {
-            if (this.InnerList != null)
+            if (InnerList != null)
             {
-                foreach (IconDeviceImage icon in this.InnerList)
+                foreach (IconDeviceImage icon in InnerList)
                 {
                     icon.Dispose();
                 }
-                this.InnerList.Clear();
+                InnerList.Clear();
             }
         }
         #endregion
@@ -839,7 +835,7 @@ namespace IconConverter.IconEx
         [DllImport("gdi32", CharSet = CharSet.Auto)]
         private static extern IntPtr CreateDC(
             [MarshalAs(UnmanagedType.LPTStr)]
-			string lpDriverName,
+            string lpDriverName,
             IntPtr lpDeviceName,
             IntPtr lpOutput,
             IntPtr lpInitData);
@@ -870,7 +866,7 @@ namespace IconConverter.IconEx
         private static extern IntPtr CreateIconIndirect(
             ref ICONINFO piconInfo);
 
-        private const Int16 IMAGE_ICON = 1;
+        private const short IMAGE_ICON = 1;
 
         #endregion
 
@@ -893,8 +889,8 @@ namespace IconConverter.IconEx
             public int biSize;
             public int biWidth;
             public int biHeight;
-            public Int16 biPlanes;
-            public Int16 biBitCount;
+            public short biPlanes;
+            public short biBitCount;
             public int biCompression;
             public int biSizeImage;
             public int biXPelsPerMeter;
@@ -907,54 +903,54 @@ namespace IconConverter.IconEx
                 ColorDepth colorDepth
                 )
             {
-                this.biSize = 0;
-                this.biWidth = size.Width;
-                this.biHeight = size.Height * 2;
-                this.biPlanes = 1;
-                this.biCompression = BI_RGB;
-                this.biSizeImage = 0;
-                this.biXPelsPerMeter = 0;
-                this.biYPelsPerMeter = 0;
-                this.biClrUsed = 0;
-                this.biClrImportant = 0;
+                biSize = 0;
+                biWidth = size.Width;
+                biHeight = size.Height * 2;
+                biPlanes = 1;
+                biCompression = BI_RGB;
+                biSizeImage = 0;
+                biXPelsPerMeter = 0;
+                biYPelsPerMeter = 0;
+                biClrUsed = 0;
+                biClrImportant = 0;
                 switch (colorDepth)
                 {
                     case ColorDepth.Depth4Bit:
-                        this.biBitCount = 4;
+                        biBitCount = 4;
                         break;
                     case ColorDepth.Depth8Bit:
-                        this.biBitCount = 8;
+                        biBitCount = 8;
                         break;
                     case ColorDepth.Depth16Bit:
-                        this.biBitCount = 16;
+                        biBitCount = 16;
                         break;
                     case ColorDepth.Depth24Bit:
-                        this.biBitCount = 24;
+                        biBitCount = 24;
                         break;
                     case ColorDepth.Depth32Bit:
-                        this.biBitCount = 32;
+                        biBitCount = 32;
                         break;
                     default:
-                        this.biBitCount = 4;
+                        biBitCount = 4;
                         break;
                 }
-                this.biSize = Marshal.SizeOf(this.GetType());
+                biSize = Marshal.SizeOf(GetType());
             }
 
             public void Write(
                 BinaryWriter bw)
             {
-                bw.Write(this.biSize);
-                bw.Write(this.biWidth);
-                bw.Write(this.biHeight);
-                bw.Write(this.biPlanes);
-                bw.Write(this.biBitCount);
-                bw.Write(this.biCompression);
-                bw.Write(this.biSizeImage);
-                bw.Write(this.biXPelsPerMeter);
-                bw.Write(this.biYPelsPerMeter);
-                bw.Write(this.biClrUsed);
-                bw.Write(this.biClrImportant);
+                bw.Write(biSize);
+                bw.Write(biWidth);
+                bw.Write(biHeight);
+                bw.Write(biPlanes);
+                bw.Write(biBitCount);
+                bw.Write(biCompression);
+                bw.Write(biSizeImage);
+                bw.Write(biXPelsPerMeter);
+                bw.Write(biYPelsPerMeter);
+                bw.Write(biClrUsed);
+                bw.Write(biClrImportant);
             }
 
             public BITMAPINFOHEADER(byte[] data)
@@ -1015,10 +1011,10 @@ namespace IconConverter.IconEx
             public void Write(
                 BinaryWriter bw)
             {
-                bw.Write(this.rgbBlue);
-                bw.Write(this.rgbGreen);
-                bw.Write(this.rgbRed);
-                bw.Write(this.rgbReserved);
+                bw.Write(rgbBlue);
+                bw.Write(rgbGreen);
+                bw.Write(rgbRed);
+                bw.Write(rgbReserved);
             }
             public override string ToString()
             {
@@ -1039,7 +1035,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.hIcon;
+                return hIcon;
             }
         }
         /// <summary>
@@ -1049,7 +1045,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.size;
+                return size;
             }
         }
         /// <summary>
@@ -1059,7 +1055,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.colorDepth;
+                return colorDepth;
             }
         }
 
@@ -1104,7 +1100,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                System.Drawing.Icon icon = System.Drawing.Icon.FromHandle(this.hIcon);
+                System.Drawing.Icon icon = System.Drawing.Icon.FromHandle(hIcon);
                 return icon;
             }
         }
@@ -1121,7 +1117,7 @@ namespace IconConverter.IconEx
             IntPtr hBmp = bm.GetHbitmap();
 
             BITMAPINFOHEADER bmInfoHdr = new BITMAPINFOHEADER(
-                this.size, this.colorDepth);
+                size, colorDepth);
 
             // Now prepare the for GetDIBits call:
             RGBQUAD rgbQuad = new RGBQUAD();
@@ -1130,8 +1126,8 @@ namespace IconConverter.IconEx
             IntPtr bitsInfo = Marshal.AllocCoTaskMem(
                 monoBmHdrSize);
             Marshal.WriteInt32(bitsInfo, Marshal.SizeOf(bmInfoHdr));
-            Marshal.WriteInt32(bitsInfo, 4, this.size.Width);
-            Marshal.WriteInt32(bitsInfo, 8, this.size.Height);
+            Marshal.WriteInt32(bitsInfo, 4, size.Width);
+            Marshal.WriteInt32(bitsInfo, 8, size.Height);
             Marshal.WriteInt16(bitsInfo, 12, 1);
             Marshal.WriteInt16(bitsInfo, 14, 1);
             Marshal.WriteInt32(bitsInfo, 16, BI_RGB);
@@ -1150,7 +1146,7 @@ namespace IconConverter.IconEx
             int maskImageBytes = MaskImageSize(bmInfoHdr);
             IntPtr bits = Marshal.AllocCoTaskMem(maskImageBytes);
 
-            int success = GetDIBits(hdc, hBmp, 0, this.size.Height, bits, bitsInfo, DIB_RGB_COLORS);
+            int success = GetDIBits(hdc, hBmp, 0, size.Height, bits, bitsInfo, DIB_RGB_COLORS);
 
             Marshal.Copy(bits, data, MaskImageIndex(bmInfoHdr), maskImageBytes);
 
@@ -1174,7 +1170,7 @@ namespace IconConverter.IconEx
             IntPtr hBmp = bm.GetHbitmap();
 
             BITMAPINFOHEADER bmInfoHdr = new BITMAPINFOHEADER(
-                this.size, this.colorDepth);
+                size, colorDepth);
 
             // Now prepare for GetDIBits call:
             int xorIndex = XorImageIndex(bmInfoHdr);
@@ -1189,7 +1185,7 @@ namespace IconConverter.IconEx
 
             IntPtr bits = Marshal.AllocCoTaskMem(xorImageBytes);
 
-            int success = GetDIBits(hdc, hBmp, 0, this.size.Height, bits, bitsInfo, DIB_RGB_COLORS);
+            int success = GetDIBits(hdc, hBmp, 0, size.Height, bits, bitsInfo, DIB_RGB_COLORS);
 
             Marshal.Copy(bits, data, xorIndex, xorImageBytes);
 
@@ -1213,10 +1209,10 @@ namespace IconConverter.IconEx
             // Initialise the data:
             BITMAPINFOHEADER bmInfoHdr = new BITMAPINFOHEADER(
                 size, colorDepth);
-            this.data = new byte[
-                this.MaskImageIndex(bmInfoHdr) + this.MaskImageSize(bmInfoHdr)];
+            data = new byte[
+                MaskImageIndex(bmInfoHdr) + MaskImageSize(bmInfoHdr)];
 
-            MemoryStream mw = new MemoryStream(this.data, 0, this.data.Length, true);
+            MemoryStream mw = new MemoryStream(data, 0, data.Length, true);
             BinaryWriter bw = new BinaryWriter(mw);
             bmInfoHdr.Write(bw);
             // Write the colour indexes if required:
@@ -1472,7 +1468,7 @@ namespace IconConverter.IconEx
         /// <returns>Number of bytes of icon data</returns>
         internal int IconImageDataBytes()
         {
-            return this.data.Length;
+            return data.Length;
         }
         /// <summary>
         /// Internal method.  Writes the icon bitmap data to
@@ -1483,14 +1479,14 @@ namespace IconConverter.IconEx
         internal void SaveIconBitmapData(
             BinaryWriter bw)
         {
-            bw.Write(this.data, 0, this.data.Length);
+            bw.Write(data, 0, data.Length);
         }
         private void createIcon()
         {
-            if (this.hIcon != IntPtr.Zero)
+            if (hIcon != IntPtr.Zero)
             {
-                DestroyIcon(this.hIcon);
-                this.hIcon = IntPtr.Zero;
+                DestroyIcon(hIcon);
+                hIcon = IntPtr.Zero;
             }
 
             ICONINFO ii = new ICONINFO();
@@ -1498,7 +1494,7 @@ namespace IconConverter.IconEx
             getIconBitmap(false, true, ref ii.hBmColor);
             getIconBitmap(true, true, ref ii.hBmMask);
 
-            this.hIcon = CreateIconIndirect(ref ii);
+            hIcon = CreateIconIndirect(ref ii);
 
             DeleteObject(ii.hBmColor);
             DeleteObject(ii.hBmMask);
@@ -1544,7 +1540,7 @@ namespace IconConverter.IconEx
             )
         {
             // store the bytes:
-            data = new Byte[b.Length];
+            data = new byte[b.Length];
             for (int i = 0; i < b.Length; i++)
             {
                 data[i] = b[i];
@@ -1555,25 +1551,25 @@ namespace IconConverter.IconEx
             BITMAPINFOHEADER bmInfoHeader = new BITMAPINFOHEADER(data);
             //Console.WriteLine(bmInfoHeader.ToString());
 
-            this.size.Width = bmInfoHeader.biWidth;
-            this.size.Height = bmInfoHeader.biHeight / 2;
+            size.Width = bmInfoHeader.biWidth;
+            size.Height = bmInfoHeader.biHeight / 2;
             switch (bmInfoHeader.biBitCount)
             {
                 case 1:
                 case 4:
-                    this.colorDepth = ColorDepth.Depth4Bit;
+                    colorDepth = ColorDepth.Depth4Bit;
                     break;
                 case 8:
-                    this.colorDepth = ColorDepth.Depth8Bit;
+                    colorDepth = ColorDepth.Depth8Bit;
                     break;
                 case 16:
-                    this.colorDepth = ColorDepth.Depth16Bit;
+                    colorDepth = ColorDepth.Depth16Bit;
                     break;
                 case 24:
-                    this.colorDepth = ColorDepth.Depth24Bit;
+                    colorDepth = ColorDepth.Depth24Bit;
                     break;
                 case 32:
-                    this.colorDepth = ColorDepth.Depth32Bit;
+                    colorDepth = ColorDepth.Depth32Bit;
                     break;
             }
             createIcon();
@@ -1584,10 +1580,10 @@ namespace IconConverter.IconEx
         /// </summary>
         public void Dispose()
         {
-            if (this.hIcon != IntPtr.Zero)
+            if (hIcon != IntPtr.Zero)
             {
-                DestroyIcon(this.hIcon);
-                this.hIcon = IntPtr.Zero;
+                DestroyIcon(hIcon);
+                hIcon = IntPtr.Zero;
             }
         }
         #endregion

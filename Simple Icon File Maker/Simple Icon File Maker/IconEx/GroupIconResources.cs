@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IconConverter.IconEx
 {
@@ -22,12 +18,12 @@ namespace IconConverter.IconEx
             IntPtr hModule,
             IntPtr lpType,
             [MarshalAs(UnmanagedType.FunctionPtr)]
-			EnumResNamesProc lpEnumFunc,
+            EnumResNamesProc lpEnumFunc,
             IntPtr lParam);
         [DllImport("kernel32", CharSet = CharSet.Auto)]
         private extern static IntPtr LoadLibraryEx(
             [MarshalAs(UnmanagedType.LPTStr)]
-			string lpLibFileName,
+            string lpLibFileName,
             IntPtr hFile,
             int dwFlags);
         [DllImport("kernel32")]
@@ -50,7 +46,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return (GroupIconResource)this.InnerList[index];
+                return (GroupIconResource)InnerList[index];
             }
         }
 
@@ -61,7 +57,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.libraryFile;
+                return libraryFile;
             }
             set
             {
@@ -102,14 +98,14 @@ namespace IconConverter.IconEx
                 // numeric resource type:
                 int resourceId = (int)(res & 0xFFFF);
                 GroupIconResource g = new GroupIconResource(resourceId);
-                this.InnerList.Add(g);
+                InnerList.Add(g);
             }
             else
             {
                 // string resource type:
                 string resourceName = Marshal.PtrToStringAuto(lpszName);
                 GroupIconResource g = new GroupIconResource(resourceName);
-                this.InnerList.Add(g);
+                InnerList.Add(g);
             }
             return 1;
         }
@@ -155,7 +151,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.idIsNumeric;
+                return idIsNumeric;
             }
         }
 
@@ -163,7 +159,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.resourceId;
+                return resourceId;
             }
         }
 
@@ -171,7 +167,7 @@ namespace IconConverter.IconEx
         {
             get
             {
-                return this.resourceName;
+                return resourceName;
             }
         }
 
@@ -179,15 +175,15 @@ namespace IconConverter.IconEx
             int id
             )
         {
-            this.resourceId = id;
-            this.idIsNumeric = true;
+            resourceId = id;
+            idIsNumeric = true;
         }
         internal GroupIconResource(
             string resourceName
             )
         {
             this.resourceName = resourceName;
-            this.idIsNumeric = false;
+            idIsNumeric = false;
         }
     }
 }
