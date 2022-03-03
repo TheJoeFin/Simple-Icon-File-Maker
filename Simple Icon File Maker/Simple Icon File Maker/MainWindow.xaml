@@ -23,21 +23,28 @@
             <Button
                 x:Name="OpenBTN"
                 Width="200"
-                Padding="4"
-                Click="OpenBTN_Click">
+                Padding="10"
+                Click="OpenBTN_Click"
+                IsEnabled="False">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="OpenFile" />
-                    <TextBlock Text="Open Image" />
+                    <TextBlock
+                        Width="120"
+                        Text="Open Image"
+                        TextAlignment="Center" />
                 </StackPanel>
             </Button>
             <Button
                 x:Name="SaveBTN"
                 Width="200"
-                Padding="4"
+                Padding="10"
                 Click="SaveBTN_Click">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="SaveLocal" />
-                    <TextBlock Text="Save Icon" />
+                    <TextBlock
+                        Width="120"
+                        Text="Save Icon"
+                        TextAlignment="Center" />
                 </StackPanel>
             </Button>
         </StackPanel>
