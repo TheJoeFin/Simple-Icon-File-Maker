@@ -1,7 +1,12 @@
-﻿using Microsoft.UI.Xaml;
+﻿using ImageMagick;
+using ImageMagick.ImageOptimizers;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -18,6 +23,8 @@ namespace Simple_Icon_File_Maker;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
+    private string ImagePath = "";
+
     public MainWindow()
     {
         InitializeComponent();
@@ -36,7 +43,7 @@ public sealed partial class MainWindow : Window
         picker.FileTypeFilter.Add(".bmp");
         picker.FileTypeFilter.Add(".png");
 
-        var window = new Microsoft.UI.Xaml.Window();
+        Window window = new Window();
         IntPtr hwnd = WindowNative.GetWindowHandle(window);
         InitializeWithWindow.Initialize(picker, hwnd);
 
@@ -45,6 +52,8 @@ public sealed partial class MainWindow : Window
         {
             return;
         }
+
+        ImagePath = file.Path;
 
         // Ensure the stream is disposed once the image is loaded
         using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
@@ -58,9 +67,78 @@ public sealed partial class MainWindow : Window
         MainImage.Source = bitmapImage;
     }
 
-    private void SaveBTN_Click(object sender, RoutedEventArgs e)
+    private async Task GenerateIcons()
     {
+        // Read first frame of gif image
+        // string originalImagePath = @"C:\Users\jfinney\Documents\Text Grab\cropImage\images\Moon.png";
+        string openedPath = Path.GetDirectoryName(ImagePath);
+        string name = Path.GetFileNameWithoutExtension(ImagePath);
+        string iconRootString = Path.Combine(openedPath, "temp");
+        string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
+        string iconOutputString = Path.Combine(iconRootString, $"{name}.ico");
+        if (Directory.Exists(iconRootString) == false)
+        {
+            Directory.CreateDirectory(iconRootString);
+        }
 
+        MagickImageFactory imgFactory = new MagickImageFactory();
+        MagickGeometryFactory geoFactory = new MagickGeometryFactory();
+
+        using IMagickImage<ushort> firstPassimage = await imgFactory.CreateAsync(ImagePath);
+        IMagickGeometry size = geoFactory.Create(
+            0,
+            0,
+            (int)MainImage.ActualWidth,
+            (int)MainImage.ActualHeight);
+        size.IgnoreAspectRatio = false;
+
+        firstPassimage.Crop(size);
+        await firstPassimage.WriteAsync(croppedImagePath);
+
+        using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
+        List<int> intList = new() { 256, 128, 64, 32 };
+
+        MagickImageCollection collection = new MagickImageCollection();
+
+        foreach (int sideLength in intList)
+        {
+            if (MainImage.ActualWidth < sideLength || MainImage.ActualHeight < sideLength)
+                continue;
+
+            IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
+            iconSize.IgnoreAspectRatio = false;
+
+            image.Resize(iconSize);
+            string iconPath = $"{iconRootString}\\Image{sideLength}.png";
+            await image.WriteAsync(iconPath);
+
+            collection.Add(iconPath);
+        }
+
+        await collection.WriteAsync(iconOutputString);
+
+        IcoOptimizer icoOpti = new IcoOptimizer
+        {
+            OptimalCompression = true
+        };
+        icoOpti.Compress(iconOutputString);
+    }
+
+    private async void SaveBTN_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            SaveBTN.IsEnabled = false;
+            await GenerateIcons();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
+        }
+        finally
+        {
+            SaveBTN.IsEnabled = true;
+        }
     }
 
     private async void Grid_Drop(object sender, DragEventArgs e)
@@ -70,18 +148,20 @@ public sealed partial class MainWindow : Window
             e.Handled = true;
             DragOperationDeferral def = e.GetDeferral();
             RandomAccessStreamReference s = await e.DataView.GetBitmapAsync();
-            
+            ImagePath = await e.DataView.GetTextAsync();
+
             BitmapImage bitmapImage = new();
             await bitmapImage.SetSourceAsync(await s.OpenReadAsync());
             MainImage.Source = bitmapImage;
             e.AcceptedOperation = DataPackageOperation.Copy;
             def.Complete();
-        } 
+        }
         else if (e.DataView.Contains(StandardDataFormats.Uri))
         {
             e.Handled = true;
             DragOperationDeferral def = e.GetDeferral();
             Uri s = await e.DataView.GetUriAsync();
+            ImagePath = s.AbsolutePath;
 
             BitmapImage bmp = new(s);
             MainImage.Source = bmp;
@@ -96,7 +176,7 @@ public sealed partial class MainWindow : Window
             DragOperationDeferral def = e.GetDeferral();
             IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
-            foreach (var item in storageItems)
+            foreach (IStorageItem item in storageItems)
             {
                 if (item is StorageFile file)
                 {
@@ -109,7 +189,7 @@ public sealed partial class MainWindow : Window
 
                     await bitmapImage.SetSourceAsync(fileStream);
                     MainImage.Source = bitmapImage;
-
+                    ImagePath = file.Path;
                     break;
                 }
             }

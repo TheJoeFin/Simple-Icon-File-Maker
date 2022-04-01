@@ -24,8 +24,7 @@
                 x:Name="OpenBTN"
                 Width="200"
                 Padding="10"
-                Click="OpenBTN_Click"
-                IsEnabled="False">
+                Click="OpenBTN_Click">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="OpenFile" />
                     <TextBlock
@@ -55,7 +54,7 @@
             Background="DarkBlue"
             DragOver="Border_DragOver"
             Drop="Grid_Drop">
-            <Image x:Name="MainImage" />
+            <Image x:Name="MainImage" Margin="36" />
         </Border>
     </Grid>
 </Window>
