@@ -36,6 +36,7 @@ public sealed partial class MainWindow : Window
 
         m_AppWindow = GetAppWindowForCurrentWindow();
         m_AppWindow.SetIcon("SimpleIconMaker.ico");
+        m_AppWindow.Title = "Simple Icon File Maker";
     }
     private AppWindow GetAppWindowForCurrentWindow()
     {
