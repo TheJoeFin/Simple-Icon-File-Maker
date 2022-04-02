@@ -10,12 +10,28 @@
     <UseWinUI>true</UseWinUI>
     <UseWindowsForms>False</UseWindowsForms>
     <UseWPF>False</UseWPF>
+    <ApplicationIcon>SimpleIconMaker.ico</ApplicationIcon>
+    <Copyright>Joseph Finney 2022</Copyright>
+    <PackageIcon>Image128.png</PackageIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Remove="Image128.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SimpleIconMaker.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="11.0.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.1.0-preview1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22581-preview" />
     <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Simple Icon File Maker (Package)\Images\Image128.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 </Project>
