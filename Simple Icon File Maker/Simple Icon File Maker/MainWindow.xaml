@@ -9,9 +9,56 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="300" />
-            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Right side:  -->
+
+        <Grid
+            Grid.RowSpan="2"
+            Grid.Column="1"
+            AllowDrop="True"
+            Background="{ThemeResource SystemControlBaseLowAcrylicWindowBrush}"
+            DragOver="Border_DragOver"
+            Drop="Grid_Drop">
+            <Canvas
+                Name="dropHere"
+                Width="210"
+                Height="120"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Rectangle
+                    Width="210"
+                    Height="120"
+                    RadiusX="20"
+                    RadiusY="20"
+                    Stroke="{ThemeResource SystemAccentColor}"
+                    StrokeDashArray="5"
+                    StrokeLineJoin="Round" />
+                <StackPanel
+                    Margin="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Orientation="Vertical">
+                    <SymbolIcon Height="40" Symbol="Copy" />
+                    <TextBlock Text="Drag and Drop image here" />
+                </StackPanel>
+            </Canvas>
+            <Viewbox>
+                <Image
+                    x:Name="MainImage"
+                    Margin="36"
+                    Stretch="Uniform" />
+            </Viewbox>
+        </Grid>
+
+        <!--  Left side:  -->
 
         <StackPanel
             Grid.Column="0"
@@ -46,59 +93,38 @@
                         TextAlignment="Center" />
                 </StackPanel>
             </Button>
-
-            <Image
-                x:Name="OutputImage256"
-                Width="256"
-                HorizontalAlignment="Center" />
-            <Image
-                x:Name="OutputImage128"
-                Width="128"
-                HorizontalAlignment="Center" />
-            <Image
-                x:Name="OutputImage64"
-                Width="64"
-                HorizontalAlignment="Center" />
-            <Image
-                x:Name="OutputImage32"
-                Width="32"
-                HorizontalAlignment="Center" />
-            <Image
-                x:Name="OutputImage16"
-                Width="16"
-                HorizontalAlignment="Center" />
         </StackPanel>
 
-        <Grid
-            Grid.Column="1"
-            AllowDrop="True"
-            Background="{ThemeResource SystemControlAcrylicWindowBrush}"
-            DragOver="Border_DragOver"
-            Drop="Grid_Drop">
-            <Canvas
-                Name="dropHere"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-                <Rectangle
-                    Width="210"
-                    Height="120"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    RadiusX="20"
-                    RadiusY="20"
-                    Stroke="{ThemeResource SystemAccentColor}"
-                    StrokeDashArray="5"
-                    StrokeLineJoin="Round" />
-                <StackPanel
-                    Margin="20"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical">
-                    <SymbolIcon Height="40" Symbol="Copy" />
-                    <TextBlock Text="Drag and Drop image here" />
-                </StackPanel>
-            </Canvas>
-            <Image x:Name="MainImage" Margin="36" />
-        </Grid>
+        <ScrollViewer
+            Grid.Row="1"
+            Background="{ThemeResource SystemControlAccentAcrylicElementAccentMediumHighBrush}"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                Margin="36"
+                Orientation="Vertical"
+                Spacing="20">
+                <Image
+                    x:Name="OutputImage256"
+                    Width="256"
+                    HorizontalAlignment="Center" />
+                <Image
+                    x:Name="OutputImage128"
+                    Width="128"
+                    HorizontalAlignment="Center" />
+                <Image
+                    x:Name="OutputImage64"
+                    Width="64"
+                    HorizontalAlignment="Center" />
+                <Image
+                    x:Name="OutputImage32"
+                    Width="32"
+                    HorizontalAlignment="Center" />
+                <Image
+                    x:Name="OutputImage16"
+                    Width="16"
+                    HorizontalAlignment="Center" />
+            </StackPanel>
+        </ScrollViewer>
+
     </Grid>
 </Window>

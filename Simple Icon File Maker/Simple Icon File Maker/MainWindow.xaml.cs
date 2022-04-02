@@ -1,10 +1,13 @@
 ﻿using ImageMagick;
 using ImageMagick.ImageOptimizers;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -24,14 +27,26 @@ namespace Simple_Icon_File_Maker;
 public sealed partial class MainWindow : Window
 {
     private string ImagePath = "";
+    private Size? SourceImageSize;
+    private AppWindow m_AppWindow;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        m_AppWindow = GetAppWindowForCurrentWindow();
+        m_AppWindow.SetIcon("SimpleIconMaker.ico");
+    }
+    private AppWindow GetAppWindowForCurrentWindow()
+    {
+        IntPtr hWnd = WindowNative.GetWindowHandle(this);
+        WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+        return AppWindow.GetFromWindowId(wndId);
     }
 
     private async void OpenBTN_Click(object sender, RoutedEventArgs e)
     {
+        SourceImageSize = null;
         FileOpenPicker picker = new()
         {
             ViewMode = PickerViewMode.Thumbnail,
@@ -60,8 +75,8 @@ public sealed partial class MainWindow : Window
         // It's generally a good optimisation to decode to match the size you'll display
         // bitmapImage.DecodePixelHeight = decodePixelHeight;
         // bitmapImage.DecodePixelWidth = decodePixelWidth;
-
         await bitmapImage.SetSourceAsync(fileStream);
+        SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
         MainImage.Source = bitmapImage;
         await SourceImageUpdated();
     }
@@ -78,21 +93,22 @@ public sealed partial class MainWindow : Window
     {
         string openedPath = Path.GetDirectoryName(path);
         string name = Path.GetFileNameWithoutExtension(path);
-        string iconRootString = Path.Combine(openedPath, "temp");
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string iconRootString = sf.Path;
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
-        string iconOutputString = Path.Combine(iconRootString, $"{name}.ico");
+        string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
         if (Directory.Exists(iconRootString) == false)
             Directory.CreateDirectory(iconRootString);
 
         MagickImageFactory imgFactory = new();
         MagickGeometryFactory geoFactory = new();
 
+        if (SourceImageSize is null)
+            SourceImageSize = new Size((int)MainImage.RenderSize.Width, (int)MainImage.RenderSize.Height);
+
         using IMagickImage<ushort> firstPassimage = await imgFactory.CreateAsync(ImagePath);
         IMagickGeometry size = geoFactory.Create(
-            0,
-            0,
-            (int)MainImage.ActualWidth,
-            (int)MainImage.ActualHeight);
+            Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
         size.IgnoreAspectRatio = false;
 
         firstPassimage.Crop(size);
@@ -165,10 +181,22 @@ public sealed partial class MainWindow : Window
 
     private async void SaveBTN_Click(object sender, RoutedEventArgs e)
     {
+        FolderPicker savePicker = new();
+        savePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+        // savePicker.DefaultFileExtension = ".ico";
+        // savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
+
+        Window saveWindow = new();
+        IntPtr hwndSave = WindowNative.GetWindowHandle(saveWindow);
+        InitializeWithWindow.Initialize(savePicker, hwndSave);
+
+        StorageFolder folder = await savePicker.PickSingleFolderAsync();
+        string savePath = Path.Combine(folder.Path, $"{Path.GetFileNameWithoutExtension(ImagePath)}.ico");
+
         try
         {
             SaveBTN.IsEnabled = false;
-            await GenerateIcons(ImagePath);
+            await GenerateIcons(savePath);
         }
         catch (Exception ex)
         {
@@ -182,6 +210,7 @@ public sealed partial class MainWindow : Window
 
     private async void Grid_Drop(object sender, DragEventArgs e)
     {
+        SourceImageSize = null;
         if (e.DataView.Contains(StandardDataFormats.Bitmap))
         {
             e.Handled = true;
@@ -191,6 +220,7 @@ public sealed partial class MainWindow : Window
 
             BitmapImage bitmapImage = new();
             await bitmapImage.SetSourceAsync(await s.OpenReadAsync());
+            SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight); 
             MainImage.Source = bitmapImage;
             e.AcceptedOperation = DataPackageOperation.Copy;
             await SourceImageUpdated();
@@ -204,6 +234,7 @@ public sealed partial class MainWindow : Window
             ImagePath = s.AbsolutePath;
 
             BitmapImage bmp = new(s);
+            SourceImageSize = new(bmp.PixelWidth, bmp.PixelHeight);
             MainImage.Source = bmp;
 
             e.AcceptedOperation = DataPackageOperation.Copy;
@@ -229,6 +260,7 @@ public sealed partial class MainWindow : Window
                     // bitmapImage.DecodePixelWidth = decodePixelWidth;
 
                     await bitmapImage.SetSourceAsync(fileStream);
+                    SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
                     MainImage.Source = bitmapImage;
                     ImagePath = file.Path;
                     break;
