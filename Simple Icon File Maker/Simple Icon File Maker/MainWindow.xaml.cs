@@ -43,15 +43,13 @@ public sealed partial class MainWindow : Window
         picker.FileTypeFilter.Add(".bmp");
         picker.FileTypeFilter.Add(".png");
 
-        Window window = new Window();
+        Window window = new();
         IntPtr hwnd = WindowNative.GetWindowHandle(window);
         InitializeWithWindow.Initialize(picker, hwnd);
 
         StorageFile file = await picker.PickSingleFileAsync();
         if (file is null)
-        {
             return;
-        }
 
         ImagePath = file.Path;
 
@@ -65,24 +63,29 @@ public sealed partial class MainWindow : Window
 
         await bitmapImage.SetSourceAsync(fileStream);
         MainImage.Source = bitmapImage;
+        await SourceImageUpdated();
     }
 
-    private async Task GenerateIcons()
+    private async Task SourceImageUpdated()
     {
-        // Read first frame of gif image
-        // string originalImagePath = @"C:\Users\jfinney\Documents\Text Grab\cropImage\images\Moon.png";
-        string openedPath = Path.GetDirectoryName(ImagePath);
-        string name = Path.GetFileNameWithoutExtension(ImagePath);
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        await GenerateIcons(sf.Path, true);
+        SaveBTN.IsEnabled = true;
+        dropHere.Visibility = Visibility.Collapsed;
+    }
+
+    private async Task GenerateIcons(string path, bool updatePreviews = false)
+    {
+        string openedPath = Path.GetDirectoryName(path);
+        string name = Path.GetFileNameWithoutExtension(path);
         string iconRootString = Path.Combine(openedPath, "temp");
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
         string iconOutputString = Path.Combine(iconRootString, $"{name}.ico");
         if (Directory.Exists(iconRootString) == false)
-        {
             Directory.CreateDirectory(iconRootString);
-        }
 
-        MagickImageFactory imgFactory = new MagickImageFactory();
-        MagickGeometryFactory geoFactory = new MagickGeometryFactory();
+        MagickImageFactory imgFactory = new();
+        MagickGeometryFactory geoFactory = new();
 
         using IMagickImage<ushort> firstPassimage = await imgFactory.CreateAsync(ImagePath);
         IMagickGeometry size = geoFactory.Create(
@@ -96,9 +99,10 @@ public sealed partial class MainWindow : Window
         await firstPassimage.WriteAsync(croppedImagePath);
 
         using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
-        List<int> intList = new() { 256, 128, 64, 32 };
+        List<int> intList = new() { 256, 128, 64, 32, 16 };
 
-        MagickImageCollection collection = new MagickImageCollection();
+        MagickImageCollection collection = new();
+        Dictionary<int,string> imagePaths = new();
 
         foreach (int sideLength in intList)
         {
@@ -113,15 +117,50 @@ public sealed partial class MainWindow : Window
             await image.WriteAsync(iconPath);
 
             collection.Add(iconPath);
+            imagePaths.Add(sideLength,iconPath);
         }
+
+        if (updatePreviews == true)
+            await UpdatePreviewsAsync(imagePaths);
 
         await collection.WriteAsync(iconOutputString);
 
-        IcoOptimizer icoOpti = new IcoOptimizer
+        IcoOptimizer icoOpti = new()
         {
             OptimalCompression = true
         };
         icoOpti.Compress(iconOutputString);
+    }
+
+    private async Task UpdatePreviewsAsync(Dictionary<int,string> imagePaths)
+    {
+        foreach (var pair in imagePaths)
+        {
+            if (pair.Value is not string imagePath)
+                return;
+
+            int sideLength = pair.Key;
+
+            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
+            using IRandomAccessStream fileStream = await imageSF.OpenAsync(FileAccessMode.Read);
+            BitmapImage bitmapImage = new()
+            {
+                DecodePixelHeight = sideLength,
+                DecodePixelWidth = sideLength
+            };
+
+            await bitmapImage.SetSourceAsync(fileStream);
+            _ = sideLength switch
+            {
+                256 => OutputImage256.Source = bitmapImage,
+                128 => OutputImage128.Source = bitmapImage,
+                64 => OutputImage64.Source = bitmapImage,
+                32 => OutputImage32.Source = bitmapImage,
+                16 => OutputImage16.Source = bitmapImage
+            };
+        }
+
+        await Task.CompletedTask;
     }
 
     private async void SaveBTN_Click(object sender, RoutedEventArgs e)
@@ -129,7 +168,7 @@ public sealed partial class MainWindow : Window
         try
         {
             SaveBTN.IsEnabled = false;
-            await GenerateIcons();
+            await GenerateIcons(ImagePath);
         }
         catch (Exception ex)
         {
@@ -154,6 +193,7 @@ public sealed partial class MainWindow : Window
             await bitmapImage.SetSourceAsync(await s.OpenReadAsync());
             MainImage.Source = bitmapImage;
             e.AcceptedOperation = DataPackageOperation.Copy;
+            await SourceImageUpdated();
             def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.Uri))
@@ -167,6 +207,7 @@ public sealed partial class MainWindow : Window
             MainImage.Source = bmp;
 
             e.AcceptedOperation = DataPackageOperation.Copy;
+            await SourceImageUpdated();
             def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -194,6 +235,7 @@ public sealed partial class MainWindow : Window
                 }
             }
             e.AcceptedOperation = DataPackageOperation.Copy;
+            await SourceImageUpdated();
             def.Complete();
         }
     }
