@@ -259,7 +259,11 @@ public sealed partial class MainWindow : Window
 
             foreach (IStorageItem item in storageItems)
             {
-                if (item is StorageFile file)
+                if (item is StorageFile file && 
+                    (file.FileType == ".png"
+                    || file.FileType == ".bmp"
+                    || file.FileType == ".jpeg"
+                    || file.FileType == ".jpg"))
                 {
                     using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
                     BitmapImage bitmapImage = new();
@@ -272,11 +276,11 @@ public sealed partial class MainWindow : Window
                     SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
                     MainImage.Source = bitmapImage;
                     ImagePath = file.Path;
+                    e.AcceptedOperation = DataPackageOperation.Copy;
+                    await SourceImageUpdated(Path.GetFileName(ImagePath));
                     break;
                 }
             }
-            e.AcceptedOperation = DataPackageOperation.Copy;
-            await SourceImageUpdated(Path.GetFileName(ImagePath));
             def.Complete();
         }
     }
