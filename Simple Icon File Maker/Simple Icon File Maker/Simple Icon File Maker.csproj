@@ -19,6 +19,9 @@
     <Content Remove="Image128.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="AboutWindow.xaml" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="SimpleIconMaker.ico" />
   </ItemGroup>
 
@@ -34,5 +37,11 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="AboutWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

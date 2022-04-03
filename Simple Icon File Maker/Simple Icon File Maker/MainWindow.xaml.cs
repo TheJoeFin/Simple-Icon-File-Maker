@@ -3,6 +3,7 @@ using ImageMagick.ImageOptimizers;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
+using Windows.System;
 using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -282,5 +284,18 @@ public sealed partial class MainWindow : Window
     private void Border_DragOver(object sender, DragEventArgs e)
     {
         e.AcceptedOperation = DataPackageOperation.Copy;
+    }
+
+    private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
+    {
+        Uri imageMagickNetGH = new("https://github.com/dlemstra/Magick.NET");
+        bool success = await Launcher.LaunchUriAsync(imageMagickNetGH);
+
+        if (success == false)
+        {
+            InfoAppBarButton.IsEnabled = false;
+            InfoAppBarButton.Label = "error";
+            InfoAppBarButton.Icon = new SymbolIcon(Symbol.Cancel);
+        }
     }
 }
