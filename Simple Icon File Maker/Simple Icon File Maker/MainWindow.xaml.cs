@@ -28,7 +28,7 @@ public sealed partial class MainWindow : Window
 {
     private string ImagePath = "";
     private Size? SourceImageSize;
-    private AppWindow m_AppWindow;
+    private readonly AppWindow m_AppWindow;
 
     public MainWindow()
     {
@@ -79,21 +79,26 @@ public sealed partial class MainWindow : Window
         await bitmapImage.SetSourceAsync(fileStream);
         SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
         MainImage.Source = bitmapImage;
-        await SourceImageUpdated();
+        await SourceImageUpdated(Path.GetFileName(ImagePath));
     }
 
-    private async Task SourceImageUpdated()
+    private async Task SourceImageUpdated(string fileName)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        await GenerateIcons(sf.Path, true);
+        string pathAndName = Path.Combine(sf.Path, fileName);
+        await GenerateIcons(pathAndName, true);
         SaveBTN.IsEnabled = true;
         dropHere.Visibility = Visibility.Collapsed;
     }
 
     private async Task GenerateIcons(string path, bool updatePreviews = false)
     {
-        string openedPath = Path.GetDirectoryName(path);
-        string name = Path.GetFileNameWithoutExtension(path);
+        string? openedPath = Path.GetDirectoryName(path);
+        string? name = Path.GetFileNameWithoutExtension(path);
+
+        if (openedPath is null || name is null)
+            return;
+
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string iconRootString = sf.Path;
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
@@ -173,7 +178,8 @@ public sealed partial class MainWindow : Window
                 128 => OutputImage128.Source = bitmapImage,
                 64 => OutputImage64.Source = bitmapImage,
                 32 => OutputImage32.Source = bitmapImage,
-                16 => OutputImage16.Source = bitmapImage
+                16 => OutputImage16.Source = bitmapImage,
+                _ => throw new Exception("Icon side length did not match output image size")
             };
         }
 
@@ -224,7 +230,7 @@ public sealed partial class MainWindow : Window
             SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight); 
             MainImage.Source = bitmapImage;
             e.AcceptedOperation = DataPackageOperation.Copy;
-            await SourceImageUpdated();
+            await SourceImageUpdated(Path.GetFileName(ImagePath));
             def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.Uri))
@@ -239,7 +245,7 @@ public sealed partial class MainWindow : Window
             MainImage.Source = bmp;
 
             e.AcceptedOperation = DataPackageOperation.Copy;
-            await SourceImageUpdated();
+            await SourceImageUpdated(Path.GetFileName(ImagePath));
             def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -268,7 +274,7 @@ public sealed partial class MainWindow : Window
                 }
             }
             e.AcceptedOperation = DataPackageOperation.Copy;
-            await SourceImageUpdated();
+            await SourceImageUpdated(Path.GetFileName(ImagePath));
             def.Complete();
         }
     }
