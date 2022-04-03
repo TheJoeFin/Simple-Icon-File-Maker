@@ -13,6 +13,7 @@
     <ApplicationIcon>SimpleIconMaker.ico</ApplicationIcon>
     <Copyright>Joseph Finney 2022</Copyright>
     <PackageIcon>Image128.png</PackageIcon>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Image128.png" />
