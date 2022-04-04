@@ -30,7 +30,7 @@ public sealed partial class MainWindow : Window
 {
     private string ImagePath = "";
     private Size? SourceImageSize;
-    private readonly AppWindow m_AppWindow;
+    private readonly AppWindow? m_AppWindow;
 
     public MainWindow()
     {
@@ -190,8 +190,11 @@ public sealed partial class MainWindow : Window
 
     private async void SaveBTN_Click(object sender, RoutedEventArgs e)
     {
-        FolderPicker savePicker = new();
-        savePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+        FolderPicker savePicker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+        };
+        savePicker.FileTypeFilter.Add("*");
         // savePicker.DefaultFileExtension = ".ico";
         // savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
