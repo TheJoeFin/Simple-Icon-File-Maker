@@ -1,17 +1,9 @@
 ﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Microsoft.UI.Windowing;
+using WinRT.Interop;
+using Windows.System;
+using Microsoft.UI;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -23,9 +15,47 @@ namespace Simple_Icon_File_Maker
     /// </summary>
     public sealed partial class AboutWindow : Window
     {
+        private readonly AppWindow? m_AboutWindow;
+
         public AboutWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
+
+            m_AboutWindow = GetAppWindowForCurrentWindow();
+            m_AboutWindow.Resize(new Windows.Graphics.SizeInt32(1000, 800)); 
+            m_AboutWindow.SetIcon("SimpleIconMaker.ico");
+            m_AboutWindow.Title = "About Simple Icon File Maker";
+        }
+
+        private AppWindow GetAppWindowForCurrentWindow()
+        {
+            IntPtr hWnd = WindowNative.GetWindowHandle(this);
+            WindowId wndId = Win32Interop.GetWindowIdFromWindow(hWnd);
+            return AppWindow.GetFromWindowId(wndId);
+        }
+
+        private async void WindowsAppSDKBTN_Click(object sender, RoutedEventArgs e)
+        {
+            Uri imageMagickNetGH = new("https://github.com/microsoft/WindowsAppSDK");
+            _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
+        }
+
+        private async void WinUIBTN_Click(object sender, RoutedEventArgs e)
+        {
+            Uri imageMagickNetGH = new("https://github.com/Microsoft/microsoft-ui-xaml");
+            _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
+        }
+
+        private async void MagickDotNetBTN_Click(object sender, RoutedEventArgs e)
+        {
+            Uri imageMagickNetGH = new("https://github.com/dlemstra/Magick.NET");
+            _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
+        }
+
+        private async void TheJoeFinBTN_Click(object sender, RoutedEventArgs e)
+        {
+            Uri imageMagickNetGH = new("https://github.com/TheJoeFin");
+            _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
         }
     }
 }

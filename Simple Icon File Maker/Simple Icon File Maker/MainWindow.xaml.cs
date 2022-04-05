@@ -3,7 +3,6 @@ using ImageMagick.ImageOptimizers;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
@@ -15,7 +14,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
-using Windows.System;
 using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -126,7 +124,7 @@ public sealed partial class MainWindow : Window
         List<int> intList = new() { 256, 128, 64, 32, 16 };
 
         MagickImageCollection collection = new();
-        Dictionary<int,string> imagePaths = new();
+        Dictionary<int, string> imagePaths = new();
 
         foreach (int sideLength in intList)
         {
@@ -141,7 +139,7 @@ public sealed partial class MainWindow : Window
             await image.WriteAsync(iconPath);
 
             collection.Add(iconPath);
-            imagePaths.Add(sideLength,iconPath);
+            imagePaths.Add(sideLength, iconPath);
         }
 
         if (updatePreviews == true)
@@ -156,7 +154,7 @@ public sealed partial class MainWindow : Window
         icoOpti.Compress(iconOutputString);
     }
 
-    private async Task UpdatePreviewsAsync(Dictionary<int,string> imagePaths)
+    private async Task UpdatePreviewsAsync(Dictionary<int, string> imagePaths)
     {
         foreach (var pair in imagePaths)
         {
@@ -232,7 +230,7 @@ public sealed partial class MainWindow : Window
 
             BitmapImage bitmapImage = new();
             await bitmapImage.SetSourceAsync(await s.OpenReadAsync());
-            SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight); 
+            SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
             MainImage.Source = bitmapImage;
             e.AcceptedOperation = DataPackageOperation.Copy;
             await SourceImageUpdated(Path.GetFileName(ImagePath));
@@ -262,7 +260,7 @@ public sealed partial class MainWindow : Window
 
             foreach (IStorageItem item in storageItems)
             {
-                if (item is StorageFile file && 
+                if (item is StorageFile file &&
                     (file.FileType == ".png"
                     || file.FileType == ".bmp"
                     || file.FileType == ".jpeg"
@@ -293,16 +291,9 @@ public sealed partial class MainWindow : Window
         e.AcceptedOperation = DataPackageOperation.Copy;
     }
 
-    private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
+    private void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
     {
-        Uri imageMagickNetGH = new("https://github.com/dlemstra/Magick.NET");
-        bool success = await Launcher.LaunchUriAsync(imageMagickNetGH);
-
-        if (success == false)
-        {
-            InfoAppBarButton.IsEnabled = false;
-            InfoAppBarButton.Label = "error";
-            InfoAppBarButton.Icon = new SymbolIcon(Symbol.Cancel);
-        }
+        AboutWindow aboutWindow = new();
+        aboutWindow.Activate();
     }
 }

@@ -13,10 +13,22 @@
                 About Simple Icon File Maker
             </TextBlock>
             <TextBlock>
+                Created by:
+            </TextBlock>
+            <HyperlinkButton x:Name="TheJoeFinBTN" Click="TheJoeFinBTN_Click">
+                TheJoeFin
+            </HyperlinkButton>
+            <TextBlock>
                 Libraries used:
             </TextBlock>
-            <HyperlinkButton>
-                Windows Apps SDK
+            <HyperlinkButton x:Name="WindowsAppSDKBTN" Click="WindowsAppSDKBTN_Click">
+                Windows App SDK
+            </HyperlinkButton>
+            <HyperlinkButton x:Name="WinUIBTN" Click="WinUIBTN_Click">
+                WinUI 3
+            </HyperlinkButton>
+            <HyperlinkButton x:Name="MagickDotNetBTN" Click="MagickDotNetBTN_Click">
+                The .NET library for ImageMagick: Magick.NET
             </HyperlinkButton>
         </StackPanel>
     </ScrollViewer>

@@ -137,7 +137,7 @@
             HorizontalAlignment="Left"
             VerticalAlignment="Bottom"
             Click="InfoAppBarButton_Click"
-            Icon="World"
-            Label="Library used" />
+            Icon="Help"
+            Label="About" />
     </Grid>
 </Window>
