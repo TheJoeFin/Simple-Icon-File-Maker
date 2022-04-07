@@ -120,7 +120,6 @@ public sealed partial class MainWindow : Window
         firstPassimage.Crop(size);
         await firstPassimage.WriteAsync(croppedImagePath);
 
-        using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
         List<int> intList = new() { 256, 128, 64, 32, 16 };
 
         MagickImageCollection collection = new();
@@ -128,6 +127,7 @@ public sealed partial class MainWindow : Window
 
         foreach (int sideLength in intList)
         {
+            using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
             if (MainImage.ActualWidth < sideLength || MainImage.ActualHeight < sideLength)
                 continue;
 
@@ -135,6 +135,7 @@ public sealed partial class MainWindow : Window
             iconSize.IgnoreAspectRatio = false;
 
             image.Resize(iconSize);
+
             string iconPath = $"{iconRootString}\\Image{sideLength}.png";
             await image.WriteAsync(iconPath);
 
