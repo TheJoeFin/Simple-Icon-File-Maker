@@ -4,6 +4,7 @@ using Microsoft.UI.Windowing;
 using WinRT.Interop;
 using Windows.System;
 using Microsoft.UI;
+using Windows.ApplicationModel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -25,6 +26,17 @@ namespace Simple_Icon_File_Maker
             m_AboutWindow.Resize(new Windows.Graphics.SizeInt32(1000, 800)); 
             m_AboutWindow.SetIcon("SimpleIconMaker.ico");
             m_AboutWindow.Title = "About Simple Icon File Maker";
+
+            VersionNumber.Text = GetAppDescription();
+        }
+
+        private string GetAppDescription()
+        {
+            Package package = Package.Current;
+            PackageId packageId = package.Id;
+            PackageVersion version = packageId.Version;
+
+            return $"{package.DisplayName} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
         }
 
         private AppWindow GetAppWindowForCurrentWindow()
@@ -55,6 +67,12 @@ namespace Simple_Icon_File_Maker
         private async void TheJoeFinBTN_Click(object sender, RoutedEventArgs e)
         {
             Uri imageMagickNetGH = new("https://github.com/TheJoeFin");
+            _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
+        }
+
+        private async void SourceBTN_Click(object sender, RoutedEventArgs e)
+        {
+            Uri imageMagickNetGH = new("https://github.com/TheJoeFin/Simple-Icon-File-Maker");
             _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
         }
     }

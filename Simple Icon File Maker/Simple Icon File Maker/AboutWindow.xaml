@@ -13,10 +13,19 @@
                 About Simple Icon File Maker
             </TextBlock>
             <TextBlock>
+                <Run>
+                    Version:
+                </Run>
+                <Run x:Name="VersionNumber" />
+            </TextBlock>
+            <TextBlock>
                 Created by:
             </TextBlock>
             <HyperlinkButton x:Name="TheJoeFinBTN" Click="TheJoeFinBTN_Click">
-                TheJoeFin
+                TheJoeFin (GitHub)
+            </HyperlinkButton>
+            <HyperlinkButton x:Name="SourceBTN" Click="SourceBTN_Click">
+                Source code on GitHub
             </HyperlinkButton>
             <TextBlock>
                 Libraries used:
