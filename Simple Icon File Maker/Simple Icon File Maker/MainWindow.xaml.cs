@@ -86,18 +86,21 @@ public sealed partial class MainWindow : Window
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string pathAndName = Path.Combine(sf.Path, fileName);
-        await GenerateIcons(pathAndName, true);
-        SaveBTN.IsEnabled = true;
-        dropHere.Visibility = Visibility.Collapsed;
+        bool success = await GenerateIcons(pathAndName, true);
+
+        SaveBTN.IsEnabled = success;
+        SaveAllBTN.IsEnabled = success;
+
+        dropHere.Visibility = success ? Visibility.Collapsed : Visibility.Visible;
     }
 
-    private async Task GenerateIcons(string path, bool updatePreviews = false)
+    private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
     {
         string? openedPath = Path.GetDirectoryName(path);
         string? name = Path.GetFileNameWithoutExtension(path);
 
         if (openedPath is null || name is null)
-            return;
+            return false;
 
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string iconRootString = sf.Path;
@@ -111,6 +114,22 @@ public sealed partial class MainWindow : Window
 
         if (SourceImageSize is null)
             SourceImageSize = new Size((int)MainImage.RenderSize.Width, (int)MainImage.RenderSize.Height);
+
+        if (string.IsNullOrWhiteSpace(ImagePath) == true)
+        {
+            ClearOutputImages();
+            return false;
+        }
+
+        try
+        {
+            _ = await imgFactory.CreateAsync(ImagePath);
+        }
+        catch (Exception)
+        {
+            ClearOutputImages();
+            return false;
+        }
 
         using IMagickImage<ushort> firstPassimage = await imgFactory.CreateAsync(ImagePath);
         IMagickGeometry size = geoFactory.Create(
@@ -137,7 +156,11 @@ public sealed partial class MainWindow : Window
             image.Resize(iconSize);
 
             string iconPath = $"{iconRootString}\\Image{sideLength}.png";
+            string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
             await image.WriteAsync(iconPath);
+
+            if (saveAllFiles == true)
+                await image.WriteAsync(outputImagePath);
 
             collection.Add(iconPath);
             imagePaths.Add(sideLength, iconPath);
@@ -153,6 +176,17 @@ public sealed partial class MainWindow : Window
             OptimalCompression = true
         };
         icoOpti.Compress(iconOutputString);
+
+        return true;
+    }
+
+    private void ClearOutputImages()
+    {
+        OutputImage256.Source = null;
+        OutputImage128.Source = null;
+        OutputImage64.Source = null;
+        OutputImage32.Source = null;
+        OutputImage16.Source = null;
     }
 
     private async Task UpdatePreviewsAsync(Dictionary<int, string> imagePaths)
@@ -211,6 +245,7 @@ public sealed partial class MainWindow : Window
         try
         {
             SaveBTN.IsEnabled = false;
+            SaveAllBTN.IsEnabled = false;
             await GenerateIcons(savePath);
         }
         catch (Exception ex)
@@ -220,6 +255,45 @@ public sealed partial class MainWindow : Window
         finally
         {
             SaveBTN.IsEnabled = true;
+            SaveAllBTN.IsEnabled = true;
+        }
+    }
+
+    private async void SaveAllBTN_Click(object sender, RoutedEventArgs e)
+    {
+        FileSavePicker savePicker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+        };
+        savePicker.FileTypeChoices.Add("ICO File", new List<string>() { ".ico" });
+        savePicker.DefaultFileExtension = ".ico";
+        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
+
+        Window saveWindow = new();
+        IntPtr hwndSave = WindowNative.GetWindowHandle(saveWindow);
+        InitializeWithWindow.Initialize(savePicker, hwndSave);
+
+        StorageFile file = await savePicker.PickSaveFileAsync();
+
+        if (file is null)
+            return;
+
+        string savePath = Path.Combine(file.Path);
+
+        try
+        {
+            SaveBTN.IsEnabled = false;
+            SaveAllBTN.IsEnabled = false;
+            await GenerateIcons(savePath, false, true);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
+        }
+        finally
+        {
+            SaveBTN.IsEnabled = true;
+            SaveAllBTN.IsEnabled = true;
         }
     }
 
@@ -300,5 +374,12 @@ public sealed partial class MainWindow : Window
     {
         AboutWindow aboutWindow = new();
         aboutWindow.Activate();
+    }
+
+    private async void ClearAppBarButton_Click(object sender, RoutedEventArgs e)
+    {
+        MainImage.Source = null;
+        ImagePath = "-";
+        await SourceImageUpdated("");
     }
 }

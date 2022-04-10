@@ -86,10 +86,24 @@
                 Click="SaveBTN_Click"
                 IsEnabled="False">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <SymbolIcon Symbol="SaveLocal" />
+                    <SymbolIcon Symbol="Save" />
                     <TextBlock
                         Width="120"
                         Text="Save Icon"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button
+                x:Name="SaveAllBTN"
+                Width="200"
+                HorizontalAlignment="Center"
+                Click="SaveAllBTN_Click"
+                IsEnabled="False">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <SymbolIcon Symbol="SaveLocal" />
+                    <TextBlock
+                        Width="120"
+                        Text="Save All Images"
                         TextAlignment="Center" />
                 </StackPanel>
             </Button>
@@ -131,13 +145,19 @@
             </StackPanel>
         </ScrollViewer>
 
-        <AppBarButton
-            x:Name="InfoAppBarButton"
-            Grid.Row="1"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Bottom"
-            Click="InfoAppBarButton_Click"
-            Icon="Help"
-            Label="About" />
+        <CommandBar Grid.Row="1" VerticalAlignment="Bottom">
+            <CommandBar.PrimaryCommands>
+                <AppBarButton
+                    x:Name="InfoAppBarButton"
+                    Click="InfoAppBarButton_Click"
+                    Icon="Help"
+                    Label="About" />
+                <AppBarButton
+                    x:Name="ClearAppBarButton"
+                    Click="ClearAppBarButton_Click"
+                    Icon="Clear"
+                    Label="Clear" />
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
     </Grid>
 </Window>
