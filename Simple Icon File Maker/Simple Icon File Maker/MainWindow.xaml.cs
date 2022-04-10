@@ -189,20 +189,24 @@ public sealed partial class MainWindow : Window
 
     private async void SaveBTN_Click(object sender, RoutedEventArgs e)
     {
-        FolderPicker savePicker = new()
+        FileSavePicker savePicker = new()
         {
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
         };
-        savePicker.FileTypeFilter.Add("*");
-        // savePicker.DefaultFileExtension = ".ico";
-        // savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
+        savePicker.FileTypeChoices.Add("ICO File", new List<string>() { ".ico" });
+        savePicker.DefaultFileExtension = ".ico";
+        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
         Window saveWindow = new();
         IntPtr hwndSave = WindowNative.GetWindowHandle(saveWindow);
         InitializeWithWindow.Initialize(savePicker, hwndSave);
 
-        StorageFolder folder = await savePicker.PickSingleFolderAsync();
-        string savePath = Path.Combine(folder.Path, $"{Path.GetFileNameWithoutExtension(ImagePath)}.ico");
+        StorageFile file = await savePicker.PickSaveFileAsync();
+
+        if (file is null)
+            return;
+
+        string savePath = Path.Combine(file.Path);
 
         try
         {
