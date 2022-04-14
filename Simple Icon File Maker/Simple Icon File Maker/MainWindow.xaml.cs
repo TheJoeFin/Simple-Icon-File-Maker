@@ -154,6 +154,7 @@ public sealed partial class MainWindow : Window
             iconSize.IgnoreAspectRatio = false;
 
             image.Resize(iconSize);
+            image.Sharpen();
 
             string iconPath = $"{iconRootString}\\Image{sideLength}.png";
             string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
