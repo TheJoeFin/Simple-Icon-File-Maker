@@ -133,10 +133,12 @@ public sealed partial class MainWindow : Window
 
         using IMagickImage<ushort> firstPassimage = await imgFactory.CreateAsync(ImagePath);
         IMagickGeometry size = geoFactory.Create(
-            Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+            Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
         size.IgnoreAspectRatio = false;
+        size.FillArea = true;
 
-        firstPassimage.Crop(size);
+        firstPassimage.Extent(size, Gravity.Center, MagickColor.FromRgba(0,0,0,0));
+
         await firstPassimage.WriteAsync(croppedImagePath);
 
         List<int> intList = new() { 256, 128, 64, 32, 16 };
@@ -153,7 +155,7 @@ public sealed partial class MainWindow : Window
             IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
             iconSize.IgnoreAspectRatio = false;
 
-            image.Resize(iconSize);
+            image.Scale(iconSize);
             image.Sharpen();
 
             string iconPath = $"{iconRootString}\\Image{sideLength}.png";
