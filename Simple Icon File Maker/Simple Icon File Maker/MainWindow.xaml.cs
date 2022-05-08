@@ -96,6 +96,9 @@ public sealed partial class MainWindow : Window
 
     private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
     {
+        ImagesProcessingProgressRing.Visibility = Visibility.Visible;
+        ImagesProcessingProgressRing.IsActive = true;
+        
         string? openedPath = Path.GetDirectoryName(path);
         string? name = Path.GetFileNameWithoutExtension(path);
 
@@ -180,6 +183,8 @@ public sealed partial class MainWindow : Window
         };
         icoOpti.Compress(iconOutputString);
 
+        ImagesProcessingProgressRing.IsActive = false;
+        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
         return true;
     }
 
@@ -190,6 +195,9 @@ public sealed partial class MainWindow : Window
         OutputImage64.Source = null;
         OutputImage32.Source = null;
         OutputImage16.Source = null;
+
+        ImagesProcessingProgressRing.IsActive = false;
+        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
     }
 
     private async Task UpdatePreviewsAsync(Dictionary<int, string> imagePaths)

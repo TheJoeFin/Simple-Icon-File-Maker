@@ -114,9 +114,16 @@
             Background="{ThemeResource SystemControlAccentAcrylicElementAccentMediumHighBrush}"
             VerticalScrollBarVisibility="Auto">
             <StackPanel
-                Margin="36"
+                Margin="24,12,24,100"
                 Orientation="Vertical"
                 Spacing="20">
+                <ProgressRing
+                    x:Name="ImagesProcessingProgressRing"
+                    Width="50"
+                    Height="50"
+                    IsActive="False"
+                    IsIndeterminate="True"
+                    Visibility="Collapsed" />
                 <Image
                     x:Name="OutputImage256"
                     Width="256"
