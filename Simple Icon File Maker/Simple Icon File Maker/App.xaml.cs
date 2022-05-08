@@ -46,6 +46,6 @@ namespace Simple_Icon_File_Maker
             m_window.Activate();
         }
 
-        private Window m_window;
+        private Window? m_window;
     }
 }
