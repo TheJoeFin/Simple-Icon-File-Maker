@@ -89,6 +89,7 @@ public sealed partial class MainWindow : Window
 
     private async Task SourceImageUpdated(string fileName)
     {
+        PreviewStackPanel.Children.Clear();
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string pathAndName = Path.Combine(sf.Path, fileName);
         bool success = await GenerateIcons(pathAndName, true);
@@ -351,10 +352,10 @@ public sealed partial class MainWindow : Window
             foreach (IStorageItem item in storageItems)
             {
                 if (item is StorageFile file &&
-                    (file.FileType == ".png"
-                    || file.FileType == ".bmp"
-                    || file.FileType == ".jpeg"
-                    || file.FileType == ".jpg"))
+                    (file.FileType.ToLower() == ".png"
+                    || file.FileType.ToLower() == ".bmp"
+                    || file.FileType.ToLower() == ".jpeg"
+                    || file.FileType.ToLower() == ".jpg"))
                 {
                     using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
                     BitmapImage bitmapImage = new();
