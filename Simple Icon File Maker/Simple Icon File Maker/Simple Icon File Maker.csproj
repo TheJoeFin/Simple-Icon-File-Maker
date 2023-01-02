@@ -30,6 +30,7 @@
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="12.2.2" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
+    <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 

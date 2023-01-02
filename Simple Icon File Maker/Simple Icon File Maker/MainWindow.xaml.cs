@@ -5,14 +5,16 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Simple_Icon_File_Maker.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
@@ -31,9 +33,8 @@ public sealed partial class MainWindow : Window
     private string ImagePath = "";
     private Size? SourceImageSize;
     private readonly AppWindow? m_AppWindow;
-    List<int> windowsFull = new() { 256, 128, 72, 64, 60, 40, 32, 24, 20, 16 };
-    List<int> simple = new() { 256, 128, 64, 32, 16 };
 
+    ObservableCollection<IconSize> IconSizes = new(IconSize.GetFullWindowsSizes());
 
     public MainWindow()
     {
@@ -42,7 +43,15 @@ public sealed partial class MainWindow : Window
         m_AppWindow = GetAppWindowForCurrentWindow();
         m_AppWindow.SetIcon("SimpleIconMaker.ico");
         m_AppWindow.Title = "Simple Icon File Maker";
+
+        IconSizes.CollectionChanged += IconSizes_CollectionChanged;
     }
+
+    private void IconSizes_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        
+    }
+
     private AppWindow GetAppWindowForCurrentWindow()
     {
         IntPtr hWnd = WindowNative.GetWindowHandle(this);
@@ -104,7 +113,7 @@ public sealed partial class MainWindow : Window
     {
         ImagesProcessingProgressRing.Visibility = Visibility.Visible;
         ImagesProcessingProgressRing.IsActive = true;
-        
+
         string? openedPath = Path.GetDirectoryName(path);
         string? name = Path.GetFileNameWithoutExtension(path);
 
@@ -145,14 +154,16 @@ public sealed partial class MainWindow : Window
         size.IgnoreAspectRatio = false;
         size.FillArea = true;
 
-        firstPassimage.Extent(size, Gravity.Center, MagickColor.FromRgba(0,0,0,0));
+        firstPassimage.Extent(size, Gravity.Center, MagickColor.FromRgba(0, 0, 0, 0));
 
         await firstPassimage.WriteAsync(croppedImagePath);
 
         MagickImageCollection collection = new();
         Dictionary<int, string> imagePaths = new();
 
-        foreach (int sideLength in windowsFull)
+        List<int> selectedSizes = IconSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
+
+        foreach (int sideLength in selectedSizes)
         {
             using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
             if (MainImage.ActualWidth < sideLength || MainImage.ActualHeight < sideLength)
@@ -224,7 +235,7 @@ public sealed partial class MainWindow : Window
                 Width = sideLength,
                 Height = sideLength,
                 Margin = new Thickness(5),
-                
+
             };
             ToolTipService.SetToolTip(image, $"{sideLength} x {sideLength}");
             PreviewStackPanel.Children.Add(image);
@@ -397,5 +408,26 @@ public sealed partial class MainWindow : Window
         MainImage.Source = null;
         ImagePath = "-";
         await SourceImageUpdated("");
+    }
+
+    private async void RefreshButton_Click(object sender, RoutedEventArgs e)
+    {
+        await SourceImageUpdated(Path.GetFileName(ImagePath));
+    }
+
+    private void SelectAllButton_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (IconSize size in IconSizes)
+            size.IsSelected = true;
+
+        IconSizesListView.UpdateLayout();
+    }
+
+    private void ClearSelectionButton_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (IconSize size in IconSizes)
+            size.IsSelected = false;
+
+        IconSizesListView.UpdateLayout();
     }
 }
