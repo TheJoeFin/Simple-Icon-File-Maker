@@ -1,7 +1,7 @@
 # Simple Icon File Maker
 A small lightweight Windows app which creates .ico files with different resolutions.
 
-![SimpleIconFileMaker-Star](https://user-images.githubusercontent.com/7809853/162339840-e4f1531d-b949-434a-b472-66c497c23565.jpg)
+![SimpleIconFileMaker-Happy-Planet](./Readme-Images/HappyPlanet-1-3.png)
 
 
 ## How to use
