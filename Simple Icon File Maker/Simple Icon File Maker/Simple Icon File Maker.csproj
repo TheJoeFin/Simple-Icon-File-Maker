@@ -20,7 +20,7 @@
     <Content Remove="Image128.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="AboutWindow.xaml" />
+    <None Remove="AboutDialog.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SimpleIconMaker.ico" />
@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="AboutWindow.xaml">
+    <Page Update="AboutDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

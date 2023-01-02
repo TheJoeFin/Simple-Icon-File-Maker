@@ -113,10 +113,7 @@
             Grid.Row="1"
             Background="{ThemeResource SystemControlAccentAcrylicElementAccentMediumHighBrush}"
             VerticalScrollBarVisibility="Auto">
-            <StackPanel
-                Margin="24,12,24,100"
-                Orientation="Vertical"
-                Spacing="20">
+            <Grid>
                 <ProgressRing
                     x:Name="ImagesProcessingProgressRing"
                     Width="50"
@@ -124,32 +121,13 @@
                     IsActive="False"
                     IsIndeterminate="True"
                     Visibility="Collapsed" />
-                <Image
-                    x:Name="OutputImage256"
-                    Width="256"
-                    HorizontalAlignment="Center"
-                    ToolTipService.ToolTip="256x256 Pixels" />
-                <Image
-                    x:Name="OutputImage128"
-                    Width="128"
-                    HorizontalAlignment="Center"
-                    ToolTipService.ToolTip="128x128 Pixels" />
-                <Image
-                    x:Name="OutputImage64"
-                    Width="64"
-                    HorizontalAlignment="Center"
-                    ToolTipService.ToolTip="64x64 Pixels" />
-                <Image
-                    x:Name="OutputImage32"
-                    Width="32"
-                    HorizontalAlignment="Center"
-                    ToolTipService.ToolTip="32x32 Pixels" />
-                <Image
-                    x:Name="OutputImage16"
-                    Width="16"
-                    HorizontalAlignment="Center"
-                    ToolTipService.ToolTip="16x16 Pixels" />
-            </StackPanel>
+                <StackPanel
+                    Name="PreviewStackPanel"
+                    Margin="24,12,24,100"
+                    Orientation="Vertical"
+                    Spacing="20" />
+
+            </Grid>
         </ScrollViewer>
 
         <CommandBar Grid.Row="1" VerticalAlignment="Bottom">

@@ -3,6 +3,7 @@ using ImageMagick.ImageOptimizers;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation.Metadata;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
@@ -29,6 +31,9 @@ public sealed partial class MainWindow : Window
     private string ImagePath = "";
     private Size? SourceImageSize;
     private readonly AppWindow? m_AppWindow;
+    List<int> windowsFull = new() { 256, 128, 72, 64, 60, 40, 32, 24, 20, 16 };
+    List<int> simple = new() { 256, 128, 64, 32, 16 };
+
 
     public MainWindow()
     {
@@ -115,8 +120,7 @@ public sealed partial class MainWindow : Window
         MagickImageFactory imgFactory = new();
         MagickGeometryFactory geoFactory = new();
 
-        if (SourceImageSize is null)
-            SourceImageSize = new Size((int)MainImage.RenderSize.Width, (int)MainImage.RenderSize.Height);
+        SourceImageSize ??= new Size((int)MainImage.RenderSize.Width, (int)MainImage.RenderSize.Height);
 
         if (string.IsNullOrWhiteSpace(ImagePath) == true)
         {
@@ -144,12 +148,10 @@ public sealed partial class MainWindow : Window
 
         await firstPassimage.WriteAsync(croppedImagePath);
 
-        List<int> intList = new() { 256, 128, 64, 32, 16 };
-
         MagickImageCollection collection = new();
         Dictionary<int, string> imagePaths = new();
 
-        foreach (int sideLength in intList)
+        foreach (int sideLength in windowsFull)
         {
             using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
             if (MainImage.ActualWidth < sideLength || MainImage.ActualHeight < sideLength)
@@ -190,11 +192,7 @@ public sealed partial class MainWindow : Window
 
     private void ClearOutputImages()
     {
-        OutputImage256.Source = null;
-        OutputImage128.Source = null;
-        OutputImage64.Source = null;
-        OutputImage32.Source = null;
-        OutputImage16.Source = null;
+        PreviewStackPanel.Children.Clear();
 
         ImagesProcessingProgressRing.IsActive = false;
         ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
@@ -218,15 +216,17 @@ public sealed partial class MainWindow : Window
             };
 
             await bitmapImage.SetSourceAsync(fileStream);
-            _ = sideLength switch
+
+            Image image = new()
             {
-                256 => OutputImage256.Source = bitmapImage,
-                128 => OutputImage128.Source = bitmapImage,
-                64 => OutputImage64.Source = bitmapImage,
-                32 => OutputImage32.Source = bitmapImage,
-                16 => OutputImage16.Source = bitmapImage,
-                _ => throw new Exception("Icon side length did not match output image size")
+                Source = bitmapImage,
+                Width = sideLength,
+                Height = sideLength,
+                Margin = new Thickness(5),
+                
             };
+            ToolTipService.SetToolTip(image, $"{sideLength} x {sideLength}");
+            PreviewStackPanel.Children.Add(image);
         }
 
         await Task.CompletedTask;
@@ -381,10 +381,14 @@ public sealed partial class MainWindow : Window
         e.AcceptedOperation = DataPackageOperation.Copy;
     }
 
-    private void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
+    private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
     {
-        AboutWindow aboutWindow = new();
-        aboutWindow.Activate();
+        AboutDialog aboutWindow = new()
+        {
+            XamlRoot = this.Content.XamlRoot
+        };
+
+        _ = await aboutWindow.ShowAsync();
     }
 
     private async void ClearAppBarButton_Click(object sender, RoutedEventArgs e)

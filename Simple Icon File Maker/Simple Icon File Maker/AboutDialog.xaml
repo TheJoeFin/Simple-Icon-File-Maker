@@ -1,17 +1,16 @@
-﻿<Window
-    x:Class="Simple_Icon_File_Maker.AboutWindow"
+﻿<ContentDialog
+    x:Class="Simple_Icon_File_Maker.AboutDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Simple_Icon_File_Maker"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="About Simple Icon File Maker"
+    PrimaryButtonText="Okay"
     mc:Ignorable="d">
 
     <ScrollViewer>
         <StackPanel Margin="15" Spacing="10">
-            <TextBlock Style="{ThemeResource HeaderTextBlockStyle}">
-                About Simple Icon File Maker
-            </TextBlock>
             <TextBlock>
                 <Run>
                     Version:
@@ -41,4 +40,4 @@
             </HyperlinkButton>
         </StackPanel>
     </ScrollViewer>
-</Window>
+</ContentDialog>
