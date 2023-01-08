@@ -5,6 +5,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ public sealed partial class MainWindow : Window
 
     private void IconSizes_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
-        
+
     }
 
     private AppWindow GetAppWindowForCurrentWindow()
@@ -90,7 +91,8 @@ public sealed partial class MainWindow : Window
         // It's generally a good optimisation to decode to match the size you'll display
         // bitmapImage.DecodePixelHeight = decodePixelHeight;
         // bitmapImage.DecodePixelWidth = decodePixelWidth;
-        await bitmapImage.SetSourceAsync(fileStream);
+        await bitmapImage.CheckAndSetSourceAsync(this, fileStream);
+        if (errorInfoBar.IsOpen) return;
         SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
         MainImage.Source = bitmapImage;
         await SourceImageUpdated(Path.GetFileName(ImagePath));
@@ -227,7 +229,8 @@ public sealed partial class MainWindow : Window
                 DecodePixelWidth = sideLength
             };
 
-            await bitmapImage.SetSourceAsync(fileStream);
+            await bitmapImage.CheckAndSetSourceAsync(this, fileStream);
+            if (errorInfoBar.IsOpen) return;
 
             Image image = new()
             {
@@ -375,7 +378,8 @@ public sealed partial class MainWindow : Window
                     // bitmapImage.DecodePixelHeight = decodePixelHeight;
                     // bitmapImage.DecodePixelWidth = decodePixelWidth;
 
-                    await bitmapImage.SetSourceAsync(fileStream);
+                    await bitmapImage.CheckAndSetSourceAsync(this, fileStream);
+                    if (errorInfoBar.IsOpen) return;
                     SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
                     MainImage.Source = bitmapImage;
                     ImagePath = file.Path;
@@ -430,4 +434,10 @@ public sealed partial class MainWindow : Window
 
         IconSizesListView.UpdateLayout();
     }
+    public void ShowErrorInfoBar(string errorMessage)
+    {
+        errorInfoBar.Message = errorMessage;
+        errorInfoBar.IsOpen = true;
+    }
+
 }
