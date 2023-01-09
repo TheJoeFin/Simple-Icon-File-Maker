@@ -30,8 +30,19 @@
             Drop="Grid_Drop">
 
                 <!-- Error Info Bar -->
-                
-            <InfoBar x:Name="errorInfoBar" Title="An Error Has Occured" Severity="Error"/>
+
+            <InfoBar x:Name="errorInfoBar" Title="An Error Has Occured" Severity="Error">
+                <InfoBar.Resources>
+                    <Storyboard x:Name="closeInfoBarStoryboard">
+                        <ObjectAnimationUsingKeyFrames
+                            Storyboard.TargetName="errorInfoBar"
+                            Storyboard.TargetProperty="IsOpen"
+                            Duration="0:0:5">
+                            <DiscreteObjectKeyFrame KeyTime="0:0:5" Value="False"/>
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </InfoBar.Resources>
+            </InfoBar>
 
             <Canvas
                 Name="dropHere"

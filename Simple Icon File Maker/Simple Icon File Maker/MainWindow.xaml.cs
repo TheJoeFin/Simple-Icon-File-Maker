@@ -35,8 +35,6 @@ public sealed partial class MainWindow : Window
     private Size? SourceImageSize;
     private readonly AppWindow? m_AppWindow;
 
-    private DispatcherTimer _timer;
-
     ObservableCollection<IconSize> IconSizes = new(IconSize.GetFullWindowsSizes());
 
     public MainWindow()
@@ -46,10 +44,6 @@ public sealed partial class MainWindow : Window
         m_AppWindow = GetAppWindowForCurrentWindow();
         m_AppWindow.SetIcon("SimpleIconMaker.ico");
         m_AppWindow.Title = "Simple Icon File Maker";
-
-        _timer = new DispatcherTimer();
-        _timer.Interval = TimeSpan.FromSeconds(5);
-        _timer.Tick += Timer_Tick;
 
         IconSizes.CollectionChanged += IconSizes_CollectionChanged;
     }
@@ -445,12 +439,7 @@ public sealed partial class MainWindow : Window
     {
         errorInfoBar.Message = errorMessage;
         errorInfoBar.IsOpen = true;
-        _timer.Start();
-    }
-    private void Timer_Tick(object? sender, object e)
-    {
-        errorInfoBar.IsOpen = false;
-        _timer.Stop();
+        closeInfoBarStoryboard.Begin();
     }
 
 }
