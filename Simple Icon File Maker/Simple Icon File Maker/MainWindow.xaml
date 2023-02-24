@@ -57,6 +57,25 @@
                     Margin="36"
                     Stretch="Uniform" />
             </Viewbox>
+
+            <InfoBar
+                x:Name="errorInfoBar"
+                Title="Error opening the image"
+                Margin="20"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Severity="Error">
+                <InfoBar.Resources>
+                    <Storyboard x:Name="closeInfoBarStoryboard">
+                        <ObjectAnimationUsingKeyFrames
+                            Storyboard.TargetName="errorInfoBar"
+                            Storyboard.TargetProperty="IsOpen"
+                            Duration="0:0:15">
+                            <DiscreteObjectKeyFrame KeyTime="0:0:15" Value="False" />
+                        </ObjectAnimationUsingKeyFrames>
+                    </Storyboard>
+                </InfoBar.Resources>
+            </InfoBar>
         </Grid>
 
         <!--  Left side:  -->

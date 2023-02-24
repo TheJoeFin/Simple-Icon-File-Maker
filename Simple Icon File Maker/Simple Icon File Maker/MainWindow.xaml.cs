@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -85,15 +86,9 @@ public sealed partial class MainWindow : Window
 
         // Ensure the stream is disposed once the image is loaded
         using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
-        BitmapImage bitmapImage = new();
-        // Decode pixel sizes are optional
-        // It's generally a good optimisation to decode to match the size you'll display
-        // bitmapImage.DecodePixelHeight = decodePixelHeight;
-        // bitmapImage.DecodePixelWidth = decodePixelWidth;
-        await bitmapImage.SetSourceAsync(fileStream);
-        SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
-        MainImage.Source = bitmapImage;
-        await SourceImageUpdated(Path.GetFileName(ImagePath));
+        bool success = await UpdateSourceImageFromStream(fileStream);
+        if (!success)
+            return;
     }
 
     private async Task SourceImageUpdated(string fileName)
@@ -330,12 +325,13 @@ public sealed partial class MainWindow : Window
             RandomAccessStreamReference s = await e.DataView.GetBitmapAsync();
             ImagePath = await e.DataView.GetTextAsync();
 
-            BitmapImage bitmapImage = new();
-            await bitmapImage.SetSourceAsync(await s.OpenReadAsync());
-            SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
-            MainImage.Source = bitmapImage;
+            bool success = await UpdateSourceImageFromStream(await s.OpenReadAsync());
+            if (!success)
+            {
+                e.AcceptedOperation = DataPackageOperation.None;
+                return;
+            }
             e.AcceptedOperation = DataPackageOperation.Copy;
-            await SourceImageUpdated(Path.GetFileName(ImagePath));
             def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.Uri))
@@ -369,23 +365,45 @@ public sealed partial class MainWindow : Window
                     || file.FileType.ToLower() == ".jpg"))
                 {
                     using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
-                    BitmapImage bitmapImage = new();
-                    // Decode pixel sizes are optional
-                    // It's generally a good optimisation to decode to match the size you'll display
-                    // bitmapImage.DecodePixelHeight = decodePixelHeight;
-                    // bitmapImage.DecodePixelWidth = decodePixelWidth;
+                    bool success = await UpdateSourceImageFromStream(fileStream);
+                    if (!success)
+                    {
+                        e.AcceptedOperation = DataPackageOperation.None;
+                        return;
+                    }
 
-                    await bitmapImage.SetSourceAsync(fileStream);
-                    SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
-                    MainImage.Source = bitmapImage;
-                    ImagePath = file.Path;
                     e.AcceptedOperation = DataPackageOperation.Copy;
-                    await SourceImageUpdated(Path.GetFileName(ImagePath));
+                    ImagePath = file.Path;
                     break;
                 }
             }
             def.Complete();
         }
+    }
+
+    private async Task<bool> UpdateSourceImageFromStream(IRandomAccessStream fileStream)
+    {
+        BitmapImage bitmapImage = new();
+        // Decode pixel sizes are optional
+        // It's generally a good optimisation to decode to match the size you'll display
+        // bitmapImage.DecodePixelHeight = decodePixelHeight;
+        // bitmapImage.DecodePixelWidth = decodePixelWidth;
+
+        try
+        {
+            await bitmapImage.SetSourceAsync(fileStream);
+        }
+        catch (Exception ex)
+        {
+            errorInfoBar.IsOpen = true;
+            errorInfoBar.Message = ex.Message;
+            closeInfoBarStoryboard.Begin();
+            return false;
+        }
+        SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+        MainImage.Source = bitmapImage;
+        await SourceImageUpdated(Path.GetFileName(ImagePath));
+        return true;
     }
 
     private void Border_DragOver(object sender, DragEventArgs e)
