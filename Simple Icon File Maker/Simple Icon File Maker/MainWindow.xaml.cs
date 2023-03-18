@@ -230,12 +230,17 @@ public sealed partial class MainWindow : Window
                 Width = sideLength,
                 Height = sideLength,
                 Margin = new Thickness(5),
-
+                Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill
+            };
+            Viewbox vb = new()
+            {
+                Child = image,
+                Stretch = Microsoft.UI.Xaml.Media.Stretch.None
             };
             ToolTipService.SetToolTip(image, $"{sideLength} x {sideLength}");
-            PreviewStackPanel.Children.Add(image);
+            PreviewStackPanel.Children.Add(vb);
         }
-
+        SetPreviewsZoom();
         await Task.CompletedTask;
     }
 
@@ -448,5 +453,29 @@ public sealed partial class MainWindow : Window
             size.IsSelected = false;
 
         IconSizesListView.UpdateLayout();
+    }
+
+    private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
+    {
+        SetPreviewsZoom();
+    }
+
+    private void SetPreviewsZoom()
+    {
+        UIElementCollection previewBoxes = PreviewStackPanel.Children;
+
+        if (ZoomPreviewToggleButton.IsChecked is not bool isZoomingPreview)
+            return;
+
+        foreach (var child in previewBoxes)
+        {
+            if (child is not Viewbox vb)
+                continue;
+
+            if (isZoomingPreview)
+                vb.Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill;
+            else
+                vb.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
+        }
     }
 }
