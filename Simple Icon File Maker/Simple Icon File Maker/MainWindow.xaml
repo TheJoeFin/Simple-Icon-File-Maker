@@ -8,7 +8,7 @@
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid Background="{ThemeResource SystemControlBaseLowAcrylicWindowBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="360" />
             <ColumnDefinition Width="*" />
@@ -25,7 +25,6 @@
             Grid.RowSpan="2"
             Grid.Column="1"
             AllowDrop="True"
-            Background="{ThemeResource SystemControlBaseLowAcrylicWindowBrush}"
             DragOver="Border_DragOver"
             Drop="Grid_Drop">
             <Canvas
@@ -90,7 +89,8 @@
                 x:Name="OpenBTN"
                 Width="200"
                 HorizontalAlignment="Center"
-                Click="OpenBTN_Click">
+                Click="OpenBTN_Click"
+                ToolTipService.ToolTip="Open image to make .ico file from">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="OpenFile" />
                     <TextBlock
@@ -104,7 +104,8 @@
                 Width="200"
                 HorizontalAlignment="Center"
                 Click="SaveBTN_Click"
-                IsEnabled="False">
+                IsEnabled="False"
+                ToolTipService.ToolTip="Save all images as a combined .ico">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="Save" />
                     <TextBlock
@@ -118,7 +119,8 @@
                 Width="200"
                 HorizontalAlignment="Center"
                 Click="SaveAllBTN_Click"
-                IsEnabled="False">
+                IsEnabled="False"
+                ToolTipService.ToolTip="Save all images as a combined .ico and each size as a .png">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="SaveLocal" />
                     <TextBlock
@@ -146,13 +148,15 @@
                     VerticalAlignment="Top"
                     ExpandDirection="Down"
                     Header="Icon Sizes"
-                    IsExpanded="False">
+                    IsExpanded="False"
+                    ToolTipService.ToolTip="Change icon size options">
                     <StackPanel Orientation="Vertical">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <Button
                                 x:Name="RefreshButton"
                                 HorizontalAlignment="Center"
-                                Click="RefreshButton_Click">
+                                Click="RefreshButton_Click"
+                                ToolTipService.ToolTip="Refresh icon previews">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <SymbolIcon Symbol="Refresh" />
                                 </StackPanel>
@@ -160,7 +164,8 @@
                             <Button
                                 x:Name="SelectAllButton"
                                 HorizontalAlignment="Center"
-                                Click="SelectAllButton_Click">
+                                Click="SelectAllButton_Click"
+                                ToolTipService.ToolTip="Select all icon sizes">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <SymbolIcon Symbol="SelectAll" />
                                 </StackPanel>
@@ -168,7 +173,8 @@
                             <Button
                                 x:Name="ClearSelectionButton"
                                 HorizontalAlignment="Center"
-                                Click="ClearSelectionButton_Click">
+                                Click="ClearSelectionButton_Click"
+                                ToolTipService.ToolTip="Clear all icon size selection">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <SymbolIcon Symbol="ClearSelection" />
                                 </StackPanel>
@@ -212,17 +218,20 @@
                     x:Name="ZoomPreviewToggleButton"
                     Click="ZoomPreviewToggleButton_Click"
                     Icon="ZoomIn"
-                    Label="Zoom Previews" />
+                    Label="Zoom Previews"
+                    ToolTipService.ToolTip="Zoom in on icon previews" />
                 <AppBarButton
                     x:Name="InfoAppBarButton"
                     Click="InfoAppBarButton_Click"
                     Icon="Help"
-                    Label="About" />
+                    Label="About"
+                    ToolTipService.ToolTip="More info about Simple Icon File Maker" />
                 <AppBarButton
                     x:Name="ClearAppBarButton"
                     Click="ClearAppBarButton_Click"
                     Icon="Clear"
-                    Label="Clear" />
+                    Label="Clear"
+                    ToolTipService.ToolTip="Clear image and reset the app" />
             </CommandBar.PrimaryCommands>
         </CommandBar>
     </Grid>
