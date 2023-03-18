@@ -364,16 +364,17 @@ public sealed partial class MainWindow : Window
                     || file.FileType.ToLower() == ".jpeg"
                     || file.FileType.ToLower() == ".jpg"))
                 {
+                    ImagePath = file.Path;
                     using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
                     bool success = await UpdateSourceImageFromStream(fileStream);
                     if (!success)
                     {
                         e.AcceptedOperation = DataPackageOperation.None;
+                        def.Complete();
                         return;
                     }
 
                     e.AcceptedOperation = DataPackageOperation.Copy;
-                    ImagePath = file.Path;
                     break;
                 }
             }
