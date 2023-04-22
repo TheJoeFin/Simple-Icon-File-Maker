@@ -4,6 +4,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Simple_Icon_File_Maker.Models;
 using System;
@@ -12,13 +13,14 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Perception.People;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
+using Windows.UI.ViewManagement;
 using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -44,6 +46,11 @@ public sealed partial class MainWindow : Window
         m_AppWindow = GetAppWindowForCurrentWindow();
         m_AppWindow.SetIcon("SimpleIconMaker.ico");
         m_AppWindow.Title = "Simple Icon File Maker";
+        UISettings uiSettings = new();
+        Windows.UI.Color accentColor = uiSettings.GetColorValue(UIColorType.Accent);
+        var titlebar = m_AppWindow.TitleBar;
+        titlebar.BackgroundColor = accentColor;
+        
 
         IconSizes.CollectionChanged += IconSizes_CollectionChanged;
     }
@@ -325,19 +332,21 @@ public sealed partial class MainWindow : Window
         SourceImageSize = null;
         if (e.DataView.Contains(StandardDataFormats.Bitmap))
         {
+            Debug.WriteLine("bitmap");
             e.Handled = true;
             DragOperationDeferral def = e.GetDeferral();
             RandomAccessStreamReference s = await e.DataView.GetBitmapAsync();
             ImagePath = await e.DataView.GetTextAsync();
+            def.Complete();
+            e.AcceptedOperation = DataPackageOperation.Copy;
 
             bool success = await UpdateSourceImageFromStream(await s.OpenReadAsync());
             if (!success)
             {
+                Debug.WriteLine("bitmap, update not success");
                 e.AcceptedOperation = DataPackageOperation.None;
                 return;
             }
-            e.AcceptedOperation = DataPackageOperation.Copy;
-            def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.Uri))
         {
@@ -345,18 +354,20 @@ public sealed partial class MainWindow : Window
             DragOperationDeferral def = e.GetDeferral();
             Uri s = await e.DataView.GetUriAsync();
             ImagePath = s.AbsolutePath;
+            Debug.WriteLine("URI");
 
             BitmapImage bmp = new(s);
             SourceImageSize = new(bmp.PixelWidth, bmp.PixelHeight);
             MainImage.Source = bmp;
+            def.Complete();
 
             e.AcceptedOperation = DataPackageOperation.Copy;
             await SourceImageUpdated(Path.GetFileName(ImagePath));
-            def.Complete();
         }
         else if (e.DataView.Contains(StandardDataFormats.StorageItems))
         {
             e.Handled = true;
+            Debug.WriteLine("StorageItem");
 
             DragOperationDeferral def = e.GetDeferral();
             IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
@@ -371,9 +382,11 @@ public sealed partial class MainWindow : Window
                 {
                     ImagePath = file.Path;
                     using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
+                    def.Complete();
                     bool success = await UpdateSourceImageFromStream(fileStream);
                     if (!success)
                     {
+                        Debug.WriteLine("StorageItem, no success");
                         e.AcceptedOperation = DataPackageOperation.None;
                         def.Complete();
                         return;
@@ -383,7 +396,6 @@ public sealed partial class MainWindow : Window
                     break;
                 }
             }
-            def.Complete();
         }
     }
 

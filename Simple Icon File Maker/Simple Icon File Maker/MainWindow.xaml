@@ -8,7 +8,11 @@
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource SystemControlBaseLowAcrylicWindowBrush}">
+    <Grid
+        AllowDrop="True"
+        Background="{ThemeResource SystemControlBaseLowAcrylicWindowBrush}"
+        DragOver="Border_DragOver"
+        Drop="Grid_Drop">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="360" />
             <ColumnDefinition Width="*" />
@@ -21,12 +25,7 @@
 
         <!--  Right side:  -->
 
-        <Grid
-            Grid.RowSpan="2"
-            Grid.Column="1"
-            AllowDrop="True"
-            DragOver="Border_DragOver"
-            Drop="Grid_Drop">
+        <Grid Grid.RowSpan="2" Grid.Column="1">
             <Canvas
                 Name="dropHere"
                 Width="210"
