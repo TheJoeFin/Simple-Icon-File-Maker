@@ -1,0 +1,251 @@
+<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
+<!--  Licensed under the MIT License.  -->
+
+<Page
+    x:Class="Simple_Icon_File_Maker.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Simple_Icon_File_Maker"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Simple_Icon_File_Maker.Models"
+    mc:Ignorable="d">
+
+    <Grid
+        AllowDrop="True"
+        DragOver="Border_DragOver"
+        Drop="Grid_Drop">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="368" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="320" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  Right side:  -->
+
+        <Grid
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="1">
+            <Grid
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="Red">
+                <Canvas
+                    Name="dropHere"
+                    Width="210"
+                    Height="120"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+                    <Rectangle
+                        Width="210"
+                        Height="120"
+                        RadiusX="20"
+                        RadiusY="20"
+                        Stroke="{ThemeResource SystemAccentColor}"
+                        StrokeDashArray="5"
+                        StrokeLineJoin="Round" />
+                    <StackPanel
+                        Margin="20"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical">
+                        <SymbolIcon Height="40" Symbol="Copy" />
+                        <TextBlock Text="Drag and Drop image here" />
+                    </StackPanel>
+                </Canvas>
+                <Viewbox>
+                    <Image
+                        x:Name="MainImage"
+                        Margin="36"
+                        Stretch="Uniform" />
+                </Viewbox>
+
+                <InfoBar
+                    x:Name="errorInfoBar"
+                    Title="Error opening the image"
+                    Margin="20"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Severity="Error">
+                    <InfoBar.Resources>
+                        <Storyboard x:Name="closeInfoBarStoryboard">
+                            <ObjectAnimationUsingKeyFrames
+                                Storyboard.TargetName="errorInfoBar"
+                                Storyboard.TargetProperty="IsOpen"
+                                Duration="0:0:15">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:15" Value="False" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </InfoBar.Resources>
+                </InfoBar>
+            </Grid>
+
+        </Grid>
+
+
+
+        <!--  Left side:  -->
+
+        <StackPanel
+            Grid.Column="0"
+            Padding="20"
+            Orientation="Vertical"
+            Spacing="26">
+            <Button
+                x:Name="OpenBTN"
+                Width="200"
+                HorizontalAlignment="Center"
+                Click="OpenBTN_Click"
+                ToolTipService.ToolTip="Open image to make .ico file from">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <SymbolIcon Symbol="OpenFile" />
+                    <TextBlock
+                        Width="120"
+                        Text="Open Image"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button
+                x:Name="SaveBTN"
+                Width="200"
+                HorizontalAlignment="Center"
+                Click="SaveBTN_Click"
+                IsEnabled="False"
+                ToolTipService.ToolTip="Save all images as a combined .ico">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <SymbolIcon Symbol="Save" />
+                    <TextBlock
+                        Width="120"
+                        Text="Save Icon"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button
+                x:Name="SaveAllBTN"
+                Width="200"
+                HorizontalAlignment="Center"
+                Click="SaveAllBTN_Click"
+                IsEnabled="False"
+                ToolTipService.ToolTip="Save all images as a combined .ico and each size as a .png">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <SymbolIcon Symbol="SaveLocal" />
+                    <TextBlock
+                        Width="120"
+                        Text="Save All Images"
+                        TextAlignment="Center" />
+                </StackPanel>
+            </Button>
+
+        </StackPanel>
+
+        <ScrollViewer
+            Grid.Row="1"
+            Background="{ThemeResource SystemControlAccentAcrylicElementAccentMediumHighBrush}"
+            VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Expander
+                    Grid.Row="0"
+                    Width="200"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    ExpandDirection="Down"
+                    Header="Icon Sizes"
+                    IsExpanded="False"
+                    ToolTipService.ToolTip="Change icon size options">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button
+                                x:Name="RefreshButton"
+                                HorizontalAlignment="Center"
+                                Click="RefreshButton_Click"
+                                ToolTipService.ToolTip="Refresh icon previews">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <SymbolIcon Symbol="Refresh" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                x:Name="SelectAllButton"
+                                HorizontalAlignment="Center"
+                                Click="SelectAllButton_Click"
+                                ToolTipService.ToolTip="Select all icon sizes">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <SymbolIcon Symbol="SelectAll" />
+                                </StackPanel>
+                            </Button>
+                            <Button
+                                x:Name="ClearSelectionButton"
+                                HorizontalAlignment="Center"
+                                Click="ClearSelectionButton_Click"
+                                ToolTipService.ToolTip="Clear all icon size selection">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <SymbolIcon Symbol="ClearSelection" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
+                        <ListView
+                            x:Name="IconSizesListView"
+                            ItemsSource="{x:Bind IconSizes}"
+                            SelectionMode="None">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:IconSize">
+                                    <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}">
+                                        <TextBlock Text="{x:Bind Tooltip}" />
+                                    </CheckBox>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Expander>
+                <ProgressRing
+                    x:Name="ImagesProcessingProgressRing"
+                    Grid.Row="1"
+                    Width="50"
+                    Height="50"
+                    IsActive="False"
+                    IsIndeterminate="True"
+                    Visibility="Collapsed" />
+                <StackPanel
+                    Name="PreviewStackPanel"
+                    Grid.Row="1"
+                    Margin="24,12,24,100"
+                    Orientation="Vertical"
+                    Spacing="20" />
+
+            </Grid>
+        </ScrollViewer>
+
+        <CommandBar Grid.Row="1" VerticalAlignment="Bottom">
+            <CommandBar.PrimaryCommands>
+                <AppBarToggleButton
+                    x:Name="ZoomPreviewToggleButton"
+                    Click="ZoomPreviewToggleButton_Click"
+                    Icon="ZoomIn"
+                    Label="Zoom Previews"
+                    ToolTipService.ToolTip="Zoom in on icon previews" />
+                <AppBarButton
+                    x:Name="InfoAppBarButton"
+                    Click="InfoAppBarButton_Click"
+                    Icon="Help"
+                    Label="About"
+                    ToolTipService.ToolTip="More info about Simple Icon File Maker" />
+                <AppBarButton
+                    x:Name="ClearAppBarButton"
+                    Click="ClearAppBarButton_Click"
+                    Icon="Clear"
+                    Label="Clear"
+                    ToolTipService.ToolTip="Clear image and reset the app" />
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
+    </Grid>
+</Page>
