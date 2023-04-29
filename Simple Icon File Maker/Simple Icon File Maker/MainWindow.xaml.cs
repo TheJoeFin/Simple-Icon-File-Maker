@@ -20,10 +20,8 @@ namespace Simple_Icon_File_Maker
             m_AppWindow = GetAppWindowForCurrentWindow();
             m_AppWindow.SetIcon("SimpleIconMaker.ico");
             m_AppWindow.Title = "Simple Icon File Maker";
-            UISettings uiSettings = new();
-            Windows.UI.Color accentColor = uiSettings.GetColorValue(UIColorType.Accent);
-            var titlebar = m_AppWindow.TitleBar;
-            titlebar.BackgroundColor = accentColor;
+            ExtendsContentIntoTitleBar = true;
+            SetTitleBar(titleBar);
         }
 
         private AppWindow GetAppWindowForCurrentWindow()

@@ -3,39 +3,56 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:Simple_Icon_File_Maker"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="About Simple Icon File Maker"
-    PrimaryButtonText="Okay"
+    PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+    PrimaryButtonText="Close"
     mc:Ignorable="d">
 
     <ScrollViewer>
-        <StackPanel Margin="15" Spacing="10">
-            <TextBlock>
-                <Run>
+        <StackPanel Spacing="4">
+            <TextBlock IsTextSelectionEnabled="True">
+                <Run FontWeight="SemiBold">
                     Version:
                 </Run>
                 <Run x:Name="VersionNumber" />
             </TextBlock>
-            <TextBlock>
-                Created by:
-            </TextBlock>
-            <HyperlinkButton x:Name="TheJoeFinBTN" Click="TheJoeFinBTN_Click">
+            <TextBlock
+                Margin="0,16,0,0"
+                FontWeight="SemiBold"
+                Text="Created by:" />
+            <HyperlinkButton
+                x:Name="TheJoeFinBTN"
+                Margin="-12,0,0,0"
+                Click="TheJoeFinBTN_Click">
                 TheJoeFin (GitHub)
             </HyperlinkButton>
-            <HyperlinkButton x:Name="SourceBTN" Click="SourceBTN_Click">
+            <HyperlinkButton
+                x:Name="SourceBTN"
+                Margin="-12,0,0,0"
+                Click="SourceBTN_Click">
                 Source code on GitHub
             </HyperlinkButton>
-            <TextBlock>
-                Libraries used:
-            </TextBlock>
-            <HyperlinkButton x:Name="WindowsAppSDKBTN" Click="WindowsAppSDKBTN_Click">
+            <TextBlock
+                Margin="0,16,0,0"
+                FontWeight="SemiBold"
+                Text="Libraries used:" />
+            <HyperlinkButton
+                x:Name="WindowsAppSDKBTN"
+                Margin="-12,0,0,0"
+                Click="WindowsAppSDKBTN_Click">
                 Windows App SDK
             </HyperlinkButton>
-            <HyperlinkButton x:Name="WinUIBTN" Click="WinUIBTN_Click">
+            <HyperlinkButton
+                x:Name="WinUIBTN"
+                Margin="-12,0,0,0"
+                Click="WinUIBTN_Click">
                 WinUI 3
             </HyperlinkButton>
-            <HyperlinkButton x:Name="MagickDotNetBTN" Click="MagickDotNetBTN_Click">
+            <HyperlinkButton
+                x:Name="MagickDotNetBTN"
+                Margin="-12,0,0,0"
+                Click="MagickDotNetBTN_Click">
                 The .NET library for ImageMagick: Magick.NET
             </HyperlinkButton>
         </StackPanel>

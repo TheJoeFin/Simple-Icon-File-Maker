@@ -78,8 +78,28 @@ namespace Simple_Icon_File_Maker
             SaveBTN.IsEnabled = success;
             SaveAllBTN.IsEnabled = success;
 
-            dropHere.Visibility = success ? Visibility.Collapsed : Visibility.Visible;
+            if (success)
+            {
+                ShowConfigUI();
+            }
+            else
+            {
+                HideConfigUI();
+            }
         }
+
+
+        private void ShowConfigUI()
+        {
+            VisualStateManager.GoToState(this, "ImageSelectedState", true);
+        }
+
+        private void HideConfigUI()
+        {
+            VisualStateManager.GoToState(this, "EmptyState", true);
+        }
+
+
 
         private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
         {
@@ -414,6 +434,7 @@ namespace Simple_Icon_File_Maker
             MainImage.Source = null;
             ImagePath = "-";
             await SourceImageUpdated("");
+            HideConfigUI();
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
