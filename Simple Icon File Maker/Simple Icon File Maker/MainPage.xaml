@@ -158,20 +158,6 @@
                 Orientation="Horizontal"
                 Spacing="8">
                 <Button
-                    x:Name="RefreshButton"
-                    Click="RefreshButton_Click"
-                    Style="{StaticResource DefaultButtonStyle}"
-                    ToolTipService.ToolTip="Refresh icon previews">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon
-                            Margin="0,0,4,0"
-                            VerticalAlignment="Center"
-                            FontSize="16"
-                            Glyph="&#xE72C;" />
-                        <TextBlock VerticalAlignment="Center" Text="Refresh Preview" />
-                    </StackPanel>
-                </Button>
-                <Button
                     x:Name="SelectAllButton"
                     HorizontalAlignment="Center"
                     Click="SelectAllButton_Click"
@@ -273,11 +259,21 @@
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TextBlock
-                Margin="16,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource BodyStrongTextBlockStyle}"
-                Text="Preview" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button
+                    x:Name="RefreshButton"
+                    Margin="16,0,0,0"
+                    Click="RefreshButton_Click"
+                    Content="&#xE72C;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    Style="{StaticResource DefaultButtonStyle}"
+                    ToolTipService.ToolTip="Refresh icon previews" />
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="Preview" />
+            </StackPanel>
             <StackPanel
                 Margin="0,0,16,0"
                 HorizontalAlignment="Right"
