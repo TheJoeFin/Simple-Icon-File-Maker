@@ -29,12 +29,6 @@ namespace Simple_Icon_File_Maker
         public MainPage()
         {
             this.InitializeComponent();
-            IconSizes.CollectionChanged += IconSizes_CollectionChanged;
-        }
-
-        private void IconSizes_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-
         }
 
         private async void OpenBTN_Click(object sender, RoutedEventArgs e)
@@ -59,13 +53,12 @@ namespace Simple_Icon_File_Maker
             if (file is null)
                 return;
 
+            ThinkingCoinfigUI();
             ImagePath = file.Path;
 
             // Ensure the stream is disposed once the image is loaded
             using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
             bool success = await UpdateSourceImageFromStream(fileStream);
-            if (!success)
-                return;
         }
 
         private async Task SourceImageUpdated(string fileName)
@@ -79,27 +72,19 @@ namespace Simple_Icon_File_Maker
             SaveAllBTN.IsEnabled = success;
 
             if (success)
-            {
                 ShowConfigUI();
-            }
             else
-            {
-                HideConfigUI();
-            }
+                WelcomeConfigUI();
         }
 
-
-        private void ShowConfigUI()
-        {
+        private void ShowConfigUI() =>
             VisualStateManager.GoToState(this, "ImageSelectedState", true);
-        }
 
-        private void HideConfigUI()
-        {
-            VisualStateManager.GoToState(this, "EmptyState", true);
-        }
+        private void WelcomeConfigUI() =>
+            VisualStateManager.GoToState(this, "WelcomeState", true);
 
-
+        private void ThinkingCoinfigUI() =>
+            VisualStateManager.GoToState(this, "ThinkingState", true);
 
         private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
         {
@@ -319,6 +304,7 @@ namespace Simple_Icon_File_Maker
 
         private async void Grid_Drop(object sender, DragEventArgs e)
         {
+            ThinkingCoinfigUI();
             SourceImageSize = null;
             if (e.DataView.Contains(StandardDataFormats.Bitmap))
             {
@@ -362,6 +348,7 @@ namespace Simple_Icon_File_Maker
                 DragOperationDeferral def = e.GetDeferral();
                 IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
+                // Itterate through all the items to find an image, stop at first success
                 foreach (IStorageItem item in storageItems)
                 {
                     if (item is StorageFile file &&
@@ -378,10 +365,9 @@ namespace Simple_Icon_File_Maker
                         {
                             Debug.WriteLine("StorageItem, no success");
                             e.AcceptedOperation = DataPackageOperation.None;
-                            def.Complete();
                             return;
                         }
-
+                        // Found an image, stop looking
                         e.AcceptedOperation = DataPackageOperation.Copy;
                         break;
                     }
@@ -406,6 +392,7 @@ namespace Simple_Icon_File_Maker
                 errorInfoBar.IsOpen = true;
                 errorInfoBar.Message = ex.Message;
                 closeInfoBarStoryboard.Begin();
+                WelcomeConfigUI();
                 return false;
             }
             SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
@@ -434,7 +421,7 @@ namespace Simple_Icon_File_Maker
             MainImage.Source = null;
             ImagePath = "-";
             await SourceImageUpdated("");
-            HideConfigUI();
+            WelcomeConfigUI();
         }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)

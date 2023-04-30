@@ -23,6 +23,7 @@
     <Grid
         Padding="16"
         AllowDrop="True"
+        Background="Transparent"
         ColumnSpacing="12"
         DragOver="Border_DragOver"
         Drop="Grid_Drop"
@@ -36,24 +37,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup x:Name="InterfaceStates">
-                <VisualState x:Name="EmptyState" />
-                <VisualState x:Name="ImageSelectedState">
-                    <VisualState.Setters>
-                        <Setter Target="ImageSelectionCard.Style" Value="{StaticResource CardStyle}" />
-                        <Setter Target="ImageSelectionCard.(Grid.RowSpan)" Value="1" />
-                        <Setter Target="ImageSelectionCard.(Grid.ColumnSpan)" Value="1" />
-                        <Setter Target="ImageSelectionCard.HorizontalAlignment" Value="Stretch" />
-                        <Setter Target="ImageSelectionCard.VerticalAlignment" Value="Stretch" />
-                        <Setter Target="SettingsCard.Visibility" Value="Visible" />
-                        <Setter Target="PreviewCard.Visibility" Value="Visible" />
-                        <Setter Target="ClearAppBarButton.Visibility" Value="Visible" />
-                        <Setter Target="dropHere.Visibility" Value="Collapsed" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
         <!--  Image selection card  -->
         <Grid
             x:Name="ImageSelectionCard"
@@ -136,7 +119,7 @@
                 VerticalAlignment="Bottom"
                 BorderThickness="0,1,0,0"
                 CornerRadius="0,0,8,8"
-                IsClosable="False"
+                IsClosable="True"
                 Severity="Error">
                 <InfoBar.Resources>
                     <Storyboard x:Name="closeInfoBarStoryboard">
@@ -308,7 +291,29 @@
                     Spacing="20" />
             </ScrollViewer>
         </Grid>
-
-
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="InterfaceStates">
+                <VisualState x:Name="WelcomeState" />
+                <VisualState x:Name="ThinkingState">
+                    <VisualState.Setters>
+                        <Setter Target="dropHere.Visibility" Value="Collapsed" />
+                        <Setter Target="errorInfoBar.IsOpen" Value="False" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="ImageSelectedState">
+                    <VisualState.Setters>
+                        <Setter Target="ImageSelectionCard.Style" Value="{StaticResource CardStyle}" />
+                        <Setter Target="ImageSelectionCard.(Grid.RowSpan)" Value="1" />
+                        <Setter Target="ImageSelectionCard.(Grid.ColumnSpan)" Value="1" />
+                        <Setter Target="ImageSelectionCard.HorizontalAlignment" Value="Stretch" />
+                        <Setter Target="ImageSelectionCard.VerticalAlignment" Value="Stretch" />
+                        <Setter Target="SettingsCard.Visibility" Value="Visible" />
+                        <Setter Target="PreviewCard.Visibility" Value="Visible" />
+                        <Setter Target="ClearAppBarButton.Visibility" Value="Visible" />
+                        <Setter Target="dropHere.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
     </Grid>
 </Page>
