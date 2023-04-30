@@ -173,8 +173,11 @@ namespace Simple_Icon_File_Maker
                 IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
                 iconSize.IgnoreAspectRatio = false;
 
-                image.Scale(iconSize);
-                image.Sharpen();
+                if (smallerSide > sideLength)
+                {
+                    image.Scale(iconSize);
+                    image.Sharpen();
+                }
 
                 string iconPath = $"{iconRootString}\\Image{sideLength}.png";
                 string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
@@ -187,19 +190,31 @@ namespace Simple_Icon_File_Maker
                 imagePaths.Add(sideLength, iconPath);
             }
 
-            if (updatePreviews == true)
-                await UpdatePreviewsAsync(imagePaths);
-
-            await collection.WriteAsync(iconOutputString);
-
-            IcoOptimizer icoOpti = new()
+            try
             {
-                OptimalCompression = true
-            };
-            icoOpti.Compress(iconOutputString);
+                if (updatePreviews == true)
+                    await UpdatePreviewsAsync(imagePaths);
+                else
+                {
+                    await collection.WriteAsync(iconOutputString);
 
-            ImagesProcessingProgressRing.IsActive = false;
-            ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
+                    IcoOptimizer icoOpti = new()
+                    {
+                        OptimalCompression = true
+                    };
+                    icoOpti.Compress(iconOutputString);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Generating Icons Exception " + ex.Message);
+                return false;
+            }
+            finally
+            {
+                ImagesProcessingProgressRing.IsActive = false;
+                ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
+            }
             return true;
         }
 
@@ -403,13 +418,13 @@ namespace Simple_Icon_File_Maker
             if (file is null)
                 return;
 
-            string savePath = Path.Combine(file.Path);
+            OutPutPath = Path.Combine(file.Path);
 
             try
             {
                 SaveBTN.IsEnabled = false;
                 SaveAllBTN.IsEnabled = false;
-                await GenerateIcons(savePath);
+                await GenerateIcons(OutPutPath);
             }
             catch (Exception ex)
             {
@@ -419,6 +434,7 @@ namespace Simple_Icon_File_Maker
             {
                 SaveBTN.IsEnabled = true;
                 SaveAllBTN.IsEnabled = true;
+                OpenFolderBTN.Visibility = Visibility.Visible;
             }
         }
 

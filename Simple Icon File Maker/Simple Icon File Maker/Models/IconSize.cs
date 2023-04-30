@@ -29,6 +29,8 @@ public record IconSize: INotifyPropertyChanged
     {
         return new IconSize[]
         {
+            //new() { SideLength = 1024, IsSelected = false },
+            //new() { SideLength = 512, IsSelected = false },
             new() { SideLength = 256 },
             new() { SideLength = 128 },
             new() { SideLength = 72, IsSelected = false },
