@@ -11,11 +11,14 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Gaming.Input.Custom;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.Storage.Streams;
+using Windows.System;
 using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker
@@ -24,7 +27,9 @@ namespace Simple_Icon_File_Maker
     {
         private string ImagePath = "";
         private Size? SourceImageSize;
+        private string OutPutPath = "";
         ObservableCollection<IconSize> IconSizes = new(IconSize.GetFullWindowsSizes());
+        List<IconSize> LastRefreshSizes { get; set; } = new();
 
         public MainPage()
         {
@@ -88,6 +93,7 @@ namespace Simple_Icon_File_Maker
 
         private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
         {
+            LastRefreshSizes.Clear();
             ImagesProcessingProgressRing.Visibility = Visibility.Visible;
             ImagesProcessingProgressRing.IsActive = true;
 
@@ -108,6 +114,18 @@ namespace Simple_Icon_File_Maker
             MagickGeometryFactory geoFactory = new();
 
             SourceImageSize ??= new Size((int)MainImage.RenderSize.Width, (int)MainImage.RenderSize.Height);
+
+            int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
+
+            foreach (IconSize iconSize in IconSizes)
+            {
+                iconSize.IsEnabled = true;
+                if (iconSize.SideLength > smallerSide)
+                    iconSize.IsEnabled = false;
+            }
+            
+            foreach (IconSize iconSize in IconSizes)
+                LastRefreshSizes.Add(new(iconSize));
 
             if (string.IsNullOrWhiteSpace(ImagePath) == true)
             {
@@ -143,7 +161,7 @@ namespace Simple_Icon_File_Maker
             foreach (int sideLength in selectedSizes)
             {
                 using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
-                if (MainImage.ActualWidth < sideLength || MainImage.ActualHeight < sideLength)
+                if (smallerSide < sideLength)
                     continue;
 
                 IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
@@ -283,13 +301,13 @@ namespace Simple_Icon_File_Maker
             if (file is null)
                 return;
 
-            string savePath = Path.Combine(file.Path);
+            OutPutPath = Path.Combine(file.Path);
 
             try
             {
                 SaveBTN.IsEnabled = false;
                 SaveAllBTN.IsEnabled = false;
-                await GenerateIcons(savePath, false, true);
+                await GenerateIcons(OutPutPath, false, true);
             }
             catch (Exception ex)
             {
@@ -299,6 +317,7 @@ namespace Simple_Icon_File_Maker
             {
                 SaveBTN.IsEnabled = true;
                 SaveAllBTN.IsEnabled = true;
+                OpenFolderBTN.Visibility = Visibility.Visible;
             }
         }
 
@@ -426,7 +445,15 @@ namespace Simple_Icon_File_Maker
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
+            RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
             await SourceImageUpdated(Path.GetFileName(ImagePath));
+
+            bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
+            if (!IconSizes.Any(x => x.IsSelected))
+            {
+                SaveBTN.IsEnabled = false;
+                SaveAllBTN.IsEnabled = false;
+            }
         }
 
         private void SelectAllButton_Click(object sender, RoutedEventArgs e)
@@ -435,6 +462,7 @@ namespace Simple_Icon_File_Maker
                 size.IsSelected = true;
 
             IconSizesListView.UpdateLayout();
+            CheckIfRefreshIsNeeded();
         }
 
         private void ClearSelectionButton_Click(object sender, RoutedEventArgs e)
@@ -443,6 +471,7 @@ namespace Simple_Icon_File_Maker
                 size.IsSelected = false;
 
             IconSizesListView.UpdateLayout();
+            CheckIfRefreshIsNeeded();
         }
 
         private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
@@ -467,6 +496,47 @@ namespace Simple_Icon_File_Maker
                 else
                     vb.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
             }
+        }
+
+        private void CheckBox_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            CheckIfRefreshIsNeeded();
+        }
+
+        private void CheckIfRefreshIsNeeded()
+        {
+            List<IconSize> currentSizes = new(IconSizes.ToList());
+            bool isCurrentUnChanged = true;
+
+            for (int i = 0; i < currentSizes.Count; i++)
+            {
+                if (currentSizes[i] != LastRefreshSizes[i])
+                {
+                    isCurrentUnChanged = false;
+                    break;
+                }
+            }
+
+            if (isCurrentUnChanged)
+                RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
+            else
+                RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
+        }
+
+        private async void OpenFolderBTN_Click(object sender, RoutedEventArgs e)
+        {
+            string? outputDirectory = Path.GetDirectoryName(OutPutPath);
+            if (outputDirectory is null)
+                return;
+
+            Uri uri = new(outputDirectory);
+            LauncherOptions options = new()
+            {
+                TreatAsUntrusted = false,
+                DesiredRemainingView = Windows.UI.ViewManagement.ViewSizePreference.UseLess
+            };
+
+            _ = await Launcher.LaunchUriAsync(uri, options);
         }
     }
 }

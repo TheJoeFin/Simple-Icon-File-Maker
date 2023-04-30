@@ -2,12 +2,26 @@
 
 namespace Simple_Icon_File_Maker.Models;
 
-public class IconSize : INotifyPropertyChanged
+public record IconSize: INotifyPropertyChanged
 {
     public int SideLength { get; set; }
     public bool IsSelected { get; set; } = true;
 
+    public bool IsEnabled { get; set; } = true;
+
     public string Tooltip => $"{SideLength} x {SideLength}";
+
+    public IconSize()
+    {
+
+    }
+
+    public IconSize(IconSize iconSize)
+    {
+        SideLength = iconSize.SideLength;
+        IsSelected = iconSize.IsSelected;
+        IsEnabled = iconSize.IsEnabled;
+    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
