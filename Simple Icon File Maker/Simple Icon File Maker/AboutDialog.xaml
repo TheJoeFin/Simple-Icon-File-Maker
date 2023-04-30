@@ -11,6 +11,12 @@
 
     <ScrollViewer>
         <StackPanel Spacing="4">
+            <HyperlinkButton
+                x:Name="SourceBTN"
+                Margin="-12,0,0,0"
+                NavigateUri="https://github.com/TheJoeFin/Simple-Icon-File-Maker">
+                Source code on GitHub
+            </HyperlinkButton>
             <TextBlock IsTextSelectionEnabled="True">
                 <Run FontWeight="SemiBold">
                     Version:
@@ -24,14 +30,18 @@
             <HyperlinkButton
                 x:Name="TheJoeFinBTN"
                 Margin="-12,0,0,0"
-                Click="TheJoeFinBTN_Click">
+                NavigateUri="https://github.com/TheJoeFin">
                 TheJoeFin (GitHub)
             </HyperlinkButton>
+            <TextBlock
+                Margin="0,16,0,0"
+                FontWeight="SemiBold"
+                Text="UI Design by:" />
             <HyperlinkButton
-                x:Name="SourceBTN"
+                x:Name="NielsBTN"
                 Margin="-12,0,0,0"
-                Click="SourceBTN_Click">
-                Source code on GitHub
+                NavigateUri="https://github.com/niels9001">
+                Niels Laute (GitHub)
             </HyperlinkButton>
             <TextBlock
                 Margin="0,16,0,0"
@@ -40,19 +50,19 @@
             <HyperlinkButton
                 x:Name="WindowsAppSDKBTN"
                 Margin="-12,0,0,0"
-                Click="WindowsAppSDKBTN_Click">
+                NavigateUri="https://github.com/microsoft/WindowsAppSDK">
                 Windows App SDK
             </HyperlinkButton>
             <HyperlinkButton
                 x:Name="WinUIBTN"
                 Margin="-12,0,0,0"
-                Click="WinUIBTN_Click">
+                NavigateUri="https://github.com/Microsoft/microsoft-ui-xaml">
                 WinUI 3
             </HyperlinkButton>
             <HyperlinkButton
                 x:Name="MagickDotNetBTN"
                 Margin="-12,0,0,0"
-                Click="MagickDotNetBTN_Click">
+                NavigateUri="https://github.com/dlemstra/Magick.NET">
                 The .NET library for ImageMagick: Magick.NET
             </HyperlinkButton>
         </StackPanel>

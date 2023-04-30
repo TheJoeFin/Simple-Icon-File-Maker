@@ -29,34 +29,4 @@ public sealed partial class AboutDialog : ContentDialog
 
         return $"{package.DisplayName} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
-
-    private async void WindowsAppSDKBTN_Click(object sender, RoutedEventArgs e)
-    {
-        Uri imageMagickNetGH = new("https://github.com/microsoft/WindowsAppSDK");
-        _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
-    }
-
-    private async void WinUIBTN_Click(object sender, RoutedEventArgs e)
-    {
-        Uri imageMagickNetGH = new("https://github.com/Microsoft/microsoft-ui-xaml");
-        _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
-    }
-
-    private async void MagickDotNetBTN_Click(object sender, RoutedEventArgs e)
-    {
-        Uri imageMagickNetGH = new("https://github.com/dlemstra/Magick.NET");
-        _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
-    }
-
-    private async void TheJoeFinBTN_Click(object sender, RoutedEventArgs e)
-    {
-        Uri imageMagickNetGH = new("https://github.com/TheJoeFin");
-        _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
-    }
-
-    private async void SourceBTN_Click(object sender, RoutedEventArgs e)
-    {
-        Uri imageMagickNetGH = new("https://github.com/TheJoeFin/Simple-Icon-File-Maker");
-        _ = await Launcher.LaunchUriAsync(imageMagickNetGH);
-    }
 }
