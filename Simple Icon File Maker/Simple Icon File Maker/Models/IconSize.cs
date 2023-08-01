@@ -36,6 +36,7 @@ public record IconSize: INotifyPropertyChanged
             new() { SideLength = 72, IsSelected = false },
             new() { SideLength = 64 },
             new() { SideLength = 60, IsSelected = false },
+            new() { SideLength = 48, IsSelected = false },
             new() { SideLength = 40, IsSelected = false },
             new() { SideLength = 32 },
             new() { SideLength = 24, IsSelected = false },
