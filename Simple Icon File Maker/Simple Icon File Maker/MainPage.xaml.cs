@@ -181,10 +181,10 @@ namespace Simple_Icon_File_Maker
 
                 string iconPath = $"{iconRootString}\\Image{sideLength}.png";
                 string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
-                await image.WriteAsync(iconPath);
+                await image.WriteAsync(iconPath, MagickFormat.Png32);
 
                 if (saveAllFiles == true)
-                    await image.WriteAsync(outputImagePath);
+                    await image.WriteAsync(outputImagePath, MagickFormat.Png32);
 
                 collection.Add(iconPath);
                 imagePaths.Add(sideLength, iconPath);
@@ -456,13 +456,13 @@ namespace Simple_Icon_File_Maker
 
             foreach (var child in previewBoxes)
             {
-                if (child is not Viewbox vb)
+                if (child is not Image img)
                     continue;
 
                 if (isZoomingPreview)
-                    vb.Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill;
+                    img.Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill;
                 else
-                    vb.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
+                    img.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
             }
         }
         private async Task SourceImageUpdated(string fileName)
@@ -502,18 +502,14 @@ namespace Simple_Icon_File_Maker
                 Image image = new()
                 {
                     Source = bitmapImage,
-                    Width = sideLength,
-                    Height = sideLength,
+                    HorizontalAlignment = HorizontalAlignment.Center,
                     Margin = new Thickness(5),
-                    Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill
+                    Stretch = Microsoft.UI.Xaml.Media.Stretch.None,
+                    CanDrag = true,
                 };
-                Viewbox vb = new()
-                {
-                    Child = image,
-                    Stretch = Microsoft.UI.Xaml.Media.Stretch.None
-                };
+
                 ToolTipService.SetToolTip(image, $"{sideLength} x {sideLength}");
-                PreviewStackPanel.Children.Add(vb);
+                PreviewStackPanel.Children.Add(image);
             }
             SetPreviewsZoom();
             await Task.CompletedTask;
