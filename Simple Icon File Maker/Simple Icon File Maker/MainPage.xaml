@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
+    Loaded="Page_Loaded"
     mc:Ignorable="d">
     <Page.Resources>
         <Style x:Key="CardStyle" TargetType="Grid">
@@ -157,6 +158,22 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="8">
+                <Button
+                    x:Name="SelectWebButton"
+                    HorizontalAlignment="Center"
+                    Click="SelectWebButton_Click"
+                    Content="&#xE12B;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    ToolTipService.ToolTip="Select Sizes Ideal For Web" />
+                <Button
+                    x:Name="SelectWindowsButton"
+                    HorizontalAlignment="Center"
+                    Click="SelectWindowsButton_Click"
+                    Content="&#xE7F8;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    ToolTipService.ToolTip="Select Sizes Ideal For Windows" />
                 <Button
                     x:Name="SelectAllButton"
                     HorizontalAlignment="Center"

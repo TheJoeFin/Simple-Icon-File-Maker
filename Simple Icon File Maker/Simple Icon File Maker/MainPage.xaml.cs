@@ -23,13 +23,24 @@ namespace Simple_Icon_File_Maker
 {
     public sealed partial class MainPage : Page
     {
-        ObservableCollection<IconSize> IconSizes = new(IconSize.GetFullWindowsSizes());
+        ObservableCollection<IconSize> IconSizes = new(IconSize.GetAllSizes());
         private string ImagePath = "";
         private string OutPutPath = "";
         private Size? SourceImageSize;
         public MainPage()
         {
             InitializeComponent();
+        }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            SelectTheseIcons(IconSize.GetWindowsSizesFull());
+        }
+
+        private void SelectTheseIcons(IconSize[] iconSizesToSelect)
+        {
+            foreach (IconSize iconSize in IconSizes)
+                iconSize.IsSelected = iconSizesToSelect.Contains(iconSize);
         }
 
         List<IconSize> LastRefreshSizes { get; set; } = new();
@@ -543,6 +554,18 @@ namespace Simple_Icon_File_Maker
         private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
         {
             SetPreviewsZoom();
+        }
+
+        private void SelectWebButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTheseIcons(IconSize.GetIdealWebSizesFull());
+            CheckIfRefreshIsNeeded();
+        }
+
+        private void SelectWindowsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SelectTheseIcons(IconSize.GetWindowsSizesFull());
+            CheckIfRefreshIsNeeded();
         }
     }
 }
