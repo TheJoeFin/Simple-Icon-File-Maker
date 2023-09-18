@@ -101,8 +101,10 @@
             <Button
                 x:Name="ClearAppBarButton"
                 Grid.Row="1"
+                Height="32"
                 Margin="0,12,0,0"
                 HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 Click="ClearAppBarButton_Click"
                 ToolTipService.ToolTip="Clear image and reset the app"
                 Visibility="Collapsed">
@@ -153,14 +155,16 @@
                 Style="{StaticResource BodyStrongTextBlockStyle}"
                 Text="Icon sizes" />
             <StackPanel
-                Margin="0,0,16,0"
+                Margin="0,0,8,0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 Spacing="8">
                 <Button
                     x:Name="SelectWebButton"
+                    Height="32"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Click="SelectWebButton_Click"
                     Content="&#xE12B;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -168,7 +172,9 @@
                     ToolTipService.ToolTip="Select Sizes Ideal For Web" />
                 <Button
                     x:Name="SelectWindowsButton"
+                    Height="32"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Click="SelectWindowsButton_Click"
                     Content="&#xE7F8;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -176,7 +182,9 @@
                     ToolTipService.ToolTip="Select Sizes Ideal For Windows" />
                 <Button
                     x:Name="SelectAllButton"
+                    Height="32"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Click="SelectAllButton_Click"
                     Content="&#xE8B3;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -185,7 +193,9 @@
 
                 <Button
                     x:Name="ClearSelectionButton"
+                    Height="32"
                     HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Click="ClearSelectionButton_Click"
                     Content="&#xE8E6;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -210,7 +220,7 @@
             </ListView>
             <Grid
                 Grid.Row="2"
-                Padding="12"
+                Padding="8"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0">
                 <Button
@@ -231,6 +241,15 @@
                     Orientation="Horizontal"
                     Spacing="8">
 
+                    <Button
+                        x:Name="OpenFolderBTN"
+                        Height="32"
+                        Click="OpenFolderBTN_Click"
+                        Content="&#xE197;"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Open Destination Folder..."
+                        Visibility="Collapsed" />
                     <Button
                         x:Name="SaveBTN"
                         Click="SaveBTN_Click"
@@ -253,14 +272,6 @@
                             <TextBlock Text="Save all images" />
                         </StackPanel>
                     </Button>
-
-                    <Button
-                        x:Name="OpenFolderBTN"
-                        Click="OpenFolderBTN_Click"
-                        Content="&#xE197;"
-                        FontFamily="{StaticResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Visibility="Collapsed" />
                 </StackPanel>
             </Grid>
         </Grid>
@@ -279,7 +290,10 @@
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button
                     x:Name="RefreshButton"
-                    Margin="16,0,0,0"
+                    Height="32"
+                    Margin="8,0,0,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Click="RefreshButton_Click"
                     Content="&#xE72C;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -292,12 +306,13 @@
                     Text="Preview" />
             </StackPanel>
             <StackPanel
-                Margin="0,0,16,0"
+                Margin="0,0,8,0"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
                 Spacing="8">
                 <ToggleButton
                     x:Name="ZoomPreviewToggleButton"
+                    Height="32"
                     Click="ZoomPreviewToggleButton_Click"
                     Content="&#xE8A3;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
