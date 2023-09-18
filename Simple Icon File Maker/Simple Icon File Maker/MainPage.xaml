@@ -179,7 +179,7 @@
                     Content="&#xE7F8;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                     FontSize="16"
-                    ToolTipService.ToolTip="Select Sizes Ideal For Windows" />
+                    ToolTipService.ToolTip="Select Sizes Ideal For Windows (Default)" />
                 <Button
                     x:Name="SelectAllButton"
                     Height="32"
