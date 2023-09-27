@@ -99,4 +99,16 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
             new() { SideLength = 16 },
         };
     }
+
+    public override int GetHashCode()
+    {
+        // https://stackoverflow.com/a/263416/7438031
+        // 9/26/2023
+        unchecked // Overflow is fine, just wrap
+        {
+            int hash = 17;
+            // Suitable nullity checks etc, of course :)
+            return hash * 23 + SideLength.GetHashCode();
+        }
+    }
 }

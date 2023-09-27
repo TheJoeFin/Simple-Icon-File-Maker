@@ -160,15 +160,15 @@ namespace Simple_Icon_File_Maker
                 return false;
             }
 
-            using IMagickImage<ushort> firstPassimage = await imgFactory.CreateAsync(ImagePath);
+            using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(ImagePath);
             IMagickGeometry size = geoFactory.Create(
                 Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
             size.IgnoreAspectRatio = false;
             size.FillArea = true;
 
-            firstPassimage.Extent(size, Gravity.Center, MagickColor.FromRgba(0, 0, 0, 0));
+            firstPassImage.Extent(size, Gravity.Center, MagickColor.FromRgba(0, 0, 0, 0));
 
-            await firstPassimage.WriteAsync(croppedImagePath);
+            await firstPassImage.WriteAsync(croppedImagePath);
 
             MagickImageCollection collection = new();
             Dictionary<int, string> imagePaths = new();
@@ -275,7 +275,7 @@ namespace Simple_Icon_File_Maker
                 DragOperationDeferral def = e.GetDeferral();
                 IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
-                // Itterate through all the items to find an image, stop at first success
+                // Iterate through all the items to find an image, stop at first success
                 foreach (IStorageItem item in storageItems)
                 {
                     if (item is StorageFile file &&
@@ -327,8 +327,8 @@ namespace Simple_Icon_File_Maker
             picker.FileTypeFilter.Add(".png");
 
             Window window = new();
-            IntPtr hwnd = WindowNative.GetWindowHandle(window);
-            InitializeWithWindow.Initialize(picker, hwnd);
+            IntPtr windowHandle = WindowNative.GetWindowHandle(window);
+            InitializeWithWindow.Initialize(picker, windowHandle);
 
             StorageFile file = await picker.PickSingleFileAsync();
             if (file is null)
@@ -382,8 +382,8 @@ namespace Simple_Icon_File_Maker
             savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
             Window saveWindow = new();
-            IntPtr hwndSave = WindowNative.GetWindowHandle(saveWindow);
-            InitializeWithWindow.Initialize(savePicker, hwndSave);
+            IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
+            InitializeWithWindow.Initialize(savePicker, windowHandleSave);
 
             StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -421,8 +421,8 @@ namespace Simple_Icon_File_Maker
             savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
             Window saveWindow = new();
-            IntPtr hwndSave = WindowNative.GetWindowHandle(saveWindow);
-            InitializeWithWindow.Initialize(savePicker, hwndSave);
+            IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
+            InitializeWithWindow.Initialize(savePicker, windowHandleSave);
 
             StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -530,7 +530,7 @@ namespace Simple_Icon_File_Maker
         {
             BitmapImage bitmapImage = new();
             // Decode pixel sizes are optional
-            // It's generally a good optimisation to decode to match the size you'll display
+            // It's generally a good optimization to decode to match the size you'll display
             // bitmapImage.DecodePixelHeight = decodePixelHeight;
             // bitmapImage.DecodePixelWidth = decodePixelWidth;
 
