@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Simple_Icon_File_Maker.Models;
 
+[DebuggerDisplay("SideLength = {SideLength}, IsSelected = {IsSelected}")]
 public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 {
     public int SideLength { get; set; }
@@ -27,7 +31,8 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 
     public bool Equals(IconSize? other)
     {
-        if (other?.SideLength == SideLength)
+        if (other?.SideLength == SideLength 
+            && other.IsSelected == IsSelected)
             return true;
 
         return false;
@@ -107,8 +112,25 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
         unchecked // Overflow is fine, just wrap
         {
             int hash = 17;
-            // Suitable nullity checks etc, of course :)
-            return hash * 23 + SideLength.GetHashCode();
+            hash += 23 + (IsSelected ? 1 : 0);
+            return hash * 23 + SideLength;
         }
+    }
+}
+
+public class IconSideComparer : IEqualityComparer<IconSize>
+{
+    public bool Equals(IconSize? x, IconSize? y)
+    {
+        if (x is not IconSize iconX || y is not IconSize iconY)
+            return false;
+
+        bool isEqual = iconX.SideLength == iconY.SideLength;
+        return isEqual;
+    }
+
+    public int GetHashCode([DisallowNull] IconSize obj)
+    {
+        return obj.GetHashCode();
     }
 }
