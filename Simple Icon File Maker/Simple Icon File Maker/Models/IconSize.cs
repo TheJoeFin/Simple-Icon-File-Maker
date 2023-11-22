@@ -38,6 +38,11 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
         return false;
     }
 
+    public IconSize(int sideLength)
+    {
+        SideLength = sideLength;
+    }
+
     public IconSize(IconSize iconSize)
     {
         SideLength = iconSize.SideLength;
@@ -45,12 +50,14 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
         IsEnabled = iconSize.IsEnabled;
     }
 
+#pragma warning disable CS0067 // The event 'IconSize.PropertyChanged' is never used
     public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CS0067 // The event 'IconSize.PropertyChanged' is never used
 
     public static IconSize[] GetAllSizes()
     {
-        return new IconSize[]
-        {
+        return
+        [
             //new() { SideLength = 1024, IsSelected = false },
             //new() { SideLength = 512, IsSelected = false },
             new() { SideLength = 256 },
@@ -66,43 +73,43 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
             new() { SideLength = 24},
             new() { SideLength = 20},
             new() { SideLength = 16 },
-        };
+        ];
     }
     
     public static IconSize[] GetWindowsSizesFull()
     {
-        return new IconSize[]
-        {
+        return
+        [
             new() { SideLength = 256 },
             new() { SideLength = 128 },
             new() { SideLength = 64 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public static IconSize[] GetIdealWebSizesFull()
     {
-        return new IconSize[]
-        {
+        return
+        [
             new() { SideLength = 192 },
             new() { SideLength = 180 },
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 24 },
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public static IconSize[] GetIdealWebSizesShort()
     {
-        return new IconSize[]
-        {
+        return
+        [
             //16x16, 32x32, 48x48
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public override int GetHashCode()
