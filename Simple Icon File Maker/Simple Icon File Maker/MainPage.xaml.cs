@@ -59,6 +59,9 @@ public sealed partial class MainPage : Page
 
     private void CheckIfRefreshIsNeeded()
     {
+        if (LastRefreshSizes.Count < 1) 
+            return;
+
         List<IconSize> currentSizes = new(IconSizes.Where(i => i.IsSelected).ToList());
         bool isCurrentUnChanged = true;
 
@@ -329,6 +332,7 @@ public sealed partial class MainPage : Page
         picker.FileTypeFilter.Add(".jpeg");
         picker.FileTypeFilter.Add(".bmp");
         picker.FileTypeFilter.Add(".png");
+        picker.FileTypeFilter.Add(".ico");
 
         Window window = new();
         IntPtr windowHandle = WindowNative.GetWindowHandle(window);
@@ -341,9 +345,67 @@ public sealed partial class MainPage : Page
         ConfigUiThinking();
         ImagePath = file.Path;
 
+        if (file.FileType.ToLower() == ".ico")
+        {
+            LoadIconFile();
+            return;
+        }
+
         // Ensure the stream is disposed once the image is loaded
         using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
-        bool success = await UpdateSourceImageFromStream(fileStream);
+        _ = await UpdateSourceImageFromStream(fileStream);
+    }
+
+    private async Task LoadIconFile()
+    {
+        bool success = false;
+        MagickImageCollection collection = new(ImagePath);
+        Dictionary<int, string> iconImages = new();
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        int biggestSide = 0;
+        string biggestPath = string.Empty;
+
+        foreach (MagickImage image in collection.Cast<MagickImage>())
+        {
+            Debug.WriteLine($"Image: {image.Width}x{image.Height}");
+            string imageName = $"{Path.GetFileNameWithoutExtension(ImagePath)}-{image.Width}.png";
+
+            string imagePath = Path.Combine(sf.Path, imageName);
+            await image.WriteAsync(imagePath, MagickFormat.Png32);
+            iconImages.Add(image.Width, imagePath);
+            if (image.Width > biggestSide)
+            {
+                biggestSide = image.Width;
+                biggestPath = imagePath;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(biggestPath))
+        {
+            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(biggestPath);
+            using IRandomAccessStream fileStream = await imageSF.OpenAsync(FileAccessMode.Read);
+            BitmapImage bitmapImage = new()
+            {
+                DecodePixelHeight = biggestSide,
+                DecodePixelWidth = biggestSide
+            };
+
+            await bitmapImage.SetSourceAsync(fileStream);
+            MainImage.Source = bitmapImage;
+        }
+
+
+        try
+        {
+            await UpdatePreviewsAsync(iconImages);
+            success = true;
+        }
+        catch (Exception) { }
+
+        if (success)
+            ConfigUiShow();
+        else
+            ConfigUiWelcome();
     }
 
     private async void OpenFolderBTN_Click(object sender, RoutedEventArgs e)
