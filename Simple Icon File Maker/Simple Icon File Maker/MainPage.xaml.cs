@@ -360,7 +360,8 @@ public sealed partial class MainPage : Page
     {
         bool success = false;
         MagickImageCollection collection = new(ImagePath);
-        Dictionary<int, string> iconImages = new();
+        Dictionary<int, string> iconImages = [];
+        List<IconSize> sizesOfIcons = [];
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         int biggestSide = 0;
         string biggestPath = string.Empty;
@@ -372,13 +373,47 @@ public sealed partial class MainPage : Page
 
             string imagePath = Path.Combine(sf.Path, imageName);
             await image.WriteAsync(imagePath, MagickFormat.Png32);
+
             iconImages.Add(image.Width, imagePath);
+            IconSize iconSizeOfIconFrame = new(image.Width)
+            {
+                IsSelected = true,
+            };
+            sizesOfIcons.Add(iconSizeOfIconFrame);
+
             if (image.Width > biggestSide)
             {
                 biggestSide = image.Width;
                 biggestPath = imagePath;
             }
         }
+
+        IconSize[] empty = [];
+        SelectTheseIcons(empty);
+
+        foreach (IconSize size in sizesOfIcons)
+        {
+            bool isAlreadyInList = false;
+            foreach (IconSize setSize in IconSizes)
+            {
+                
+                if (setSize.SideLength == size.SideLength)
+                {
+                    isAlreadyInList = true;
+                    setSize.IsSelected = true;
+                    break;
+                }
+            }
+
+            if (!isAlreadyInList)
+                IconSizes.Add(size);
+        }
+
+        var orderedIcons = IconSizes.OrderByDescending(size => size.SideLength).ToList();
+        IconSizes.Clear();
+
+        foreach (IconSize size in orderedIcons)
+            IconSizes.Add(size);
 
         if (!string.IsNullOrEmpty(biggestPath))
         {
@@ -393,7 +428,6 @@ public sealed partial class MainPage : Page
             await bitmapImage.SetSourceAsync(fileStream);
             MainImage.Source = bitmapImage;
         }
-
 
         try
         {
