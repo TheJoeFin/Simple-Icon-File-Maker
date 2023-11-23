@@ -25,7 +25,8 @@ public sealed partial class MainPage : Page
 {
     ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
 
-    List<IconSize> LastRefreshSizes { get; set; } = new();
+    List<IconSize> LastRefreshSizes { get; set; } = [];
+    readonly HashSet<string> SingleImageFiles = [".png", ".bmp", ".jpeg", ".jpg"];
 
     private string ImagePath = "";
     private string OutPutPath = "";
@@ -59,7 +60,7 @@ public sealed partial class MainPage : Page
 
     private void CheckIfRefreshIsNeeded()
     {
-        if (LastRefreshSizes.Count < 1) 
+        if (LastRefreshSizes.Count < 1)
             return;
 
         List<IconSize> currentSizes = new(IconSizes.Where(i => i.IsSelected).ToList());
@@ -105,8 +106,8 @@ public sealed partial class MainPage : Page
         CheckIfRefreshIsNeeded();
     }
 
-        private void ConfigUiThinking() =>
-        VisualStateManager.GoToState(this, "ThinkingState", true);
+    private void ConfigUiThinking() =>
+    VisualStateManager.GoToState(this, "ThinkingState", true);
 
     private void ConfigUiShow() =>
         VisualStateManager.GoToState(this, "ImageSelectedState", true);
@@ -177,8 +178,8 @@ public sealed partial class MainPage : Page
 
         await firstPassImage.WriteAsync(croppedImagePath);
 
-        MagickImageCollection collection = new();
-        Dictionary<int, string> imagePaths = new();
+        MagickImageCollection collection = [];
+        Dictionary<int, string> imagePaths = [];
 
         List<int> selectedSizes = IconSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
 
@@ -286,10 +287,7 @@ public sealed partial class MainPage : Page
             foreach (IStorageItem item in storageItems)
             {
                 if (item is StorageFile file &&
-                    (file.FileType.ToLower() == ".png"
-                    || file.FileType.ToLower() == ".bmp"
-                    || file.FileType.ToLower() == ".jpeg"
-                    || file.FileType.ToLower() == ".jpg"))
+                    SingleImageFiles.Contains(file.FileType.ToLowerInvariant()))
                 {
                     ImagePath = file.Path;
                     using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
@@ -345,9 +343,9 @@ public sealed partial class MainPage : Page
         ConfigUiThinking();
         ImagePath = file.Path;
 
-        if (file.FileType.ToLower() == ".ico")
+        if (file.FileType.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
         {
-            LoadIconFile();
+            await LoadIconFile();
             return;
         }
 
@@ -396,7 +394,7 @@ public sealed partial class MainPage : Page
             bool isAlreadyInList = false;
             foreach (IconSize setSize in IconSizes)
             {
-                
+
                 if (setSize.SideLength == size.SideLength)
                 {
                     isAlreadyInList = true;
