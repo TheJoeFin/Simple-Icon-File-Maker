@@ -6,9 +6,6 @@ using Windows.ApplicationModel;
 
 namespace Simple_Icon_File_Maker;
 
-/// <summary>
-/// An empty window that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class AboutDialog : ContentDialog
 {
     public AboutDialog()
@@ -18,7 +15,7 @@ public sealed partial class AboutDialog : ContentDialog
         VersionNumber.Text = GetAppDescription();
     }
 
-    private string GetAppDescription()
+    private static string GetAppDescription()
     {
         Package package = Package.Current;
         PackageId packageId = package.Id;
