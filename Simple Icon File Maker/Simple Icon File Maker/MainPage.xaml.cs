@@ -26,7 +26,7 @@ public sealed partial class MainPage : Page
     ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
 
     List<IconSize> LastRefreshSizes { get; set; } = [];
-    readonly HashSet<string> SingleImageFiles = [".png", ".bmp", ".jpeg", ".jpg"];
+    readonly HashSet<string> SupportedImageFormats = [".png", ".bmp", ".jpeg", ".jpg", ".ico"];
 
     private string ImagePath = "";
     private string OutPutPath = "";
@@ -48,9 +48,43 @@ public sealed partial class MainPage : Page
             iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
     }
 
-    private void Border_DragOver(object sender, DragEventArgs e)
+    private async void Border_DragOver(object sender, DragEventArgs e)
     {
-        e.AcceptedOperation = DataPackageOperation.Copy;
+        DataPackageView dataView = e.DataView;
+        if (dataView.Contains(StandardDataFormats.Bitmap))
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            return;
+        }
+        else if (dataView.Contains(StandardDataFormats.Uri))
+        {
+            Uri uri = await dataView.GetUriAsync();
+            string extension = Path.GetExtension(uri.AbsolutePath) ?? string.Empty;
+
+            if (SupportedImageFormats.Contains(extension.ToLowerInvariant()))
+            {
+                e.AcceptedOperation = DataPackageOperation.Copy;
+                return;
+            }
+            Debug.WriteLine($"Unsupported dragOver Uri: {uri.AbsoluteUri}");
+        }
+        else if (dataView.Contains(StandardDataFormats.StorageItems))
+        {
+            IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
+            // Iterate through all the items to find an image, stop at first success
+            foreach (IStorageItem item in storageItems)
+            {
+                if (item is StorageFile file &&
+                    SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
+                {
+                    e.AcceptedOperation = DataPackageOperation.Copy;
+                    return;
+                }
+                Debug.WriteLine($"Unsupported dragOver StorageFile: {item.Name}");
+            }
+        }
+
+        e.AcceptedOperation = DataPackageOperation.None;
     }
 
     private void CheckBox_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -107,13 +141,13 @@ public sealed partial class MainPage : Page
     }
 
     private void ConfigUiThinking() =>
-    VisualStateManager.GoToState(this, "ThinkingState", true);
+    VisualStateManager.GoToState(this, UiStates.ThinkingState.ToString(), true);
 
     private void ConfigUiShow() =>
-        VisualStateManager.GoToState(this, "ImageSelectedState", true);
+        VisualStateManager.GoToState(this, UiStates.ImageSelectedState.ToString(), true);
 
     private void ConfigUiWelcome() =>
-        VisualStateManager.GoToState(this, "WelcomeState", true);
+        VisualStateManager.GoToState(this, UiStates.WelcomeState.ToString(), true);
 
     private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
     {
@@ -241,70 +275,88 @@ public sealed partial class MainPage : Page
     {
         ConfigUiThinking();
         SourceImageSize = null;
+        ImagePath = string.Empty;
+        DragOperationDeferral def = e.GetDeferral();
+        e.Handled = true;
+
         if (e.DataView.Contains(StandardDataFormats.Bitmap))
         {
-            Debug.WriteLine("bitmap");
-            e.Handled = true;
-            DragOperationDeferral def = e.GetDeferral();
-            RandomAccessStreamReference s = await e.DataView.GetBitmapAsync();
-            ImagePath = await e.DataView.GetTextAsync();
-            def.Complete();
-            e.AcceptedOperation = DataPackageOperation.Copy;
+            Debug.WriteLine("dropped bitmap");
 
-            bool success = await UpdateSourceImageFromStream(await s.OpenReadAsync());
-            if (!success)
+            ImagePath = await e.DataView.GetTextAsync();
+
+            if (!SupportedImageFormats.Contains(Path.GetExtension(ImagePath)))
             {
                 Debug.WriteLine("bitmap, update not success");
-                e.AcceptedOperation = DataPackageOperation.None;
+                ConfigUiWelcome();
+                def.Complete();
                 return;
             }
+
+            await LoadFromImagePath();
         }
         else if (e.DataView.Contains(StandardDataFormats.Uri))
         {
-            e.Handled = true;
-            DragOperationDeferral def = e.GetDeferral();
+            Debug.WriteLine("dropped URI");
             Uri s = await e.DataView.GetUriAsync();
+
+            string extension = Path.GetExtension(s.AbsolutePath) ?? string.Empty;
+
+            if (!SupportedImageFormats.Contains(extension))
+            {
+                Debug.WriteLine("dropped URI, not supported");
+                ConfigUiWelcome();
+                def.Complete();
+                return;
+            }
+
             ImagePath = s.AbsolutePath;
-            Debug.WriteLine("URI");
+            await LoadFromImagePath();
 
-            BitmapImage bmp = new(s);
-            SourceImageSize = new(bmp.PixelWidth, bmp.PixelHeight);
-            MainImage.Source = bmp;
-            def.Complete();
-
-            e.AcceptedOperation = DataPackageOperation.Copy;
-            await SourceImageUpdated(Path.GetFileName(ImagePath));
         }
         else if (e.DataView.Contains(StandardDataFormats.StorageItems))
         {
-            e.Handled = true;
-            Debug.WriteLine("StorageItem");
-
-            DragOperationDeferral def = e.GetDeferral();
+            Debug.WriteLine("Dropped StorageItem");
             IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
             // Iterate through all the items to find an image, stop at first success
             foreach (IStorageItem item in storageItems)
             {
                 if (item is StorageFile file &&
-                    SingleImageFiles.Contains(file.FileType.ToLowerInvariant()))
+                    SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
                 {
                     ImagePath = file.Path;
-                    using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
-                    def.Complete();
-                    bool success = await UpdateSourceImageFromStream(fileStream);
-                    if (!success)
-                    {
-                        Debug.WriteLine("StorageItem, no success");
-                        e.AcceptedOperation = DataPackageOperation.None;
-                        return;
-                    }
+                    await LoadFromImagePath();
                     // Found an image, stop looking
-                    e.AcceptedOperation = DataPackageOperation.Copy;
-                    break;
+                    def.Complete();
+                    return;
                 }
             }
+            Debug.WriteLine("StorageItem, not supported");
+            ConfigUiWelcome();
         }
+
+        e.AcceptedOperation = DataPackageOperation.None;
+        def.Complete();
+    }
+
+    private async Task LoadFromImagePath()
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+        {
+            ConfigUiWelcome();
+            return;
+        }
+
+        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+        {
+            await LoadIconFile();
+            return;
+        }
+
+        StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
+        using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
+        _ = await UpdateSourceImageFromStream(fileStream);
     }
 
     private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
@@ -326,11 +378,8 @@ public sealed partial class MainPage : Page
             SuggestedStartLocation = PickerLocationId.PicturesLibrary
         };
 
-        picker.FileTypeFilter.Add(".jpg");
-        picker.FileTypeFilter.Add(".jpeg");
-        picker.FileTypeFilter.Add(".bmp");
-        picker.FileTypeFilter.Add(".png");
-        picker.FileTypeFilter.Add(".ico");
+        foreach (string extension in SupportedImageFormats)
+            picker.FileTypeFilter.Add(extension);
 
         Window window = new();
         IntPtr windowHandle = WindowNative.GetWindowHandle(window);
@@ -343,15 +392,7 @@ public sealed partial class MainPage : Page
         ConfigUiThinking();
         ImagePath = file.Path;
 
-        if (file.FileType.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
-        {
-            await LoadIconFile();
-            return;
-        }
-
-        // Ensure the stream is disposed once the image is loaded
-        using IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read);
-        _ = await UpdateSourceImageFromStream(fileStream);
+        await LoadFromImagePath();
     }
 
     private async Task LoadIconFile()
@@ -574,6 +615,7 @@ public sealed partial class MainPage : Page
                 img.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
         }
     }
+
     private async Task SourceImageUpdated(string fileName)
     {
         PreviewStackPanel.Children.Clear();
@@ -665,4 +707,12 @@ public sealed partial class MainPage : Page
         SelectTheseIcons(IconSize.GetWindowsSizesFull());
         CheckIfRefreshIsNeeded();
     }
+}
+
+public enum UiStates
+{
+    WelcomeState = 0,
+    ThinkingState = 1,
+    ImageSelectedState = 2,
+    UnsupportedFileFormat = 3,
 }
