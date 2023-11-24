@@ -76,6 +76,11 @@
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="Drag and drop an image here" />
+                    <TextBlock
+                        x:Name="SupportedFilesTextBlock"
+                        HorizontalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="Drag and drop an image here" />
                     <Button
                         x:Name="OpenBTN"
                         Grid.Row="1"

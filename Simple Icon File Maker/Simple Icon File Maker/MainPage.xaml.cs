@@ -39,6 +39,8 @@ public sealed partial class MainPage : Page
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         SelectTheseIcons(IconSize.GetWindowsSizesFull());
+
+        SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
     }
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
