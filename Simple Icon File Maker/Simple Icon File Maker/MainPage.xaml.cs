@@ -25,8 +25,8 @@ public sealed partial class MainPage : Page
 {
     ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
 
-    List<IconSize> LastRefreshSizes { get; set; } = [];
-    readonly HashSet<string> SupportedImageFormats = [".png", ".bmp", ".jpeg", ".jpg", ".ico"];
+    List<IconSize> LastRefreshSizes { get; set; } = new();
+    readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
 
     private string ImagePath = "";
     private string OutPutPath = "";
@@ -214,8 +214,8 @@ public sealed partial class MainPage : Page
 
         await firstPassImage.WriteAsync(croppedImagePath);
 
-        MagickImageCollection collection = [];
-        Dictionary<int, string> imagePaths = [];
+        MagickImageCollection collection = new();
+        Dictionary<int, string> imagePaths = new();
 
         List<int> selectedSizes = IconSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
 
@@ -401,9 +401,9 @@ public sealed partial class MainPage : Page
     {
         bool success = false;
         MagickImageCollection collection = new(ImagePath);
-        Dictionary<int, string> iconImages = [];
-        List<IconSize> sizesOfIcons = [];
-        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        Dictionary<int, string> iconImages = new();
+        List<IconSize> sizesOfIcons = new();
+        StorageFolder? sf = ApplicationData.Current.LocalCacheFolder;
         int biggestSide = 0;
         string biggestPath = string.Empty;
 
@@ -429,7 +429,7 @@ public sealed partial class MainPage : Page
             }
         }
 
-        IconSize[] empty = [];
+        IconSize[] empty = Array.Empty<IconSize>();
         SelectTheseIcons(empty);
 
         foreach (IconSize size in sizesOfIcons)

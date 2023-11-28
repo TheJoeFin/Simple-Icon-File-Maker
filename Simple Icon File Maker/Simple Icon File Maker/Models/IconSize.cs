@@ -57,7 +57,7 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
     public static IconSize[] GetAllSizes()
     {
         return
-        [
+        new IconSize[] {
             //new() { SideLength = 1024, IsSelected = false },
             //new() { SideLength = 512, IsSelected = false },
             new() { SideLength = 256 },
@@ -73,43 +73,43 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
             new() { SideLength = 24},
             new() { SideLength = 20},
             new() { SideLength = 16 },
-        ];
+        };
     }
     
     public static IconSize[] GetWindowsSizesFull()
     {
         return
-        [
+        new IconSize[] {
             new() { SideLength = 256 },
             new() { SideLength = 128 },
             new() { SideLength = 64 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
-        ];
+        };
     }
 
     public static IconSize[] GetIdealWebSizesFull()
     {
         return
-        [
+        new IconSize[] {
             new() { SideLength = 192 },
             new() { SideLength = 180 },
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 24 },
             new() { SideLength = 16 },
-        ];
+        };
     }
 
     public static IconSize[] GetIdealWebSizesShort()
     {
         return
-        [
+        new IconSize[] {
             //16x16, 32x32, 48x48
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
-        ];
+        };
     }
 
     public override int GetHashCode()
