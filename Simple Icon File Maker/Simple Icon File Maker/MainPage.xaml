@@ -30,7 +30,7 @@
         Drop="Grid_Drop"
         RowSpacing="12">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="396" />
+            <ColumnDefinition Width="340" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
