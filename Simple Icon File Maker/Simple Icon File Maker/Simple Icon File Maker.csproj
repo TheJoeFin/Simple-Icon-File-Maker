@@ -11,7 +11,7 @@
     <UseWindowsForms>False</UseWindowsForms>
     <UseWPF>False</UseWPF>
     <ApplicationIcon>SimpleIconMaker.ico</ApplicationIcon>
-    <Copyright>Joseph Finney 2022</Copyright>
+    <Copyright>Joseph Finney 2023</Copyright>
     <PackageIcon>Image128.png</PackageIcon>
     <Nullable>enable</Nullable>
     <SupportedOSPlatformVersion>10.0.20348.0</SupportedOSPlatformVersion>
