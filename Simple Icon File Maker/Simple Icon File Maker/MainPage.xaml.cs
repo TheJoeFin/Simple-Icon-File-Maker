@@ -305,28 +305,31 @@ public sealed partial class MainPage : Page
             Debug.WriteLine("Dropped StorageItem");
             IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
-            List<string> failedItemNames = new();
-            // Iterate through all the items to find an image, stop at first success
-            foreach (IStorageItem item in storageItems)
-            {
-                if (item is StorageFile file &&
-                    SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
-                {
-                    ImagePath = file.Path;
-                    await LoadFromImagePath();
-                    // Found an image, stop looking
-                    def.Complete();
-                    return;
-                }
-                else { failedItemNames.Add($"File type not supported: {item.Name}"); }
-            }
-            Debug.WriteLine("StorageItem, not supported");
-            ShowErrorOnItem(string.Join($",{Environment.NewLine}", failedItemNames));
-            ConfigUiWelcome();
+            await TryToOpenStorageItems(storageItems);
         }
 
-        e.AcceptedOperation = DataPackageOperation.None;
         def.Complete();
+    }
+
+    private async Task TryToOpenStorageItems(IReadOnlyList<IStorageItem> storageItems)
+    {
+        List<string> failedItemNames = new();
+        // Iterate through all the items to find an image, stop at first success
+        foreach (IStorageItem item in storageItems)
+        {
+            if (item is StorageFile file &&
+                SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
+            {
+                ImagePath = file.Path;
+                await LoadFromImagePath();
+                // Found an image, stop looking
+                return;
+            }
+            else { failedItemNames.Add($"File type not supported: {item.Name}"); }
+        }
+        Debug.WriteLine("StorageItem, not supported");
+        ShowErrorOnItem(string.Join($",{Environment.NewLine}", failedItemNames));
+        ConfigUiWelcome();
     }
 
     private void ShowErrorOnItem(string errorMessage)
