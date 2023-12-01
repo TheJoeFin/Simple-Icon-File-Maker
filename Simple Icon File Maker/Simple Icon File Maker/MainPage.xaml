@@ -121,12 +121,11 @@
 
             <InfoBar
                 x:Name="errorInfoBar"
-                Title="Error opening the image"
+                Title="Error loading the image"
                 Grid.Row="2"
+                MaxWidth="320"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
-                BorderThickness="0,1,0,0"
-                CornerRadius="0,0,8,8"
                 IsClosable="True"
                 Severity="Error">
                 <InfoBar.Resources>

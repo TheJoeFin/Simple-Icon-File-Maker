@@ -50,43 +50,26 @@ public sealed partial class MainPage : Page
             iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
     }
 
-    private async void Border_DragOver(object sender, DragEventArgs e)
+    private void Border_DragOver(object sender, DragEventArgs e)
     {
         DataPackageView dataView = e.DataView;
+
         if (dataView.Contains(StandardDataFormats.Bitmap))
         {
+            Debug.WriteLine($"contains Bitmap");
             e.AcceptedOperation = DataPackageOperation.Copy;
             return;
         }
         else if (dataView.Contains(StandardDataFormats.Uri))
         {
-            Uri uri = await dataView.GetUriAsync();
-            string extension = Path.GetExtension(uri.AbsolutePath) ?? string.Empty;
-
-            if (SupportedImageFormats.Contains(extension.ToLowerInvariant()))
-            {
-                e.AcceptedOperation = DataPackageOperation.Copy;
-                return;
-            }
-            Debug.WriteLine($"Unsupported dragOver Uri: {uri.AbsoluteUri}");
+            Debug.WriteLine($"contains Uri");
+            e.AcceptedOperation = DataPackageOperation.Copy;
         }
         else if (dataView.Contains(StandardDataFormats.StorageItems))
         {
-            IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
-            // Iterate through all the items to find an image, stop at first success
-            foreach (IStorageItem item in storageItems)
-            {
-                if (item is StorageFile file &&
-                    SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
-                {
-                    e.AcceptedOperation = DataPackageOperation.Copy;
-                    return;
-                }
-                Debug.WriteLine($"Unsupported dragOver StorageFile: {item.Name}");
-            }
+            Debug.WriteLine($"contains StorageItems");
+            e.AcceptedOperation = DataPackageOperation.Copy;
         }
-
-        e.AcceptedOperation = DataPackageOperation.None;
     }
 
     private void CheckBox_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -276,6 +259,7 @@ public sealed partial class MainPage : Page
     private async void Grid_Drop(object sender, DragEventArgs e)
     {
         ConfigUiThinking();
+        errorInfoBar.IsOpen = false;
         SourceImageSize = null;
         ImagePath = string.Empty;
         DragOperationDeferral def = e.GetDeferral();
@@ -321,6 +305,7 @@ public sealed partial class MainPage : Page
             Debug.WriteLine("Dropped StorageItem");
             IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
+            List<string> failedItemNames = new();
             // Iterate through all the items to find an image, stop at first success
             foreach (IStorageItem item in storageItems)
             {
@@ -333,13 +318,21 @@ public sealed partial class MainPage : Page
                     def.Complete();
                     return;
                 }
+                else { failedItemNames.Add($"File type not supported: {item.Name}"); }
             }
             Debug.WriteLine("StorageItem, not supported");
+            ShowErrorOnItem(string.Join($",{Environment.NewLine}", failedItemNames));
             ConfigUiWelcome();
         }
 
         e.AcceptedOperation = DataPackageOperation.None;
         def.Complete();
+    }
+
+    private void ShowErrorOnItem(string errorMessage)
+    {
+        errorInfoBar.Message = errorMessage;
+        errorInfoBar.IsOpen = true;
     }
 
     private async Task LoadFromImagePath()
