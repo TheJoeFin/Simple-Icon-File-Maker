@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
+using System;
 using Windows.ApplicationModel;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -22,5 +23,11 @@ public sealed partial class AboutDialog : ContentDialog
         PackageVersion version = packageId.Version;
 
         return $"{package.DisplayName} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+    }
+
+    private async void ReviewBTN_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        // NavigateUri="ms-windows-store://review/?ProductId=9NS1BM1FB99Z"
+        bool result = await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store://review/?ProductId=9NS1BM1FB99Z"));
     }
 }
