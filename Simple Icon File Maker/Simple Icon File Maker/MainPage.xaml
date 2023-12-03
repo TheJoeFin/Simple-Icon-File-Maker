@@ -84,43 +84,79 @@
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Text="Drag and drop an image here" />
-                    <Button
+
+                    <StackPanel
                         x:Name="OpenBTN"
                         Grid.Row="1"
                         Margin="0,12,0,0"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Click="OpenBTN_Click"
-                        ToolTipService.ToolTip="Select image to make .ico file from">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon FontSize="16" Glyph="&#xE8E5;" />
-                            <TextBlock Text="Browse and select an image" TextAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            Height="32"
+                            HorizontalAlignment="Left"
+                            Click="InfoAppBarButton_Click"
+                            ToolTipService.ToolTip="About Simple Icon File Maker">
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Glyph="&#xE946;" />
+                        </Button>
+                        <Button
+                            Height="32"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Click="OpenBTN_Click"
+                            Style="{StaticResource AccentButtonStyle}"
+                            ToolTipService.ToolTip="Select image to make .ico file from">
+                            <StackPanel
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <FontIcon FontSize="16" Glyph="&#xE8E5;" />
+                                <TextBlock Text="Browse and select an image" TextAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
             <Viewbox
-                MaxHeight="120"
-                Margin="24,24,24,0"
+                MaxHeight="140"
+                Margin="24,24,24,24"
                 VerticalAlignment="Center">
                 <Image x:Name="MainImage" Stretch="Uniform" />
             </Viewbox>
 
-            <Button
+            <StackPanel
                 x:Name="ClearAppBarButton"
                 Grid.Row="1"
-                Height="32"
-                Margin="0,12,0,0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Click="ClearAppBarButton_Click"
-                ToolTipService.ToolTip="Clear image and reset the app"
+                Margin="0,0,8,-4"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="8"
                 Visibility="Collapsed">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="16" Glyph="&#xE894;" />
-                    <TextBlock Text="Clear image" TextAlignment="Center" />
-                </StackPanel>
-            </Button>
+                <Button
+                    Height="32"
+                    HorizontalAlignment="Left"
+                    Click="InfoAppBarButton_Click"
+                    ToolTipService.ToolTip="About Simple Icon File Maker">
+                    <FontIcon
+                        VerticalAlignment="Center"
+                        FontSize="16"
+                        Glyph="&#xE946;" />
+                </Button>
+                <Button
+                    Width="138"
+                    Height="32"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Click="ClearAppBarButton_Click"
+                    ToolTipService.ToolTip="Clear image and reset the app">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="16" Glyph="&#xE894;" />
+                        <TextBlock Text="Clear image" TextAlignment="Center" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
 
             <InfoBar
                 x:Name="errorInfoBar"
@@ -230,17 +266,6 @@
                 Padding="8"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0">
-                <Button
-                    x:Name="InfoAppBarButton"
-                    Height="32"
-                    HorizontalAlignment="Left"
-                    Click="InfoAppBarButton_Click"
-                    Content="&#xE897;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="About Simple Icon File Maker" />
-
-
                 <StackPanel
                     Grid.Row="2"
                     HorizontalAlignment="Right"
