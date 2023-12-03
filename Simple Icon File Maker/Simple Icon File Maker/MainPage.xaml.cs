@@ -3,6 +3,7 @@ using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Models;
 using System;
 using System.Collections.Generic;
@@ -603,15 +604,8 @@ public sealed partial class MainPage : Page
             return;
 
         foreach (var child in previewBoxes)
-        {
-            if (child is not Image img)
-                continue;
-
-            if (isZoomingPreview)
-                img.Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill;
-            else
-                img.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
-        }
+            if (child is PreviewImage img)
+                img.ZoomPreview = isZoomingPreview;
     }
 
     private async Task SourceImageUpdated(string fileName)
@@ -639,25 +633,9 @@ public sealed partial class MainPage : Page
             int sideLength = pair.Key;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
-            using IRandomAccessStream fileStream = await imageSF.OpenAsync(FileAccessMode.Read);
-            BitmapImage bitmapImage = new()
-            {
-                DecodePixelHeight = sideLength,
-                DecodePixelWidth = sideLength
-            };
+            
+            PreviewImage image = new(imageSF, sideLength);
 
-            await bitmapImage.SetSourceAsync(fileStream);
-
-            Image image = new()
-            {
-                Source = bitmapImage,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(5),
-                Stretch = Microsoft.UI.Xaml.Media.Stretch.None,
-                CanDrag = true,
-            };
-
-            ToolTipService.SetToolTip(image, $"{sideLength} x {sideLength}");
             PreviewStackPanel.Children.Add(image);
         }
         SetPreviewsZoom();
