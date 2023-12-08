@@ -14,6 +14,7 @@
     <Copyright>Joseph Finney 2023</Copyright>
     <PackageIcon>Image128.png</PackageIcon>
     <Nullable>enable</Nullable>
+    <PublishTrimmed>true</PublishTrimmed>
     <SupportedOSPlatformVersion>10.0.20348.0</SupportedOSPlatformVersion>
   </PropertyGroup>
   <ItemGroup>
