@@ -1,13 +1,13 @@
 ﻿using Microsoft.UI;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using System;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace Simple_Icon_File_Maker;
 
-public sealed partial class MainWindow : Window
+public sealed partial class MainWindow : WindowEx
 {
     private readonly AppWindow? m_AppWindow;
 

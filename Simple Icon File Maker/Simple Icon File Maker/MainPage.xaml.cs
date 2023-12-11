@@ -3,6 +3,7 @@ using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Models;
 using System;
 using System.Collections.Generic;
@@ -50,43 +51,26 @@ public sealed partial class MainPage : Page
             iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
     }
 
-    private async void Border_DragOver(object sender, DragEventArgs e)
+    private void Border_DragOver(object sender, DragEventArgs e)
     {
         DataPackageView dataView = e.DataView;
+
         if (dataView.Contains(StandardDataFormats.Bitmap))
         {
+            Debug.WriteLine($"contains Bitmap");
             e.AcceptedOperation = DataPackageOperation.Copy;
             return;
         }
         else if (dataView.Contains(StandardDataFormats.Uri))
         {
-            Uri uri = await dataView.GetUriAsync();
-            string extension = Path.GetExtension(uri.AbsolutePath) ?? string.Empty;
-
-            if (SupportedImageFormats.Contains(extension.ToLowerInvariant()))
-            {
-                e.AcceptedOperation = DataPackageOperation.Copy;
-                return;
-            }
-            Debug.WriteLine($"Unsupported dragOver Uri: {uri.AbsoluteUri}");
+            Debug.WriteLine($"contains Uri");
+            e.AcceptedOperation = DataPackageOperation.Copy;
         }
         else if (dataView.Contains(StandardDataFormats.StorageItems))
         {
-            IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
-            // Iterate through all the items to find an image, stop at first success
-            foreach (IStorageItem item in storageItems)
-            {
-                if (item is StorageFile file &&
-                    SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
-                {
-                    e.AcceptedOperation = DataPackageOperation.Copy;
-                    return;
-                }
-                Debug.WriteLine($"Unsupported dragOver StorageFile: {item.Name}");
-            }
+            Debug.WriteLine($"contains StorageItems");
+            e.AcceptedOperation = DataPackageOperation.Copy;
         }
-
-        e.AcceptedOperation = DataPackageOperation.None;
     }
 
     private void CheckBox_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
@@ -276,6 +260,7 @@ public sealed partial class MainPage : Page
     private async void Grid_Drop(object sender, DragEventArgs e)
     {
         ConfigUiThinking();
+        errorInfoBar.IsOpen = false;
         SourceImageSize = null;
         ImagePath = string.Empty;
         DragOperationDeferral def = e.GetDeferral();
@@ -321,25 +306,37 @@ public sealed partial class MainPage : Page
             Debug.WriteLine("Dropped StorageItem");
             IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
 
-            // Iterate through all the items to find an image, stop at first success
-            foreach (IStorageItem item in storageItems)
-            {
-                if (item is StorageFile file &&
-                    SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
-                {
-                    ImagePath = file.Path;
-                    await LoadFromImagePath();
-                    // Found an image, stop looking
-                    def.Complete();
-                    return;
-                }
-            }
-            Debug.WriteLine("StorageItem, not supported");
-            ConfigUiWelcome();
+            await TryToOpenStorageItems(storageItems);
         }
 
-        e.AcceptedOperation = DataPackageOperation.None;
         def.Complete();
+    }
+
+    private async Task TryToOpenStorageItems(IReadOnlyList<IStorageItem> storageItems)
+    {
+        List<string> failedItemNames = new();
+        // Iterate through all the items to find an image, stop at first success
+        foreach (IStorageItem item in storageItems)
+        {
+            if (item is StorageFile file &&
+                SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
+            {
+                ImagePath = file.Path;
+                await LoadFromImagePath();
+                // Found an image, stop looking
+                return;
+            }
+            else { failedItemNames.Add($"File type not supported: {item.Name}"); }
+        }
+        Debug.WriteLine("StorageItem, not supported");
+        ShowErrorOnItem(string.Join($",{Environment.NewLine}", failedItemNames));
+        ConfigUiWelcome();
+    }
+
+    private void ShowErrorOnItem(string errorMessage)
+    {
+        errorInfoBar.Message = errorMessage;
+        errorInfoBar.IsOpen = true;
     }
 
     private async Task LoadFromImagePath()
@@ -607,15 +604,8 @@ public sealed partial class MainPage : Page
             return;
 
         foreach (var child in previewBoxes)
-        {
-            if (child is not Image img)
-                continue;
-
-            if (isZoomingPreview)
-                img.Stretch = Microsoft.UI.Xaml.Media.Stretch.UniformToFill;
-            else
-                img.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
-        }
+            if (child is PreviewImage img)
+                img.ZoomPreview = isZoomingPreview;
     }
 
     private async Task SourceImageUpdated(string fileName)
@@ -643,25 +633,9 @@ public sealed partial class MainPage : Page
             int sideLength = pair.Key;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
-            using IRandomAccessStream fileStream = await imageSF.OpenAsync(FileAccessMode.Read);
-            BitmapImage bitmapImage = new()
-            {
-                DecodePixelHeight = sideLength,
-                DecodePixelWidth = sideLength
-            };
+            
+            PreviewImage image = new(imageSF, sideLength);
 
-            await bitmapImage.SetSourceAsync(fileStream);
-
-            Image image = new()
-            {
-                Source = bitmapImage,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(5),
-                Stretch = Microsoft.UI.Xaml.Media.Stretch.None,
-                CanDrag = true,
-            };
-
-            ToolTipService.SetToolTip(image, $"{sideLength} x {sideLength}");
             PreviewStackPanel.Children.Add(image);
         }
         SetPreviewsZoom();

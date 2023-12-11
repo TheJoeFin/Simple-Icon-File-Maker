@@ -12,6 +12,12 @@
     <ScrollViewer>
         <StackPanel Spacing="4">
             <HyperlinkButton
+                x:Name="ReviewBTN"
+                Margin="-12,0,0,0"
+                Click="ReviewBTN_Click">
+                Rate / Review on the Microsoft Store
+            </HyperlinkButton>
+            <HyperlinkButton
                 x:Name="SourceBTN"
                 Margin="-12,0,0,0"
                 NavigateUri="https://github.com/TheJoeFin/Simple-Icon-File-Maker">
@@ -48,6 +54,12 @@
                 FontWeight="SemiBold"
                 Text="Libraries used:" />
             <HyperlinkButton
+                x:Name="MagickDotNetBTN"
+                Margin="-12,0,0,0"
+                NavigateUri="https://github.com/dlemstra/Magick.NET">
+                The .NET library for ImageMagick: Magick.NET
+            </HyperlinkButton>
+            <HyperlinkButton
                 x:Name="WindowsAppSDKBTN"
                 Margin="-12,0,0,0"
                 NavigateUri="https://github.com/microsoft/WindowsAppSDK">
@@ -60,10 +72,10 @@
                 WinUI 3
             </HyperlinkButton>
             <HyperlinkButton
-                x:Name="MagickDotNetBTN"
+                x:Name="WinUIExBTN"
                 Margin="-12,0,0,0"
-                NavigateUri="https://github.com/dlemstra/Magick.NET">
-                The .NET library for ImageMagick: Magick.NET
+                NavigateUri="https://github.com/dotMorten/WinUIEx">
+                WinUIEx
             </HyperlinkButton>
         </StackPanel>
     </ScrollViewer>
