@@ -357,7 +357,7 @@
                     Name="PreviewStackPanel"
                     VerticalAlignment="Center"
                     Orientation="Vertical"
-                    Spacing="20" />
+                    Spacing="40" />
             </ScrollViewer>
             <ProgressRing
                 x:Name="ImagesProcessingProgressRing"

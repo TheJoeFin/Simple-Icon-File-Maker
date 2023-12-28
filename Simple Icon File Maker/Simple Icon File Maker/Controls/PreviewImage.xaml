@@ -6,20 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Simple_Icon_File_Maker.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Background="Transparent" Loaded="UserControl_Loaded"
+    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
-    <Image
-        Name="mainImage"
-        Margin="5"
-        HorizontalAlignment="Center"
-        CanDrag="False"
-        IsRightTapEnabled="True"
-        IsTapEnabled="True"
-        Stretch="None">
-        <Image.ContextFlyout>
-            <MenuFlyout>
-                <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="Save this image..." />
-            </MenuFlyout>
-        </Image.ContextFlyout>
-    </Image>
+    <Grid Margin="5" Padding="5">
+        <Canvas Name="mainImageCanvas" CanDrag="False" />
+    </Grid>
 </UserControl>

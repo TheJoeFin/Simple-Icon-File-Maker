@@ -605,7 +605,11 @@ public sealed partial class MainPage : Page
 
         foreach (var child in previewBoxes)
             if (child is PreviewImage img)
+            {
+                if (!double.IsNaN(PreviewCard.ActualWidth) && PreviewCard.ActualWidth > 40)
+                    img.ZoomedWidthSpace = (int)PreviewCard.ActualWidth - 24;
                 img.ZoomPreview = isZoomingPreview;
+            }
     }
 
     private async Task SourceImageUpdated(string fileName)
