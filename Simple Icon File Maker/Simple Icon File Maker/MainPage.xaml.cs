@@ -629,6 +629,7 @@ public sealed partial class MainPage : Page
     }
     private async Task UpdatePreviewsAsync(Dictionary<int, string> imagePaths)
     {
+        string originalName = Path.GetFileNameWithoutExtension(ImagePath);
         foreach (var pair in imagePaths)
         {
             if (pair.Value is not string imagePath)
@@ -638,7 +639,7 @@ public sealed partial class MainPage : Page
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
             
-            PreviewImage image = new(imageSF, sideLength);
+            PreviewImage image = new(imageSF, sideLength, originalName);
 
             PreviewStackPanel.Children.Add(image);
         }

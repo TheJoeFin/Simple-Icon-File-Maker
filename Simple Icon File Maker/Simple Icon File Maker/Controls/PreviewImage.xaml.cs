@@ -20,15 +20,17 @@ namespace Simple_Icon_File_Maker.Controls;
 
 public sealed partial class PreviewImage : UserControl
 {
+    readonly string OriginalName = string.Empty;
     readonly StorageFile _imageFile;
     readonly int _sideLength = 0;
 
-    public PreviewImage(StorageFile imageFile, int sideLength)
+    public PreviewImage(StorageFile imageFile, int sideLength, string originalName)
     {
         InitializeComponent();
         _imageFile = imageFile;
         _sideLength = sideLength;
         ToolTipService.SetToolTip(this, $"{sideLength} x {sideLength}");
+        OriginalName = originalName;
     }
 
     private bool isZooming = false;
@@ -77,7 +79,7 @@ public sealed partial class PreviewImage : UserControl
         };
         string extension = Path.GetExtension(_imageFile.Path);
         savePicker.FileTypeChoices.Add("Image", new List<string>() { extension });
-        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(_imageFile.Path);
+        savePicker.SuggestedFileName = $"{OriginalName}-{_sideLength}x{_sideLength}";
         savePicker.DefaultFileExtension = extension;
 
         Window saveWindow = new();
