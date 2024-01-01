@@ -687,6 +687,11 @@ public sealed partial class MainPage : Page
         SelectTheseIcons(IconSize.GetWindowsSizesFull());
         CheckIfRefreshIsNeeded();
     }
+
+    private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        SetPreviewsZoom();
+    }
 }
 
 public enum UiStates
