@@ -9,6 +9,15 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
     <Grid Margin="5" Padding="5">
-        <Canvas Name="mainImageCanvas" CanDrag="False" />
+        <Canvas
+            Name="mainImageCanvas"
+            Background="Transparent"
+            CanDrag="False">
+            <Canvas.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="Save Image" />
+                </MenuFlyout>
+            </Canvas.ContextFlyout>
+        </Canvas>
     </Grid>
 </UserControl>

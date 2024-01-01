@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Animation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +11,6 @@ using System.IO;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 using WinRT.Interop;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -113,6 +111,7 @@ public sealed partial class PreviewImage : UserControl
 
     private void LoadImageOnToCanvas()
     {
+        mainImageCanvas.Children.Clear();
         // from StackOverflow
         // user:
         // https://stackoverflow.com/users/403671/simon-mourier
@@ -142,11 +141,17 @@ public sealed partial class PreviewImage : UserControl
         image.LoadCompleted += (s, e) =>
         {
             // choose any size here
-            imageVisual.Size = new System.Numerics.Vector2(size, size);
-            image.Dispose();
+            try
+            {
+                imageVisual.Size = new System.Numerics.Vector2(size, size);
+                image.Dispose();
+            }
+            catch { }
         };
 
         // add the visual as a child to canvas
-        ElementCompositionPreview.SetElementChildVisual(mainImageCanvas, imageVisual);
+        Grid tempGrid = new();
+        ElementCompositionPreview.SetElementChildVisual(tempGrid, imageVisual);
+        mainImageCanvas.Children.Add(tempGrid);
     }
 }
