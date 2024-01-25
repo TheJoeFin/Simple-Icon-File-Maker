@@ -12,7 +12,8 @@
         <Canvas
             Name="mainImageCanvas"
             Background="Transparent"
-            CanDrag="False">
+            CanDrag="True"
+            DragStarting="ImagePreview_DragStarting">
             <Canvas.ContextFlyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="Save Image" />

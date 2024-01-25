@@ -693,6 +693,48 @@ public sealed partial class MainPage : Page
     {
         SetPreviewsZoom();
     }
+
+    private async void MainImage_DragStarting(UIElement sender, DragStartingEventArgs args)
+    {
+        DragOperationDeferral deferral = args.GetDeferral();
+        StorageFolder folder = ApplicationData.Current.LocalCacheFolder;
+        string originalName = Path.GetFileNameWithoutExtension(ImagePath);
+        string imageNameFileName = $"{originalName}.ico";
+        OutPutPath = Path.Combine(folder.Path, imageNameFileName);
+        
+        try
+        {
+            SaveBTN.IsEnabled = false;
+            SaveAllBTN.IsEnabled = false;
+            await GenerateIcons(OutPutPath);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
+            deferral.Complete();
+        }
+        finally
+        {
+            SaveBTN.IsEnabled = true;
+            SaveAllBTN.IsEnabled = true;
+            OpenFolderBTN.Visibility = Visibility.Visible;
+        }
+
+        StorageFile file = await StorageFile.GetFileFromPathAsync(OutPutPath);
+
+        IconSize? smallest = LastRefreshSizes.FirstOrDefault();
+        if (smallest is not null)
+        {
+            string smallestImagePath = $"{folder.Path}\\image{smallest.SideLength}.png";
+            Uri uri = new(smallestImagePath);
+            BitmapImage bitmapImage = new(uri);
+            args.DragUI.SetContentFromBitmapImage(bitmapImage);
+        }
+
+        args.Data.SetStorageItems(new[] { file });
+        args.Data.RequestedOperation = DataPackageOperation.Copy;
+        deferral.Complete();
+    }
 }
 
 public enum UiStates

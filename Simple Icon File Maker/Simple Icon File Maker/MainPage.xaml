@@ -8,8 +8,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
-    SizeChanged="Page_SizeChanged"
     Loaded="Page_Loaded"
+    SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.Resources>
         <Style x:Key="CardStyle" TargetType="Grid">
@@ -122,7 +122,11 @@
                 MaxHeight="140"
                 Margin="24,24,24,24"
                 VerticalAlignment="Center">
-                <Image x:Name="MainImage" Stretch="Uniform" />
+                <Image
+                    x:Name="MainImage"
+                    CanDrag="True"
+                    DragStarting="MainImage_DragStarting"
+                    Stretch="Uniform" />
             </Viewbox>
 
             <StackPanel

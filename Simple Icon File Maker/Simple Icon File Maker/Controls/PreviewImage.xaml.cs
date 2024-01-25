@@ -1,13 +1,16 @@
 using ImageMagick;
+using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -155,5 +158,18 @@ public sealed partial class PreviewImage : UserControl
         Grid tempGrid = new();
         ElementCompositionPreview.SetElementChildVisual(tempGrid, imageVisual);
         mainImageCanvas.Children.Add(tempGrid);
+    }
+
+    private async void ImagePreview_DragStarting(UIElement sender, DragStartingEventArgs args)
+    {
+        DragOperationDeferral deferral = args.GetDeferral();
+        StorageFolder folder = ApplicationData.Current.LocalCacheFolder;
+        string imageNameFileName = $"{OriginalName}-{_sideLength}x{_sideLength}.png";
+        StorageFile file = await folder.CreateFileAsync(imageNameFileName, CreationCollisionOption.ReplaceExisting);
+        await _imageFile.CopyAndReplaceAsync(file);
+
+        args.Data.SetStorageItems(new[] { file });
+        args.Data.RequestedOperation = DataPackageOperation.Copy;
+        deferral.Complete();
     }
 }
