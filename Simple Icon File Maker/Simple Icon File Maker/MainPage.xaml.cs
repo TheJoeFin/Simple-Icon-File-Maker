@@ -105,6 +105,17 @@ public sealed partial class MainPage : Page
     {
         MainImage.Source = null;
         ImagePath = "-";
+
+        foreach (var item in PreviewStackPanel.Children)
+        {
+            if (item is not PreviewImage previewImage)
+                continue;
+
+            previewImage.Clear();
+        }
+
+        PreviewStackPanel.Children.Clear();
+        LastRefreshSizes.Clear();
         await SourceImageUpdated("");
         ConfigUiWelcome();
     }
@@ -220,6 +231,10 @@ public sealed partial class MainPage : Page
 
             string iconPath = $"{iconRootString}\\Image{sideLength}.png";
             string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
+
+            if (File.Exists(iconPath))
+                File.Delete(iconPath);
+
             await image.WriteAsync(iconPath, MagickFormat.Png32);
 
             if (saveAllFiles == true)

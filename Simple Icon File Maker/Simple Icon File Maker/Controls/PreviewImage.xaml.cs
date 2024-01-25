@@ -172,4 +172,10 @@ public sealed partial class PreviewImage : UserControl
         args.Data.RequestedOperation = DataPackageOperation.Copy;
         deferral.Complete();
     }
+
+    public void Clear()
+    {
+        mainImageCanvas.Children.Clear();
+        mainImageCanvas.DragStarting -= ImagePreview_DragStarting;
+    }
 }
