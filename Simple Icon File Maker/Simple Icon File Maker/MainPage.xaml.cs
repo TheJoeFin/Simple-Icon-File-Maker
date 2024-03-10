@@ -390,6 +390,10 @@ public sealed partial class MainPage : Page
 
     private async void OpenBTN_Click(object sender, RoutedEventArgs e)
     {
+        Button? openButton = sender as Button;
+        if (openButton is not null)
+            openButton.IsEnabled = false;
+
         SourceImageSize = null;
         FileOpenPicker picker = new()
         {
@@ -405,6 +409,10 @@ public sealed partial class MainPage : Page
         InitializeWithWindow.Initialize(picker, windowHandle);
 
         StorageFile file = await picker.PickSingleFileAsync();
+
+        if (openButton is not null)
+            openButton.IsEnabled = true;
+
         if (file is null)
             return;
 
