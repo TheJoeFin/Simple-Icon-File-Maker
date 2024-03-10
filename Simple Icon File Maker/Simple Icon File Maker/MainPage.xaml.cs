@@ -159,6 +159,11 @@ public sealed partial class MainPage : Page
             return false;
 
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+
+        var allfiles = await sf.GetFilesAsync();
+        foreach (var file in allfiles)
+            await file.DeleteAsync();
+
         string iconRootString = sf.Path;
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
         string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
@@ -229,7 +234,7 @@ public sealed partial class MainPage : Page
                 image.Sharpen();
             }
 
-            string iconPath = $"{iconRootString}\\Image{sideLength}.png";
+            string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
             string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
 
             if (File.Exists(iconPath))
@@ -642,6 +647,7 @@ public sealed partial class MainPage : Page
         else
             ConfigUiWelcome();
     }
+
     private async Task UpdatePreviewsAsync(Dictionary<int, string> imagePaths)
     {
         string originalName = Path.GetFileNameWithoutExtension(ImagePath);
@@ -653,7 +659,7 @@ public sealed partial class MainPage : Page
             int sideLength = pair.Key;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
-            
+
             PreviewImage image = new(imageSF, sideLength, originalName);
 
             PreviewStackPanel.Children.Add(image);
@@ -716,7 +722,7 @@ public sealed partial class MainPage : Page
         string originalName = Path.GetFileNameWithoutExtension(ImagePath);
         string imageNameFileName = $"{originalName}.ico";
         OutPutPath = Path.Combine(folder.Path, imageNameFileName);
-        
+
         try
         {
             SaveBTN.IsEnabled = false;
@@ -750,12 +756,4 @@ public sealed partial class MainPage : Page
         args.Data.RequestedOperation = DataPackageOperation.Copy;
         deferral.Complete();
     }
-}
-
-public enum UiStates
-{
-    WelcomeState = 0,
-    ThinkingState = 1,
-    ImageSelectedState = 2,
-    UnsupportedFileFormat = 3,
 }
