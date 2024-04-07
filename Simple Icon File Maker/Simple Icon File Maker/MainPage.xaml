@@ -356,15 +356,11 @@
                     ToolTipService.ToolTip="Zoom in on icon previews" />
             </StackPanel>
             <ScrollViewer
+                x:Name="PreviewsScrollViewer"
                 Grid.Row="1"
                 VerticalContentAlignment="Center"
-                VerticalScrollBarVisibility="Auto">
-                <StackPanel
-                    Name="PreviewStackPanel"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical"
-                    Spacing="40" />
-            </ScrollViewer>
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Auto" />
             <ProgressRing
                 x:Name="ImagesProcessingProgressRing"
                 Grid.Row="1"

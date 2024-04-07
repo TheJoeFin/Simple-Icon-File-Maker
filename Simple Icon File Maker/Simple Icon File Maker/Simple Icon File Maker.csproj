@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="AboutDialog.xaml" />
+    <None Remove="Controls\PreviewStack.xaml" />
     <None Remove="MainPage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +43,12 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\PreviewStack.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
