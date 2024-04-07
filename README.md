@@ -1,4 +1,19 @@
-# Simple Icon File Maker
+<p align="center">
+  <img width="128" align="center" src="Readme-Images/AppIcon.png">
+</p>
+<h1 align="center">
+  Simple Icon File Maker
+</h1>
+<p align="center">
+  Generate .ICO files at different scales for apps and websites.
+</p>
+<p align="center">
+  <a href="https://apps.microsoft.com/store/detail/simple-icon-file-maker/9NS1BM1FB99Z?cid=GitHub" target="_blank">
+    <img src="Readme-Images/storeBadge.png" width="200" alt="Store link" />
+  </a>
+</p>
+
+### Overview
 
 A small lightweight Windows app which creates .ico files with different resolutions.
 
