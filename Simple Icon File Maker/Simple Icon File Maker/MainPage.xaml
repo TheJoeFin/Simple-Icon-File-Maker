@@ -124,7 +124,7 @@
                 VerticalAlignment="Center">
                 <Image
                     x:Name="MainImage"
-                    CanDrag="True"
+                    CanDrag="False"
                     DragStarting="MainImage_DragStarting"
                     Stretch="Uniform" />
             </Viewbox>
