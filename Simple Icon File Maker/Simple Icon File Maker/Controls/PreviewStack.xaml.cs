@@ -10,11 +10,16 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using System.Drawing;
 using Microsoft.UI.Xaml;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Simple_Icon_File_Maker.Controls;
 
 public sealed partial class PreviewStack : UserControl
 {
+    ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
+    private string ImagePath = "";
+
     private bool isZoomingPreview = false;
     private string imagePath = string.Empty;
     private Dictionary<int, string> imagePaths = new();
@@ -142,7 +147,7 @@ public sealed partial class PreviewStack : UserControl
         try
         {
             if (updatePreviews == true)
-                await UpdatePreviewsAsync(imagePaths);
+                await UpdatePreviewsAsync();
             else
             {
                 await collection.WriteAsync(iconOutputString);
@@ -165,6 +170,14 @@ public sealed partial class PreviewStack : UserControl
             ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
         }
         return true;
+    }
+
+    private void ClearOutputImages()
+    {
+        PreviewStackPanel.Children.Clear();
+
+        ImagesProcessingProgressRing.IsActive = false;
+        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
     }
 
     private async Task UpdatePreviewsAsync()
@@ -192,15 +205,7 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string pathAndName = Path.Combine(sf.Path, fileName);
-        bool success = await GenerateIcons(pathAndName, true);
-
-        SaveBTN.IsEnabled = success;
-        SaveAllBTN.IsEnabled = success;
-
-        if (success)
-            ConfigUiShow();
-        else
-            ConfigUiWelcome();
+        _ = await GenerateIcons(pathAndName, true);
     }
 
     private void SetPreviewsZoom(bool zoomLevel)
@@ -211,8 +216,8 @@ public sealed partial class PreviewStack : UserControl
         {
             if (child is PreviewImage img)
             {
-                if (!double.IsNaN(PreviewCard.ActualWidth) && PreviewCard.ActualWidth > 40)
-                    img.ZoomedWidthSpace = (int)PreviewCard.ActualWidth - 24;
+                if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
+                    img.ZoomedWidthSpace = (int)ActualWidth - 24;
                 img.ZoomPreview = isZoomingPreview;
             }
         }

@@ -118,14 +118,6 @@ public sealed partial class MainPage : Page
         ConfigUiWelcome();
     }
 
-    private void ClearOutputImages()
-    {
-        PreviewStackPanel.Children.Clear();
-
-        ImagesProcessingProgressRing.IsActive = false;
-        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
-    }
-
     private void ClearSelectionButton_Click(object sender, RoutedEventArgs e)
     {
         foreach (IconSize size in IconSizes)

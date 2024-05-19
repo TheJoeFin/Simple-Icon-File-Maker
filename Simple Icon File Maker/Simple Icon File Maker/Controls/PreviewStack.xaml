@@ -8,9 +8,18 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel
-        Name="PreviewStackPanel"
-        VerticalAlignment="Center"
-        Orientation="Vertical"
-        Spacing="40" />
+    <Grid>
+        <StackPanel
+            Name="PreviewStackPanel"
+            VerticalAlignment="Center"
+            Orientation="Vertical"
+            Spacing="40" />
+        <ProgressRing
+            x:Name="ImagesProcessingProgressRing"
+            Width="48"
+            Height="48"
+            IsActive="False"
+            IsIndeterminate="True"
+            Visibility="Collapsed" />
+    </Grid>
 </UserControl>
