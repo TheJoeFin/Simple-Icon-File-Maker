@@ -78,43 +78,38 @@ public sealed partial class MainPage : Page
 
     private void CheckIfRefreshIsNeeded()
     {
-        if (LastRefreshSizes.Count < 1)
-            return;
+        // iterate through all preview stacks and see if any of them need CanRefresh
+        UIElementCollection allElements = PreviewsGrid.Children;
 
-        List<IconSize> currentSizes = new(IconSizes.Where(i => i.IsSelected).ToList());
-        bool isCurrentUnChanged = true;
-
-        for (int i = 0; i < currentSizes.Count; i++)
+        bool anyRefreshAvailable = false;
+        foreach (UIElement element in allElements)
         {
-            if (!currentSizes[i].Equals(LastRefreshSizes[i]))
+            if (element is PreviewStack stack)
             {
-                isCurrentUnChanged = false;
-                break;
+                if (stack.CanRefresh)
+                {
+                    anyRefreshAvailable = true;
+                    break;
+                }
             }
         }
 
-        if (isCurrentUnChanged)
-            RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
-        else
+        if (anyRefreshAvailable)
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
+        else
+            RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
     }
 
-    private async void ClearAppBarButton_Click(object sender, RoutedEventArgs e)
+    private void ClearAppBarButton_Click(object sender, RoutedEventArgs e)
     {
         MainImage.Source = null;
         ImagePath = "-";
 
-        foreach (var item in PreviewStackPanel.Children)
-        {
-            if (item is not PreviewImage previewImage)
-                continue;
+        foreach (var item in PreviewsGrid.Children)
+            if (item is PreviewStack stack)
+                stack.ClearChildren();
 
-            previewImage.Clear();
-        }
-
-        PreviewStackPanel.Children.Clear();
-        LastRefreshSizes.Clear();
-        await SourceImageUpdated("");
+        PreviewsGrid.Children.Clear();
         ConfigUiWelcome();
     }
 
@@ -140,7 +135,6 @@ public sealed partial class MainPage : Page
     {
         ConfigUiThinking();
         errorInfoBar.IsOpen = false;
-        SourceImageSize = null;
         ImagePath = string.Empty;
         DragOperationDeferral def = e.GetDeferral();
         e.Handled = true;
@@ -232,9 +226,14 @@ public sealed partial class MainPage : Page
             return;
         }
 
-        StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
-        using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
-        _ = await UpdateSourceImageFromStream(fileStream);
+        // StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
+        // using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
+        // _ = await UpdateSourceImageFromStream(fileStream);
+
+        List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
+        PreviewStack previewStack = new(ImagePath, selectedSizes);
+        PreviewsGrid.Children.Add(previewStack);
+        await previewStack.GeneratePreviewImagesAsync();
     }
 
     private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
@@ -253,7 +252,6 @@ public sealed partial class MainPage : Page
         if (openButton is not null)
             openButton.IsEnabled = false;
 
-        SourceImageSize = null;
         FileOpenPicker picker = new()
         {
             ViewMode = PickerViewMode.Thumbnail,
@@ -356,7 +354,8 @@ public sealed partial class MainPage : Page
 
         try
         {
-            await UpdatePreviewsAsync(iconImages);
+            // TODO move this method into PreviewStack
+            // await UpdatePreviewsAsync(iconImages);
             success = true;
         }
         catch (Exception) { }
@@ -386,7 +385,14 @@ public sealed partial class MainPage : Page
     private async void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
         RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
-        await SourceImageUpdated(Path.GetFileName(ImagePath));
+
+        UIElementCollection uIElements = PreviewsGrid.Children;
+
+        foreach (UIElement element in uIElements)
+        {
+            if (element is PreviewStack stack)
+                await stack.GeneratePreviewImagesAsync();
+        }
 
         bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
         if (!IconSizes.Any(x => x.IsSelected))
@@ -415,13 +421,22 @@ public sealed partial class MainPage : Page
         if (file is null)
             return;
 
-        OutPutPath = Path.Combine(file.Path);
+        OutPutPath = file.Path;
 
         try
         {
             SaveBTN.IsEnabled = false;
             SaveAllBTN.IsEnabled = false;
-            await GenerateIcons(OutPutPath, false, true);
+
+            UIElementCollection uIElements = PreviewsGrid.Children;
+
+            foreach (UIElement element in uIElements)
+            {
+                if (element is PreviewStack stack)
+                {
+                    await stack.SaveAllImagesAsync(OutPutPath);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -460,7 +475,16 @@ public sealed partial class MainPage : Page
         {
             SaveBTN.IsEnabled = false;
             SaveAllBTN.IsEnabled = false;
-            await GenerateIcons(OutPutPath);
+
+            UIElementCollection uIElements = PreviewsGrid.Children;
+
+            foreach (UIElement element in uIElements)
+            {
+                if (element is PreviewStack stack)
+                {
+                    await stack.SaveIconAsync(OutPutPath);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -503,9 +527,9 @@ public sealed partial class MainPage : Page
             ConfigUiWelcome();
             return false;
         }
-        SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+        // SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
         MainImage.Source = bitmapImage;
-        await SourceImageUpdated(Path.GetFileName(ImagePath));
+        // await SourceImageUpdated(Path.GetFileName(ImagePath));
         return true;
     }
     private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
@@ -513,7 +537,16 @@ public sealed partial class MainPage : Page
         if (ZoomPreviewToggleButton.IsChecked is not bool isZoomingPreview)
             return;
 
-        SetPreviewsZoom(isZoomingPreview);
+        UIElementCollection uIElements = PreviewsGrid.Children;
+
+        foreach (UIElement element in uIElements)
+        {
+            if (element is PreviewStack stack)
+            {
+                stack.IsZoomingPreview = isZoomingPreview;
+                stack.UpdateSizeAndZoom();
+            }
+        }
     }
 
     private void SelectWebButton_Click(object sender, RoutedEventArgs e)
@@ -530,48 +563,14 @@ public sealed partial class MainPage : Page
 
     private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        SetPreviewsZoom();
-    }
+        UIElementCollection uIElements = PreviewsGrid.Children;
 
-    private async void MainImage_DragStarting(UIElement sender, DragStartingEventArgs args)
-    {
-        DragOperationDeferral deferral = args.GetDeferral();
-        StorageFolder folder = ApplicationData.Current.LocalCacheFolder;
-        string originalName = Path.GetFileNameWithoutExtension(ImagePath);
-        string imageNameFileName = $"{originalName}.ico";
-        OutPutPath = Path.Combine(folder.Path, imageNameFileName);
-
-        try
+        foreach (UIElement element in uIElements)
         {
-            SaveBTN.IsEnabled = false;
-            SaveAllBTN.IsEnabled = false;
-            await GenerateIcons(OutPutPath);
+            if (element is PreviewStack stack)
+            {
+                stack.UpdateSizeAndZoom();
+            }
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
-            deferral.Complete();
-        }
-        finally
-        {
-            SaveBTN.IsEnabled = true;
-            SaveAllBTN.IsEnabled = true;
-            OpenFolderBTN.Visibility = Visibility.Visible;
-        }
-
-        StorageFile file = await StorageFile.GetFileFromPathAsync(OutPutPath);
-
-        IconSize? smallest = LastRefreshSizes.FirstOrDefault();
-        if (smallest is not null)
-        {
-            string smallestImagePath = $"{folder.Path}\\image{smallest.SideLength}.png";
-            Uri uri = new(smallestImagePath);
-            BitmapImage bitmapImage = new(uri);
-            args.DragUI.SetContentFromBitmapImage(bitmapImage);
-        }
-
-        args.Data.SetStorageItems(new[] { file });
-        args.Data.RequestedOperation = DataPackageOperation.Copy;
-        deferral.Complete();
     }
 }

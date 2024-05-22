@@ -10,45 +10,89 @@ using System.Threading.Tasks;
 using Windows.Storage;
 using System.Drawing;
 using Microsoft.UI.Xaml;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Simple_Icon_File_Maker.Controls;
 
 public sealed partial class PreviewStack : UserControl
 {
-    ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
-    private string ImagePath = "";
-
-    private bool isZoomingPreview = false;
-    private string imagePath = string.Empty;
+    private readonly string imagePath;
     private Dictionary<int, string> imagePaths = new();
-    private List<IconSize> LastRefreshSizes { get; set; } = new();
+    private List<IconSize> chosenSizes;
     private Size? SourceImageSize;
     private MagickImage mainImage;
 
+    public bool IsZoomingPreview { get; set; } = false;
 
-    public PreviewStack(string path)
+    public bool CanRefresh => CheckIfRefreshIsNeeded();
+
+    public PreviewStack(string path, List<IconSize> sizes)
     {
+        chosenSizes = new(sizes);
         imagePath = path;
         mainImage = new(path);
         InitializeComponent();
     }
 
-    public PreviewStack(Dictionary<int, string> imagePathsProp)
+    public void ClearChildren()
     {
-        imagePaths = imagePathsProp;
+        UIElementCollection uIElements = PreviewStackPanel.Children;
 
-        InitializeComponent();
+        foreach (UIElement element in uIElements)
+            if (element is PreviewImage previewImage)
+                previewImage.Clear();
+
+        PreviewStackPanel.Children.Clear();
     }
-    private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
-    {
-        LastRefreshSizes.Clear();
-        // ImagesProcessingProgressRing.Visibility = Visibility.Visible;
-        // ImagesProcessingProgressRing.IsActive = true;
 
-        string? openedPath = Path.GetDirectoryName(path);
-        string? name = Path.GetFileNameWithoutExtension(path);
+    public async Task SaveIconAsync(string outputPath)
+    {
+        MagickImageCollection collection = new();
+
+        foreach ((_, string path ) in imagePaths)
+            collection.Add(path);
+
+        await Task.Run(async () =>
+        {
+            await collection.WriteAsync(outputPath);
+
+            IcoOptimizer icoOpti = new()
+            {
+                OptimalCompression = true
+            };
+            icoOpti.Compress(outputPath);
+        });
+    }
+
+    public async Task SaveAllImagesAsync(string outputPath)
+    {
+        await SaveIconAsync(outputPath);
+
+        string outputFolderPath = Path.GetDirectoryName(outputPath) ?? string.Empty;
+
+        if (!Directory.Exists(outputFolderPath) || string.IsNullOrWhiteSpace(outputFolderPath))
+            return;
+
+        StorageFolder outputFolder = await StorageFolder.GetFolderFromPathAsync(outputFolderPath);
+
+        foreach ((_, string path) in imagePaths)
+        {
+            StorageFile imageFile = await StorageFile.GetFileFromPathAsync(path);
+            
+            if (imageFile is null)
+                continue;
+
+            await imageFile.CopyAsync(outputFolder);
+        }
+    }
+
+    public async Task<bool> GeneratePreviewImagesAsync()
+    {
+        ImagesProcessingProgressRing.Visibility = Visibility.Visible;
+        ImagesProcessingProgressRing.IsActive = true;
+
+        string? openedPath = Path.GetDirectoryName(imagePath);
+        string? name = Path.GetFileNameWithoutExtension(imagePath);
 
         if (openedPath is null || name is null)
             return false;
@@ -72,18 +116,14 @@ public sealed partial class PreviewStack : UserControl
 
         int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
 
-        foreach (IconSize iconSize in IconSizes)
+        foreach (IconSize iconSize in chosenSizes)
         {
             iconSize.IsEnabled = true;
             if (iconSize.SideLength > smallerSide)
                 iconSize.IsEnabled = false;
         }
 
-        foreach (IconSize iconSize in IconSizes)
-            if (iconSize.IsSelected)
-                LastRefreshSizes.Add(new(iconSize));
-
-        if (string.IsNullOrWhiteSpace(ImagePath) == true)
+        if (string.IsNullOrWhiteSpace(imagePath) == true)
         {
             ClearOutputImages();
             return false;
@@ -91,7 +131,7 @@ public sealed partial class PreviewStack : UserControl
 
         try
         {
-            _ = await imgFactory.CreateAsync(ImagePath);
+            _ = await imgFactory.CreateAsync(imagePath);
         }
         catch (Exception)
         {
@@ -99,7 +139,7 @@ public sealed partial class PreviewStack : UserControl
             return false;
         }
 
-        using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(ImagePath);
+        using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
         IMagickGeometry size = geoFactory.Create(
             Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
         size.IgnoreAspectRatio = false;
@@ -110,9 +150,8 @@ public sealed partial class PreviewStack : UserControl
         await firstPassImage.WriteAsync(croppedImagePath);
 
         MagickImageCollection collection = new();
-        Dictionary<int, string> imagePaths = new();
 
-        List<int> selectedSizes = IconSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
+        List<int> selectedSizes = chosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
 
         foreach (int sideLength in selectedSizes)
         {
@@ -137,27 +176,13 @@ public sealed partial class PreviewStack : UserControl
 
             await image.WriteAsync(iconPath, MagickFormat.Png32);
 
-            if (saveAllFiles == true)
-                await image.WriteAsync(outputImagePath, MagickFormat.Png32);
-
             collection.Add(iconPath);
             imagePaths.Add(sideLength, iconPath);
         }
 
         try
         {
-            if (updatePreviews == true)
-                await UpdatePreviewsAsync();
-            else
-            {
-                await collection.WriteAsync(iconOutputString);
-
-                IcoOptimizer icoOpti = new()
-                {
-                    OptimalCompression = true
-                };
-                icoOpti.Compress(iconOutputString);
-            }
+            await UpdatePreviewsAsync();
         }
         catch (Exception ex)
         {
@@ -180,7 +205,7 @@ public sealed partial class PreviewStack : UserControl
         ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
     }
 
-    private async Task UpdatePreviewsAsync()
+    public async Task UpdatePreviewsAsync()
     {
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
         foreach (var pair in imagePaths)
@@ -196,19 +221,29 @@ public sealed partial class PreviewStack : UserControl
 
             PreviewStackPanel.Children.Add(image);
         }
-        SetPreviewsZoom(isZoomingPreview);
+        UpdateSizeAndZoom();
         await Task.CompletedTask;
     }
-    
-    private async Task SourceImageUpdated(string fileName)
+
+    private bool CheckIfRefreshIsNeeded()
     {
-        PreviewStackPanel.Children.Clear();
-        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        string pathAndName = Path.Combine(sf.Path, fileName);
-        _ = await GenerateIcons(pathAndName, true);
+        if (imagePaths.Count < 1)
+            return true;
+
+        List<int> selectedSideLengths = chosenSizes
+                                            .Where(i => i.IsSelected)
+                                            .Select(i => i.SideLength)
+                                            .ToList();
+
+        List<int> generatedSideLengths = imagePaths.Keys.ToList();
+
+        if (selectedSideLengths.Count != generatedSideLengths.Count)
+            return true;
+
+        return generatedSideLengths.All(selectedSideLengths.Contains);
     }
 
-    private void SetPreviewsZoom(bool zoomLevel)
+    public void UpdateSizeAndZoom()
     {
         UIElementCollection previewBoxes = PreviewStackPanel.Children;
 
@@ -218,28 +253,8 @@ public sealed partial class PreviewStack : UserControl
             {
                 if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
                     img.ZoomedWidthSpace = (int)ActualWidth - 24;
-                img.ZoomPreview = isZoomingPreview;
+                img.ZoomPreview = IsZoomingPreview;
             }
         }
-    }
-
-    private bool CheckIfRefreshIsNeeded()
-    {
-        if (LastRefreshSizes.Count < 1)
-            return false;
-
-        List<IconSize> currentSizes = new(IconSizes.Where(i => i.IsSelected).ToList());
-        bool isCurrentUnChanged = true;
-
-        for (int i = 0; i < currentSizes.Count; i++)
-        {
-            if (!currentSizes[i].Equals(LastRefreshSizes[i]))
-            {
-                isCurrentUnChanged = false;
-                break;
-            }
-        }
-
-        return isCurrentUnChanged;
     }
 }

@@ -125,7 +125,6 @@
                 <Image
                     x:Name="MainImage"
                     CanDrag="True"
-                    DragStarting="MainImage_DragStarting"
                     Stretch="Uniform" />
             </Viewbox>
 
@@ -360,7 +359,9 @@
                 Grid.Row="1"
                 VerticalContentAlignment="Center"
                 HorizontalScrollBarVisibility="Auto"
-                VerticalScrollBarVisibility="Auto" />
+                VerticalScrollBarVisibility="Auto">
+                <Grid x:Name="PreviewsGrid" />
+            </ScrollViewer>
             <ProgressRing
                 x:Name="ImagesProcessingProgressRing"
                 Grid.Row="1"
