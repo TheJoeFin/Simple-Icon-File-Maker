@@ -34,6 +34,15 @@ public sealed partial class PreviewStack : UserControl
         InitializeComponent();
     }
 
+    public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
+    {
+        List<IconSize> selectedSizes = sizes.Where(x => x.IsSelected && x.IsEnabled).ToList();
+        chosenSizes.Clear();
+        chosenSizes = new(selectedSizes);
+
+        return CheckIfRefreshIsNeeded();
+    }
+
     public void ClearChildren()
     {
         UIElementCollection uIElements = PreviewStackPanel.Children;
@@ -115,6 +124,9 @@ public sealed partial class PreviewStack : UserControl
         SourceImageSize ??= new Size(mainImage.Width, mainImage.Height);
 
         int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
+
+        imagePaths.Clear();
+        PreviewStackPanel.Children.Clear();
 
         foreach (IconSize iconSize in chosenSizes)
         {
@@ -240,7 +252,7 @@ public sealed partial class PreviewStack : UserControl
         if (selectedSideLengths.Count != generatedSideLengths.Count)
             return true;
 
-        return generatedSideLengths.All(selectedSideLengths.Contains);
+        return !generatedSideLengths.All(selectedSideLengths.Contains);
     }
 
     public void UpdateSizeAndZoom()

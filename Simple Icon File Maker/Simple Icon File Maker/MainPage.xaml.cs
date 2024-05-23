@@ -2,6 +2,7 @@ using ImageMagick;
 using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Models;
@@ -71,7 +72,7 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private void CheckBox_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private void CheckBox_Tapped(object sender, TappedRoutedEventArgs e)
     {
         CheckIfRefreshIsNeeded();
     }
@@ -86,6 +87,8 @@ public sealed partial class MainPage : Page
         {
             if (element is PreviewStack stack)
             {
+                _ = stack.ChooseTheseSizes(IconSizes);
+
                 if (stack.CanRefresh)
                 {
                     anyRefreshAvailable = true;
@@ -226,14 +229,28 @@ public sealed partial class MainPage : Page
             return;
         }
 
-        // StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
-        // using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
-        // _ = await UpdateSourceImageFromStream(fileStream);
+        StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
+        using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
+        bool success = await UpdateSourceImageFromStream(fileStream);
+
+        if (success)
+            ConfigUiShow();
 
         List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
         PreviewStack previewStack = new(ImagePath, selectedSizes);
         PreviewsGrid.Children.Add(previewStack);
-        await previewStack.GeneratePreviewImagesAsync();
+        bool generatedImages = await previewStack.GeneratePreviewImagesAsync();
+
+        if (generatedImages)
+        {
+            SaveBTN.IsEnabled = true;
+            SaveAllBTN.IsEnabled = true;
+        }
+        else
+        {
+            SaveBTN.IsEnabled = false;
+            SaveAllBTN.IsEnabled = false;
+        }
     }
 
     private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
