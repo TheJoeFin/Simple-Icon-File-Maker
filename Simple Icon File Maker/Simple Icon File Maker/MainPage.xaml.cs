@@ -103,7 +103,7 @@ public sealed partial class MainPage : Page
             RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
     }
 
-    private void ClearAppBarButton_Click(object sender, RoutedEventArgs e)
+    private async void ClearAppBarButton_Click(object sender, RoutedEventArgs e)
     {
         MainImage.Source = null;
         ImagePath = "-";
@@ -113,6 +113,13 @@ public sealed partial class MainPage : Page
                 stack.ClearChildren();
 
         PreviewsGrid.Children.Clear();
+
+        // Clear out all of the files in the cache folder
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        var cacheFiles = await sf.GetFilesAsync();
+        foreach (StorageFile? file in cacheFiles)
+            await file?.DeleteAsync();
+
         ConfigUiWelcome();
     }
 
