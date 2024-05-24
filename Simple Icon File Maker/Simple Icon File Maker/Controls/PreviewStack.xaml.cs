@@ -11,6 +11,8 @@ using Windows.Storage;
 using System.Drawing;
 using Microsoft.UI.Xaml;
 using System.Linq;
+using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Storage.Streams;
 
 namespace Simple_Icon_File_Maker.Controls;
 
@@ -18,9 +20,10 @@ public sealed partial class PreviewStack : UserControl
 {
     private readonly string imagePath;
     private Dictionary<int, string> imagePaths = new();
-    private List<IconSize> chosenSizes;
     private Size? SourceImageSize;
     private MagickImage mainImage;
+    private string iconRootString;
+    public List<IconSize> ChosenSizes { get; private set; }
 
     public bool IsZoomingPreview { get; set; } = false;
 
@@ -28,17 +31,31 @@ public sealed partial class PreviewStack : UserControl
 
     public PreviewStack(string path, List<IconSize> sizes)
     {
-        chosenSizes = new(sizes);
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        iconRootString = sf.Path;
+
+        ChosenSizes = new(sizes);
         imagePath = path;
         mainImage = new(path);
+
         InitializeComponent();
+    }
+
+    public async Task<bool> InitializeAsync()
+    {
+        string extension = Path.GetExtension(imagePath);
+
+        if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            return await OpenIconFile();
+        else
+            return await GeneratePreviewImagesAsync();
     }
 
     public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
     {
         List<IconSize> selectedSizes = sizes.Where(x => x.IsSelected && x.IsEnabled).ToList();
-        chosenSizes.Clear();
-        chosenSizes = new(selectedSizes);
+        ChosenSizes.Clear();
+        ChosenSizes = new(selectedSizes);
 
         return CheckIfRefreshIsNeeded();
     }
@@ -106,13 +123,11 @@ public sealed partial class PreviewStack : UserControl
         if (openedPath is null || name is null)
             return false;
 
-        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        // TODO: move this to the "Clear Image on the MainPage"
+        // IReadOnlyList<StorageFile> allFiles = await sf.GetFilesAsync();
+        // foreach (StorageFile? file in allFiles)
+        //     await file?.DeleteAsync();
 
-        IReadOnlyList<StorageFile> allFiles = await sf.GetFilesAsync();
-        foreach (StorageFile? file in allFiles)
-            await file?.DeleteAsync();
-
-        string iconRootString = sf.Path;
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
         string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
         if (Directory.Exists(iconRootString) == false)
@@ -128,7 +143,7 @@ public sealed partial class PreviewStack : UserControl
         imagePaths.Clear();
         PreviewStackPanel.Children.Clear();
 
-        foreach (IconSize iconSize in chosenSizes)
+        foreach (IconSize iconSize in ChosenSizes)
         {
             iconSize.IsEnabled = true;
             if (iconSize.SideLength > smallerSide)
@@ -163,7 +178,7 @@ public sealed partial class PreviewStack : UserControl
 
         MagickImageCollection collection = new();
 
-        List<int> selectedSizes = chosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
+        List<int> selectedSizes = ChosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
 
         foreach (int sideLength in selectedSizes)
         {
@@ -209,6 +224,52 @@ public sealed partial class PreviewStack : UserControl
         return true;
     }
 
+    private async Task<bool> OpenIconFile()
+    {
+        if (string.IsNullOrEmpty(imagePath))
+        {
+            return false;
+        }
+
+        ImagesProcessingProgressRing.Visibility = Visibility.Visible;
+        ImagesProcessingProgressRing.IsActive = true;
+
+        ChosenSizes.Clear();
+        imagePaths.Clear();
+        PreviewStackPanel.Children.Clear();
+
+        MagickImageCollection collection = new(imagePath);
+        Dictionary<int, string> iconImages = new();
+
+        foreach (MagickImage image in collection.Cast<MagickImage>())
+        {
+            Debug.WriteLine($"Image: {image.Width}x{image.Height}");
+            string imageName = $"{Path.GetFileNameWithoutExtension(imagePath)}-{image.Width}.png";
+
+            string pathForSingleImage = Path.Combine(iconRootString,imageName);
+            await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
+
+            imagePaths.Add(image.Width, pathForSingleImage);
+
+            iconImages.Add(image.Width, imagePath);
+            IconSize iconSizeOfIconFrame = new(image.Width)
+            {
+                IsSelected = true,
+            };
+            ChosenSizes.Add(iconSizeOfIconFrame);
+
+            int sideLength = image.Width;
+            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
+
+            PreviewImage previewImage = new(imageSF, sideLength, imageName);
+            PreviewStackPanel.Children.Add(previewImage);
+        }
+
+        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
+        ImagesProcessingProgressRing.IsActive = false;
+        return true;
+    }
+
     private void ClearOutputImages()
     {
         PreviewStackPanel.Children.Clear();
@@ -242,7 +303,7 @@ public sealed partial class PreviewStack : UserControl
         if (imagePaths.Count < 1)
             return true;
 
-        List<int> selectedSideLengths = chosenSizes
+        List<int> selectedSideLengths = ChosenSizes
                                             .Where(i => i.IsSelected)
                                             .Select(i => i.SideLength)
                                             .ToList();

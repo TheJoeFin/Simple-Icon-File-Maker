@@ -223,26 +223,23 @@ public sealed partial class MainPage : Page
             return;
         }
 
-        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
-        {
-            await LoadIconFile();
-            return;
-        }
-
         StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
         using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
         bool success = await UpdateSourceImageFromStream(fileStream);
 
-        if (success)
-            ConfigUiShow();
-
         List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
         PreviewStack previewStack = new(ImagePath, selectedSizes);
         PreviewsGrid.Children.Add(previewStack);
-        bool generatedImages = await previewStack.GeneratePreviewImagesAsync();
+        bool generatedImages = await previewStack.InitializeAsync();
+
+        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+        {
+            SelectIconSizes();
+        }
 
         if (generatedImages)
         {
+            ConfigUiShow();
             SaveBTN.IsEnabled = true;
             SaveAllBTN.IsEnabled = true;
         }
@@ -250,6 +247,7 @@ public sealed partial class MainPage : Page
         {
             SaveBTN.IsEnabled = false;
             SaveAllBTN.IsEnabled = false;
+            ConfigUiWelcome();
         }
     }
 
@@ -296,47 +294,23 @@ public sealed partial class MainPage : Page
         await LoadFromImagePath();
     }
 
-    private async Task LoadIconFile()
+    private void SelectIconSizes()
     {
-        bool success = false;
-        MagickImageCollection collection = new(ImagePath);
-        Dictionary<int, string> iconImages = new();
-        List<IconSize> sizesOfIcons = new();
-        StorageFolder? sf = ApplicationData.Current.LocalCacheFolder;
-        int biggestSide = 0;
-        string biggestPath = string.Empty;
+        List<IconSize> chosenSizes = new();
 
-        foreach (MagickImage image in collection.Cast<MagickImage>())
-        {
-            Debug.WriteLine($"Image: {image.Width}x{image.Height}");
-            string imageName = $"{Path.GetFileNameWithoutExtension(ImagePath)}-{image.Width}.png";
+        UIElementCollection uIElements = PreviewsGrid.Children;
 
-            string imagePath = Path.Combine(sf.Path, imageName);
-            await image.WriteAsync(imagePath, MagickFormat.Png32);
+        foreach (UIElement element in uIElements)
+            if (element is PreviewStack stack)
+                chosenSizes.AddRange(stack.ChosenSizes);
 
-            iconImages.Add(image.Width, imagePath);
-            IconSize iconSizeOfIconFrame = new(image.Width)
-            {
-                IsSelected = true,
-            };
-            sizesOfIcons.Add(iconSizeOfIconFrame);
+        chosenSizes = chosenSizes.Distinct().ToList();
 
-            if (image.Width > biggestSide)
-            {
-                biggestSide = image.Width;
-                biggestPath = imagePath;
-            }
-        }
-
-        IconSize[] empty = Array.Empty<IconSize>();
-        SelectTheseIcons(empty);
-
-        foreach (IconSize size in sizesOfIcons)
+        foreach (IconSize size in chosenSizes)
         {
             bool isAlreadyInList = false;
             foreach (IconSize setSize in IconSizes)
             {
-
                 if (setSize.SideLength == size.SideLength)
                 {
                     isAlreadyInList = true;
@@ -349,38 +323,11 @@ public sealed partial class MainPage : Page
                 IconSizes.Add(size);
         }
 
-        var orderedIcons = IconSizes.OrderByDescending(size => size.SideLength).ToList();
+        List<IconSize> orderedIcons = IconSizes.OrderByDescending(size => size.SideLength).ToList();
         IconSizes.Clear();
 
         foreach (IconSize size in orderedIcons)
             IconSizes.Add(size);
-
-        if (!string.IsNullOrEmpty(biggestPath))
-        {
-            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(biggestPath);
-            using IRandomAccessStream fileStream = await imageSF.OpenAsync(FileAccessMode.Read);
-            BitmapImage bitmapImage = new()
-            {
-                DecodePixelHeight = biggestSide,
-                DecodePixelWidth = biggestSide
-            };
-
-            await bitmapImage.SetSourceAsync(fileStream);
-            MainImage.Source = bitmapImage;
-        }
-
-        try
-        {
-            // TODO move this method into PreviewStack
-            // await UpdatePreviewsAsync(iconImages);
-            success = true;
-        }
-        catch (Exception) { }
-
-        if (success)
-            ConfigUiShow();
-        else
-            ConfigUiWelcome();
     }
 
     private async void OpenFolderBTN_Click(object sender, RoutedEventArgs e)
