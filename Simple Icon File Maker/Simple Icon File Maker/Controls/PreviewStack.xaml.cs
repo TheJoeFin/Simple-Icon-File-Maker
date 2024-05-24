@@ -259,7 +259,7 @@ public sealed partial class PreviewStack : UserControl
             ChosenSizes.Add(iconSizeOfIconFrame);
 
             int sideLength = image.Width;
-            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
+            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(pathForSingleImage);
 
             PreviewImage previewImage = new(imageSF, sideLength, imageName);
             PreviewStackPanel.Children.Add(previewImage);
