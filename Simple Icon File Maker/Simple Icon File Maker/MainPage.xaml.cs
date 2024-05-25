@@ -1,5 +1,3 @@
-using ImageMagick;
-using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -10,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,6 +28,7 @@ public sealed partial class MainPage : Page
 
     private string ImagePath = "";
     private string OutPutPath = "";
+
     public MainPage()
     {
         InitializeComponent();
@@ -108,7 +106,7 @@ public sealed partial class MainPage : Page
         MainImage.Source = null;
         ImagePath = "-";
 
-        foreach (var item in PreviewsGrid.Children)
+        foreach (UIElement? item in PreviewsGrid.Children)
             if (item is PreviewStack stack)
                 stack.ClearChildren();
 
@@ -116,7 +114,7 @@ public sealed partial class MainPage : Page
 
         // Clear out all of the files in the cache folder
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        var cacheFiles = await sf.GetFilesAsync();
+        IReadOnlyList<StorageFile> cacheFiles = await sf.GetFilesAsync();
         foreach (StorageFile? file in cacheFiles)
             await file?.DeleteAsync();
 
@@ -262,7 +260,7 @@ public sealed partial class MainPage : Page
     {
         AboutDialog aboutWindow = new()
         {
-            XamlRoot = this.Content.XamlRoot
+            XamlRoot = Content.XamlRoot
         };
 
         _ = await aboutWindow.ShowAsync();
@@ -498,9 +496,8 @@ public sealed partial class MainPage : Page
             ConfigUiWelcome();
             return false;
         }
-        // SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+
         MainImage.Source = bitmapImage;
-        // await SourceImageUpdated(Path.GetFileName(ImagePath));
         return true;
     }
     private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
