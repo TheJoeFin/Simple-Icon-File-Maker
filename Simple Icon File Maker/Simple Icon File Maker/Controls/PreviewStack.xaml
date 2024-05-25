@@ -14,12 +14,19 @@
             VerticalAlignment="Center"
             Orientation="Vertical"
             Spacing="40" />
-        <ProgressRing
-            x:Name="ImagesProcessingProgressRing"
-            Width="48"
-            Height="48"
-            IsActive="False"
-            IsIndeterminate="True"
-            Visibility="Collapsed" />
+        <StackPanel
+            Name="TextAndProgressBar"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Orientation="Vertical"
+            Spacing="12">
+            <TextBlock x:Name="LoadingText" HorizontalAlignment="Center" />
+            <ProgressBar
+                x:Name="ImagesProgressBar"
+                Width="128"
+                HorizontalAlignment="Center"
+                Maximum="100"
+                Minimum="0" />
+        </StackPanel>
     </Grid>
 </UserControl>

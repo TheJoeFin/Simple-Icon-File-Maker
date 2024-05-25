@@ -120,15 +120,20 @@ public sealed partial class PreviewStack : UserControl
 
     public async Task<bool> GeneratePreviewImagesAsync(IProgress<int> progress)
     {
-        ImagesProcessingProgressRing.Visibility = Visibility.Visible;
-        ImagesProcessingProgressRing.IsActive = true;
-        progress.Report(0);
-
         string? openedPath = Path.GetDirectoryName(imagePath);
         string? name = Path.GetFileNameWithoutExtension(imagePath);
 
         if (openedPath is null || name is null)
             return false;
+
+        ImagesProgressBar.Value = 0;
+        progress.Report(0);
+        if (ChosenSizes.Count == 1)
+            LoadingText.Text = $"Generating {ChosenSizes.Count} preview for {name}...";
+        else
+            LoadingText.Text = $"Generating {ChosenSizes.Count} previews for {name}...";
+
+        TextAndProgressBar.Visibility = Visibility.Visible;
 
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
         string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
@@ -139,6 +144,7 @@ public sealed partial class PreviewStack : UserControl
         MagickGeometryFactory geoFactory = new();
 
         progress.Report(10);
+        ImagesProgressBar.Value = 10;
         SourceImageSize ??= new Size(mainImage.Width, mainImage.Height);
 
         int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
@@ -170,6 +176,7 @@ public sealed partial class PreviewStack : UserControl
         }
 
         progress.Report(15);
+        ImagesProgressBar.Value = 15;
         using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
         IMagickGeometry size = geoFactory.Create(
             Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
@@ -186,6 +193,7 @@ public sealed partial class PreviewStack : UserControl
 
         int baseAtThisPoint = 20;
         progress.Report(baseAtThisPoint);
+        ImagesProgressBar.Value = baseAtThisPoint;
         int currentLocation = 0;
 
         int totalImages = selectedSizes.Count;
@@ -199,6 +207,7 @@ public sealed partial class PreviewStack : UserControl
 
             currentLocation++;
             progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
             IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
             iconSize.IgnoreAspectRatio = false;
 
@@ -220,6 +229,7 @@ public sealed partial class PreviewStack : UserControl
 
             currentLocation++;
             progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
         }
 
         try
@@ -233,8 +243,7 @@ public sealed partial class PreviewStack : UserControl
         }
         finally
         {
-            ImagesProcessingProgressRing.IsActive = false;
-            ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
+            TextAndProgressBar.Visibility = Visibility.Collapsed;
         }
         return true;
     }
@@ -244,8 +253,8 @@ public sealed partial class PreviewStack : UserControl
         if (string.IsNullOrEmpty(imagePath))
             return false;
 
-        ImagesProcessingProgressRing.Visibility = Visibility.Visible;
-        ImagesProcessingProgressRing.IsActive = true;
+        TextAndProgressBar.Visibility = Visibility.Visible;
+        ImagesProgressBar.Value = 0;
 
         progress.Report(0);
         ChosenSizes.Clear();
@@ -256,7 +265,7 @@ public sealed partial class PreviewStack : UserControl
         Dictionary<int, string> iconImages = new();
 
         int currentLocation = 0;
-        int totalImages = collection.Count();
+        int totalImages = collection.Count;
         foreach (MagickImage image in collection.Cast<MagickImage>())
         {
             Debug.WriteLine($"Image: {image.Width}x{image.Height}");
@@ -283,19 +292,17 @@ public sealed partial class PreviewStack : UserControl
             currentLocation++;
             int percentageComplete = (int)((float)currentLocation / totalImages * 100);
             progress.Report(percentageComplete);
+            ImagesProgressBar.Value = percentageComplete;
         }
 
-        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
-        ImagesProcessingProgressRing.IsActive = false;
+        TextAndProgressBar.Visibility = Visibility.Collapsed;
         return true;
     }
 
     private void ClearOutputImages()
     {
         PreviewStackPanel.Children.Clear();
-
-        ImagesProcessingProgressRing.IsActive = false;
-        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
+        TextAndProgressBar.Visibility = Visibility.Collapsed;
     }
 
     public async Task UpdatePreviewsAsync()

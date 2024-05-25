@@ -133,6 +133,7 @@
                 <TextBlock
                     x:Name="LoadingText"
                     Grid.Row="1"
+                    HorizontalAlignment="Center"
                     Text="Loading image and generating sizes"
                     Visibility="Collapsed" />
                 <ProgressBar
