@@ -308,6 +308,7 @@ public sealed partial class MainPage : Page
     private void SelectIconSizes()
     {
         List<IconSize> chosenSizes = new();
+        SelectTheseIcons(Array.Empty<IconSize>());
 
         UIElementCollection uIElements = PreviewsGrid.Children;
 
