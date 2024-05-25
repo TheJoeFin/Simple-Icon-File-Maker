@@ -11,8 +11,6 @@ using Windows.Storage;
 using System.Drawing;
 using Microsoft.UI.Xaml;
 using System.Linq;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage.Streams;
 
 namespace Simple_Icon_File_Maker.Controls;
 
@@ -21,8 +19,8 @@ public sealed partial class PreviewStack : UserControl
     private readonly string imagePath;
     private Dictionary<int, string> imagePaths = new();
     private Size? SourceImageSize;
-    private MagickImage mainImage;
-    private string iconRootString;
+    private readonly MagickImage mainImage;
+    private readonly string iconRootString;
     public List<IconSize> ChosenSizes { get; private set; }
 
     public bool IsZoomingPreview { get; set; } = false;
@@ -99,16 +97,24 @@ public sealed partial class PreviewStack : UserControl
         if (!Directory.Exists(outputFolderPath) || string.IsNullOrWhiteSpace(outputFolderPath))
             return;
 
+        string outputBaseFileName = Path.GetFileNameWithoutExtension(outputPath);
         StorageFolder outputFolder = await StorageFolder.GetFolderFromPathAsync(outputFolderPath);
 
         foreach ((_, string path) in imagePaths)
         {
             StorageFile imageFile = await StorageFile.GetFileFromPathAsync(path);
-            
+
             if (imageFile is null)
                 continue;
 
-            await imageFile.CopyAsync(outputFolder);
+            string justFileName = Path.GetFileNameWithoutExtension(path);
+            // get the numbers from the right side of the string which is the side length
+            // this is because random numbers are generated to do the composition stuff
+            // ex: we want to turn "904466899Image16.png" into "outputName-16.png"
+            string sideLength = justFileName.Split("Image")[1];
+            string newName = $"{outputBaseFileName}-{sideLength}.png";
+
+            await imageFile.CopyAsync(outputFolder, newName);
         }
     }
 
@@ -122,11 +128,6 @@ public sealed partial class PreviewStack : UserControl
 
         if (openedPath is null || name is null)
             return false;
-
-        // TODO: move this to the "Clear Image on the MainPage"
-        // IReadOnlyList<StorageFile> allFiles = await sf.GetFilesAsync();
-        // foreach (StorageFile? file in allFiles)
-        //     await file?.DeleteAsync();
 
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
         string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
@@ -196,7 +197,6 @@ public sealed partial class PreviewStack : UserControl
             }
 
             string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
-            string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
 
             if (File.Exists(iconPath))
                 File.Delete(iconPath);
