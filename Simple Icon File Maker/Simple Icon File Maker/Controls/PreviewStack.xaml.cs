@@ -39,14 +39,14 @@ public sealed partial class PreviewStack : UserControl
         InitializeComponent();
     }
 
-    public async Task<bool> InitializeAsync()
+    public async Task<bool> InitializeAsync(IProgress<int> progress)
     {
         string extension = Path.GetExtension(imagePath);
 
         if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
-            return await OpenIconFile();
+            return await OpenIconFile(progress);
         else
-            return await GeneratePreviewImagesAsync();
+            return await GeneratePreviewImagesAsync(progress);
     }
 
     public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
@@ -118,10 +118,11 @@ public sealed partial class PreviewStack : UserControl
         }
     }
 
-    public async Task<bool> GeneratePreviewImagesAsync()
+    public async Task<bool> GeneratePreviewImagesAsync(IProgress<int> progress)
     {
         ImagesProcessingProgressRing.Visibility = Visibility.Visible;
         ImagesProcessingProgressRing.IsActive = true;
+        progress.Report(0);
 
         string? openedPath = Path.GetDirectoryName(imagePath);
         string? name = Path.GetFileNameWithoutExtension(imagePath);
@@ -137,6 +138,7 @@ public sealed partial class PreviewStack : UserControl
         MagickImageFactory imgFactory = new();
         MagickGeometryFactory geoFactory = new();
 
+        progress.Report(10);
         SourceImageSize ??= new Size(mainImage.Width, mainImage.Height);
 
         int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
@@ -167,6 +169,7 @@ public sealed partial class PreviewStack : UserControl
             return false;
         }
 
+        progress.Report(15);
         using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
         IMagickGeometry size = geoFactory.Create(
             Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
@@ -181,12 +184,21 @@ public sealed partial class PreviewStack : UserControl
 
         List<int> selectedSizes = ChosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
 
+        int baseAtThisPoint = 20;
+        progress.Report(baseAtThisPoint);
+        int currentLocation = 0;
+
+        int totalImages = selectedSizes.Count;
+        int halfChunkPerImage = (int)((100 - baseAtThisPoint) / (float)(totalImages * 2));
+
         foreach (int sideLength in selectedSizes)
         {
             using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
             if (smallerSide < sideLength)
                 continue;
 
+            currentLocation++;
+            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
             IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
             iconSize.IgnoreAspectRatio = false;
 
@@ -205,6 +217,9 @@ public sealed partial class PreviewStack : UserControl
 
             collection.Add(iconPath);
             imagePaths.Add(sideLength, iconPath);
+
+            currentLocation++;
+            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
         }
 
         try
@@ -224,16 +239,15 @@ public sealed partial class PreviewStack : UserControl
         return true;
     }
 
-    private async Task<bool> OpenIconFile()
+    private async Task<bool> OpenIconFile(IProgress<int> progress)
     {
         if (string.IsNullOrEmpty(imagePath))
-        {
             return false;
-        }
 
         ImagesProcessingProgressRing.Visibility = Visibility.Visible;
         ImagesProcessingProgressRing.IsActive = true;
 
+        progress.Report(0);
         ChosenSizes.Clear();
         imagePaths.Clear();
         PreviewStackPanel.Children.Clear();
@@ -241,6 +255,8 @@ public sealed partial class PreviewStack : UserControl
         MagickImageCollection collection = new(imagePath);
         Dictionary<int, string> iconImages = new();
 
+        int currentLocation = 0;
+        int totalImages = collection.Count();
         foreach (MagickImage image in collection.Cast<MagickImage>())
         {
             Debug.WriteLine($"Image: {image.Width}x{image.Height}");
@@ -263,6 +279,10 @@ public sealed partial class PreviewStack : UserControl
 
             PreviewImage previewImage = new(imageSF, sideLength, imageName);
             PreviewStackPanel.Children.Add(previewImage);
+
+            currentLocation++;
+            int percentageComplete = (int)((float)currentLocation / totalImages * 100);
+            progress.Report(percentageComplete);
         }
 
         ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;

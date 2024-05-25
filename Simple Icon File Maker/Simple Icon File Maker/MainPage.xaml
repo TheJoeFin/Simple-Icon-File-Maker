@@ -139,8 +139,8 @@
                     x:Name="InitialLoadProgressBar"
                     Grid.Row="2"
                     MaxWidth="200"
-                    IsIndeterminate="True"
                     Maximum="100"
+                    Minimum="0"
                     Visibility="Collapsed" />
             </Grid>
 

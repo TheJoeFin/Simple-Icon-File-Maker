@@ -110,6 +110,7 @@ public sealed partial class MainPage : Page
             if (item is PreviewStack stack)
                 stack.ClearChildren();
 
+        ConfigUiWelcome();
         PreviewsGrid.Children.Clear();
 
         // Clear out all of the files in the cache folder
@@ -117,8 +118,6 @@ public sealed partial class MainPage : Page
         IReadOnlyList<StorageFile> cacheFiles = await sf.GetFilesAsync();
         foreach (StorageFile? file in cacheFiles)
             await file?.DeleteAsync();
-
-        ConfigUiWelcome();
     }
 
     private void ClearSelectionButton_Click(object sender, RoutedEventArgs e)
@@ -228,6 +227,7 @@ public sealed partial class MainPage : Page
             return;
         }
 
+        InitialLoadProgressBar.Value = 0;
         StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
         using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
         bool success = await UpdateSourceImageFromStream(fileStream);
@@ -235,7 +235,13 @@ public sealed partial class MainPage : Page
         List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
         PreviewStack previewStack = new(ImagePath, selectedSizes);
         PreviewsGrid.Children.Add(previewStack);
-        bool generatedImages = await previewStack.InitializeAsync();
+
+        Progress<int> progress = new(percent =>
+        {
+            InitialLoadProgressBar.Value = percent;
+        });
+
+        bool generatedImages = await previewStack.InitializeAsync(progress);
 
         if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -357,10 +363,15 @@ public sealed partial class MainPage : Page
 
         UIElementCollection uIElements = PreviewsGrid.Children;
 
+        Progress<int> progress = new(percent =>
+        {
+            InitialLoadProgressBar.Value = percent;
+        });
+
         foreach (UIElement element in uIElements)
         {
             if (element is PreviewStack stack)
-                await stack.GeneratePreviewImagesAsync();
+                await stack.GeneratePreviewImagesAsync(progress);
         }
 
         bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
