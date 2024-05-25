@@ -213,8 +213,11 @@ public sealed partial class PreviewStack : UserControl
 
             if (smallerSide > sideLength)
             {
-                image.Scale(iconSize);
-                image.Sharpen();
+                await Task.Run(() =>
+                {
+                    image.Scale(iconSize);
+                    image.Sharpen();
+                });
             }
 
             string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";

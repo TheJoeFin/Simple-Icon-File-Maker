@@ -134,7 +134,7 @@
                     x:Name="LoadingText"
                     Grid.Row="1"
                     HorizontalAlignment="Center"
-                    Text="Loading image and generating sizes"
+                    Text="Loading image and generating previews..."
                     Visibility="Collapsed" />
                 <ProgressBar
                     x:Name="InitialLoadProgressBar"
