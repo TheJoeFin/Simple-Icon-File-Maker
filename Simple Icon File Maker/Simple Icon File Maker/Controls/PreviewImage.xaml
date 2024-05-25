@@ -12,7 +12,7 @@
         <Canvas
             Name="mainImageCanvas"
             Background="Transparent"
-            CanDrag="True"
+            CanDrag="False"
             DragStarting="ImagePreview_DragStarting">
             <Canvas.ContextFlyout>
                 <MenuFlyout>
