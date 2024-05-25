@@ -118,14 +118,31 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>
-            <Viewbox
-                MaxHeight="140"
-                Margin="24,24,24,24"
-                VerticalAlignment="Center">
-                <Image
-                    x:Name="MainImage"
-                    Stretch="Uniform" />
-            </Viewbox>
+            <Grid RowSpacing="12">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Viewbox
+                    MaxHeight="140"
+                    Margin="24,24,24,24"
+                    VerticalAlignment="Center">
+                    <Image x:Name="MainImage" Stretch="Uniform" />
+                </Viewbox>
+                <TextBlock
+                    x:Name="LoadingText"
+                    Grid.Row="1"
+                    Text="Loading image and generating sizes"
+                    Visibility="Collapsed" />
+                <ProgressBar
+                    x:Name="InitialLoadProgressBar"
+                    Grid.Row="2"
+                    MaxWidth="200"
+                    IsIndeterminate="True"
+                    Maximum="100"
+                    Visibility="Collapsed" />
+            </Grid>
 
             <StackPanel
                 x:Name="ClearAppBarButton"
@@ -377,6 +394,8 @@
                     <VisualState.Setters>
                         <Setter Target="dropHere.Visibility" Value="Collapsed" />
                         <Setter Target="errorInfoBar.IsOpen" Value="False" />
+                        <Setter Target="LoadingText.Visibility" Value="Visible" />
+                        <Setter Target="InitialLoadProgressBar.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="ImageSelectedState">
