@@ -1,11 +1,9 @@
 using ImageMagick;
-using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,9 +13,6 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace Simple_Icon_File_Maker.Controls;
 
@@ -59,7 +54,7 @@ public sealed partial class PreviewImage : UserControl
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        var dim = Math.Min(finalSize.Width, finalSize.Height);
+        double dim = Math.Min(finalSize.Width, finalSize.Height);
         mainImageCanvas.Arrange(new Rect(new Point((finalSize.Width - dim) / 2, (finalSize.Height - dim) / 2), new Size(dim, dim)));
         LoadImageOnToCanvas();
         return finalSize;
@@ -67,7 +62,7 @@ public sealed partial class PreviewImage : UserControl
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        var dim = Math.Min(availableSize.Width, availableSize.Height);
+        double dim = Math.Min(availableSize.Width, availableSize.Height);
         // smallerAvailableSize = (int)dim;
         if (double.IsPositiveInfinity(dim))
             dim = 3000;

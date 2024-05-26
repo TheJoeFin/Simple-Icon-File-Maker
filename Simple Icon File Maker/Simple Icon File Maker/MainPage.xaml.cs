@@ -1,22 +1,19 @@
 using ImageMagick;
-using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Input;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 using Windows.System;
 using WinRT.Interop;
 
@@ -26,12 +23,11 @@ public sealed partial class MainPage : Page
 {
     ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
 
-    List<IconSize> LastRefreshSizes { get; set; } = new();
     readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
 
     private string ImagePath = "";
     private string OutPutPath = "";
-    private Size? SourceImageSize;
+
     public MainPage()
     {
         InitializeComponent();
@@ -73,32 +69,35 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private void CheckBox_Tapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    private void CheckBox_Tapped(object sender, TappedRoutedEventArgs e)
     {
         CheckIfRefreshIsNeeded();
     }
 
     private void CheckIfRefreshIsNeeded()
     {
-        if (LastRefreshSizes.Count < 1)
-            return;
+        // iterate through all preview stacks and see if any of them need CanRefresh
+        UIElementCollection allElements = PreviewsGrid.Children;
 
-        List<IconSize> currentSizes = new(IconSizes.Where(i => i.IsSelected).ToList());
-        bool isCurrentUnChanged = true;
-
-        for (int i = 0; i < currentSizes.Count; i++)
+        bool anyRefreshAvailable = false;
+        foreach (UIElement element in allElements)
         {
-            if (!currentSizes[i].Equals(LastRefreshSizes[i]))
+            if (element is PreviewStack stack)
             {
-                isCurrentUnChanged = false;
-                break;
+                _ = stack.ChooseTheseSizes(IconSizes);
+
+                if (stack.CanRefresh)
+                {
+                    anyRefreshAvailable = true;
+                    break;
+                }
             }
         }
 
-        if (isCurrentUnChanged)
-            RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
-        else
+        if (anyRefreshAvailable)
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
+        else
+            RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
     }
 
     private async void ClearAppBarButton_Click(object sender, RoutedEventArgs e)
@@ -106,26 +105,18 @@ public sealed partial class MainPage : Page
         MainImage.Source = null;
         ImagePath = "-";
 
-        foreach (var item in PreviewStackPanel.Children)
-        {
-            if (item is not PreviewImage previewImage)
-                continue;
+        foreach (UIElement? item in PreviewsGrid.Children)
+            if (item is PreviewStack stack)
+                stack.ClearChildren();
 
-            previewImage.Clear();
-        }
-
-        PreviewStackPanel.Children.Clear();
-        LastRefreshSizes.Clear();
-        await SourceImageUpdated("");
         ConfigUiWelcome();
-    }
+        PreviewsGrid.Children.Clear();
 
-    private void ClearOutputImages()
-    {
-        PreviewStackPanel.Children.Clear();
-
-        ImagesProcessingProgressRing.IsActive = false;
-        ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
+        // Clear out all of the files in the cache folder
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        IReadOnlyList<StorageFile> cacheFiles = await sf.GetFilesAsync();
+        foreach (StorageFile? file in cacheFiles)
+            await file?.DeleteAsync();
     }
 
     private void ClearSelectionButton_Click(object sender, RoutedEventArgs e)
@@ -146,145 +137,14 @@ public sealed partial class MainPage : Page
     private void ConfigUiWelcome() =>
         VisualStateManager.GoToState(this, UiStates.WelcomeState.ToString(), true);
 
-    private async Task<bool> GenerateIcons(string path, bool updatePreviews = false, bool saveAllFiles = false)
-    {
-        LastRefreshSizes.Clear();
-        ImagesProcessingProgressRing.Visibility = Visibility.Visible;
-        ImagesProcessingProgressRing.IsActive = true;
-
-        string? openedPath = Path.GetDirectoryName(path);
-        string? name = Path.GetFileNameWithoutExtension(path);
-
-        if (openedPath is null || name is null)
-            return false;
-
-        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-
-        var allfiles = await sf.GetFilesAsync();
-        foreach (var file in allfiles)
-            await file.DeleteAsync();
-
-        string iconRootString = sf.Path;
-        string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
-        string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
-        if (Directory.Exists(iconRootString) == false)
-            Directory.CreateDirectory(iconRootString);
-
-        MagickImageFactory imgFactory = new();
-        MagickGeometryFactory geoFactory = new();
-
-        SourceImageSize ??= new Size((int)MainImage.RenderSize.Width, (int)MainImage.RenderSize.Height);
-
-        int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
-
-        foreach (IconSize iconSize in IconSizes)
-        {
-            iconSize.IsEnabled = true;
-            if (iconSize.SideLength > smallerSide)
-                iconSize.IsEnabled = false;
-        }
-
-        foreach (IconSize iconSize in IconSizes)
-            if (iconSize.IsSelected)
-                LastRefreshSizes.Add(new(iconSize));
-
-        if (string.IsNullOrWhiteSpace(ImagePath) == true)
-        {
-            ClearOutputImages();
-            return false;
-        }
-
-        try
-        {
-            _ = await imgFactory.CreateAsync(ImagePath);
-        }
-        catch (Exception)
-        {
-            ClearOutputImages();
-            return false;
-        }
-
-        using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(ImagePath);
-        IMagickGeometry size = geoFactory.Create(
-            Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
-        size.IgnoreAspectRatio = false;
-        size.FillArea = true;
-
-        firstPassImage.Extent(size, Gravity.Center, MagickColor.FromRgba(0, 0, 0, 0));
-
-        await firstPassImage.WriteAsync(croppedImagePath);
-
-        MagickImageCollection collection = new();
-        Dictionary<int, string> imagePaths = new();
-
-        List<int> selectedSizes = IconSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
-
-        foreach (int sideLength in selectedSizes)
-        {
-            using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
-            if (smallerSide < sideLength)
-                continue;
-
-            IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
-            iconSize.IgnoreAspectRatio = false;
-
-            if (smallerSide > sideLength)
-            {
-                image.Scale(iconSize);
-                image.Sharpen();
-            }
-
-            string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
-            string outputImagePath = $"{openedPath}\\{name}{sideLength}.png";
-
-            if (File.Exists(iconPath))
-                File.Delete(iconPath);
-
-            await image.WriteAsync(iconPath, MagickFormat.Png32);
-
-            if (saveAllFiles == true)
-                await image.WriteAsync(outputImagePath, MagickFormat.Png32);
-
-            collection.Add(iconPath);
-            imagePaths.Add(sideLength, iconPath);
-        }
-
-        try
-        {
-            if (updatePreviews == true)
-                await UpdatePreviewsAsync(imagePaths);
-            else
-            {
-                await collection.WriteAsync(iconOutputString);
-
-                IcoOptimizer icoOpti = new()
-                {
-                    OptimalCompression = true
-                };
-                icoOpti.Compress(iconOutputString);
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine("Generating Icons Exception " + ex.Message);
-            return false;
-        }
-        finally
-        {
-            ImagesProcessingProgressRing.IsActive = false;
-            ImagesProcessingProgressRing.Visibility = Visibility.Collapsed;
-        }
-        return true;
-    }
-
     private async void Grid_Drop(object sender, DragEventArgs e)
     {
         ConfigUiThinking();
         errorInfoBar.IsOpen = false;
-        SourceImageSize = null;
         ImagePath = string.Empty;
         DragOperationDeferral def = e.GetDeferral();
         e.Handled = true;
+        def.Complete();
 
         if (e.DataView.Contains(StandardDataFormats.Bitmap))
         {
@@ -296,7 +156,6 @@ public sealed partial class MainPage : Page
             {
                 Debug.WriteLine("bitmap, update not success");
                 ConfigUiWelcome();
-                def.Complete();
                 return;
             }
 
@@ -313,7 +172,6 @@ public sealed partial class MainPage : Page
             {
                 Debug.WriteLine("dropped URI, not supported");
                 ConfigUiWelcome();
-                def.Complete();
                 return;
             }
 
@@ -328,8 +186,6 @@ public sealed partial class MainPage : Page
 
             await TryToOpenStorageItems(storageItems);
         }
-
-        def.Complete();
     }
 
     private async Task TryToOpenStorageItems(IReadOnlyList<IStorageItem> storageItems)
@@ -367,22 +223,56 @@ public sealed partial class MainPage : Page
             return;
         }
 
-        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+        InitialLoadProgressBar.Value = 0;
+
+        try
         {
-            await LoadIconFile();
-            return;
+            MagickImage image = new(ImagePath);
+            MainImage.Source = await image.ToImageSource();
+        }
+        catch (Exception ex)
+        {
+            errorInfoBar.IsOpen = true;
+            errorInfoBar.Message = ex.Message;
+            closeInfoBarStoryboard.Begin();
+            ConfigUiWelcome();
         }
 
-        StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
-        using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
-        _ = await UpdateSourceImageFromStream(fileStream);
+        List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
+        PreviewStack previewStack = new(ImagePath, selectedSizes);
+        PreviewsGrid.Children.Add(previewStack);
+
+        Progress<int> progress = new(percent =>
+        {
+            InitialLoadProgressBar.Value = percent;
+        });
+
+        bool generatedImages = await previewStack.InitializeAsync(progress);
+
+        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+        {
+            SelectIconSizes();
+        }
+
+        if (generatedImages)
+        {
+            ConfigUiShow();
+            SaveBTN.IsEnabled = true;
+            SaveAllBTN.IsEnabled = true;
+        }
+        else
+        {
+            SaveBTN.IsEnabled = false;
+            SaveAllBTN.IsEnabled = false;
+            ConfigUiWelcome();
+        }
     }
 
     private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
     {
         AboutDialog aboutWindow = new()
         {
-            XamlRoot = this.Content.XamlRoot
+            XamlRoot = Content.XamlRoot
         };
 
         _ = await aboutWindow.ShowAsync();
@@ -394,7 +284,6 @@ public sealed partial class MainPage : Page
         if (openButton is not null)
             openButton.IsEnabled = false;
 
-        SourceImageSize = null;
         FileOpenPicker picker = new()
         {
             ViewMode = PickerViewMode.Thumbnail,
@@ -422,47 +311,24 @@ public sealed partial class MainPage : Page
         await LoadFromImagePath();
     }
 
-    private async Task LoadIconFile()
+    private void SelectIconSizes()
     {
-        bool success = false;
-        MagickImageCollection collection = new(ImagePath);
-        Dictionary<int, string> iconImages = new();
-        List<IconSize> sizesOfIcons = new();
-        StorageFolder? sf = ApplicationData.Current.LocalCacheFolder;
-        int biggestSide = 0;
-        string biggestPath = string.Empty;
+        List<IconSize> chosenSizes = new();
+        SelectTheseIcons(Array.Empty<IconSize>());
 
-        foreach (MagickImage image in collection.Cast<MagickImage>())
-        {
-            Debug.WriteLine($"Image: {image.Width}x{image.Height}");
-            string imageName = $"{Path.GetFileNameWithoutExtension(ImagePath)}-{image.Width}.png";
+        UIElementCollection uIElements = PreviewsGrid.Children;
 
-            string imagePath = Path.Combine(sf.Path, imageName);
-            await image.WriteAsync(imagePath, MagickFormat.Png32);
+        foreach (UIElement element in uIElements)
+            if (element is PreviewStack stack)
+                chosenSizes.AddRange(stack.ChosenSizes);
 
-            iconImages.Add(image.Width, imagePath);
-            IconSize iconSizeOfIconFrame = new(image.Width)
-            {
-                IsSelected = true,
-            };
-            sizesOfIcons.Add(iconSizeOfIconFrame);
+        chosenSizes = chosenSizes.Distinct().ToList();
 
-            if (image.Width > biggestSide)
-            {
-                biggestSide = image.Width;
-                biggestPath = imagePath;
-            }
-        }
-
-        IconSize[] empty = Array.Empty<IconSize>();
-        SelectTheseIcons(empty);
-
-        foreach (IconSize size in sizesOfIcons)
+        foreach (IconSize size in chosenSizes)
         {
             bool isAlreadyInList = false;
             foreach (IconSize setSize in IconSizes)
             {
-
                 if (setSize.SideLength == size.SideLength)
                 {
                     isAlreadyInList = true;
@@ -475,37 +341,11 @@ public sealed partial class MainPage : Page
                 IconSizes.Add(size);
         }
 
-        var orderedIcons = IconSizes.OrderByDescending(size => size.SideLength).ToList();
+        List<IconSize> orderedIcons = IconSizes.OrderByDescending(size => size.SideLength).ToList();
         IconSizes.Clear();
 
         foreach (IconSize size in orderedIcons)
             IconSizes.Add(size);
-
-        if (!string.IsNullOrEmpty(biggestPath))
-        {
-            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(biggestPath);
-            using IRandomAccessStream fileStream = await imageSF.OpenAsync(FileAccessMode.Read);
-            BitmapImage bitmapImage = new()
-            {
-                DecodePixelHeight = biggestSide,
-                DecodePixelWidth = biggestSide
-            };
-
-            await bitmapImage.SetSourceAsync(fileStream);
-            MainImage.Source = bitmapImage;
-        }
-
-        try
-        {
-            await UpdatePreviewsAsync(iconImages);
-            success = true;
-        }
-        catch (Exception) { }
-
-        if (success)
-            ConfigUiShow();
-        else
-            ConfigUiWelcome();
     }
 
     private async void OpenFolderBTN_Click(object sender, RoutedEventArgs e)
@@ -527,7 +367,19 @@ public sealed partial class MainPage : Page
     private async void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
         RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
-        await SourceImageUpdated(Path.GetFileName(ImagePath));
+
+        UIElementCollection uIElements = PreviewsGrid.Children;
+
+        Progress<int> progress = new(percent =>
+        {
+            InitialLoadProgressBar.Value = percent;
+        });
+
+        foreach (UIElement element in uIElements)
+        {
+            if (element is PreviewStack stack)
+                await stack.GeneratePreviewImagesAsync(progress);
+        }
 
         bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
         if (!IconSizes.Any(x => x.IsSelected))
@@ -556,13 +408,22 @@ public sealed partial class MainPage : Page
         if (file is null)
             return;
 
-        OutPutPath = Path.Combine(file.Path);
+        OutPutPath = file.Path;
 
         try
         {
             SaveBTN.IsEnabled = false;
             SaveAllBTN.IsEnabled = false;
-            await GenerateIcons(OutPutPath, false, true);
+
+            UIElementCollection uIElements = PreviewsGrid.Children;
+
+            foreach (UIElement element in uIElements)
+            {
+                if (element is PreviewStack stack)
+                {
+                    await stack.SaveAllImagesAsync(OutPutPath);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -601,7 +462,12 @@ public sealed partial class MainPage : Page
         {
             SaveBTN.IsEnabled = false;
             SaveAllBTN.IsEnabled = false;
-            await GenerateIcons(OutPutPath);
+
+            UIElementCollection uIElements = PreviewsGrid.Children;
+
+            foreach (UIElement element in uIElements)
+                if (element is PreviewStack stack)
+                    await stack.SaveIconAsync(OutPutPath);
         }
         catch (Exception ex)
         {
@@ -624,86 +490,21 @@ public sealed partial class MainPage : Page
         CheckIfRefreshIsNeeded();
     }
 
-    private void SetPreviewsZoom()
+    private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
     {
-        UIElementCollection previewBoxes = PreviewStackPanel.Children;
-
         if (ZoomPreviewToggleButton.IsChecked is not bool isZoomingPreview)
             return;
 
-        foreach (var child in previewBoxes)
-            if (child is PreviewImage img)
+        UIElementCollection uIElements = PreviewsGrid.Children;
+
+        foreach (UIElement element in uIElements)
+        {
+            if (element is PreviewStack stack)
             {
-                if (!double.IsNaN(PreviewCard.ActualWidth) && PreviewCard.ActualWidth > 40)
-                    img.ZoomedWidthSpace = (int)PreviewCard.ActualWidth - 24;
-                img.ZoomPreview = isZoomingPreview;
+                stack.IsZoomingPreview = isZoomingPreview;
+                stack.UpdateSizeAndZoom();
             }
-    }
-
-    private async Task SourceImageUpdated(string fileName)
-    {
-        PreviewStackPanel.Children.Clear();
-        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        string pathAndName = Path.Combine(sf.Path, fileName);
-        bool success = await GenerateIcons(pathAndName, true);
-
-        SaveBTN.IsEnabled = success;
-        SaveAllBTN.IsEnabled = success;
-
-        if (success)
-            ConfigUiShow();
-        else
-            ConfigUiWelcome();
-    }
-
-    private async Task UpdatePreviewsAsync(Dictionary<int, string> imagePaths)
-    {
-        string originalName = Path.GetFileNameWithoutExtension(ImagePath);
-        foreach (var pair in imagePaths)
-        {
-            if (pair.Value is not string imagePath)
-                return;
-
-            int sideLength = pair.Key;
-
-            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
-
-            PreviewImage image = new(imageSF, sideLength, originalName);
-
-            PreviewStackPanel.Children.Add(image);
         }
-        SetPreviewsZoom();
-        await Task.CompletedTask;
-    }
-
-    private async Task<bool> UpdateSourceImageFromStream(IRandomAccessStream fileStream)
-    {
-        BitmapImage bitmapImage = new();
-        // Decode pixel sizes are optional
-        // It's generally a good optimization to decode to match the size you'll display
-        // bitmapImage.DecodePixelHeight = decodePixelHeight;
-        // bitmapImage.DecodePixelWidth = decodePixelWidth;
-
-        try
-        {
-            await bitmapImage.SetSourceAsync(fileStream);
-        }
-        catch (Exception ex)
-        {
-            errorInfoBar.IsOpen = true;
-            errorInfoBar.Message = ex.Message;
-            closeInfoBarStoryboard.Begin();
-            ConfigUiWelcome();
-            return false;
-        }
-        SourceImageSize = new(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
-        MainImage.Source = bitmapImage;
-        await SourceImageUpdated(Path.GetFileName(ImagePath));
-        return true;
-    }
-    private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
-    {
-        SetPreviewsZoom();
     }
 
     private void SelectWebButton_Click(object sender, RoutedEventArgs e)
@@ -720,48 +521,14 @@ public sealed partial class MainPage : Page
 
     private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        SetPreviewsZoom();
-    }
+        UIElementCollection uIElements = PreviewsGrid.Children;
 
-    private async void MainImage_DragStarting(UIElement sender, DragStartingEventArgs args)
-    {
-        DragOperationDeferral deferral = args.GetDeferral();
-        StorageFolder folder = ApplicationData.Current.LocalCacheFolder;
-        string originalName = Path.GetFileNameWithoutExtension(ImagePath);
-        string imageNameFileName = $"{originalName}.ico";
-        OutPutPath = Path.Combine(folder.Path, imageNameFileName);
-
-        try
+        foreach (UIElement element in uIElements)
         {
-            SaveBTN.IsEnabled = false;
-            SaveAllBTN.IsEnabled = false;
-            await GenerateIcons(OutPutPath);
+            if (element is PreviewStack stack)
+            {
+                stack.UpdateSizeAndZoom();
+            }
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
-            deferral.Complete();
-        }
-        finally
-        {
-            SaveBTN.IsEnabled = true;
-            SaveAllBTN.IsEnabled = true;
-            OpenFolderBTN.Visibility = Visibility.Visible;
-        }
-
-        StorageFile file = await StorageFile.GetFileFromPathAsync(OutPutPath);
-
-        IconSize? smallest = LastRefreshSizes.FirstOrDefault();
-        if (smallest is not null)
-        {
-            string smallestImagePath = $"{folder.Path}\\image{smallest.SideLength}.png";
-            Uri uri = new(smallestImagePath);
-            BitmapImage bitmapImage = new(uri);
-            args.DragUI.SetContentFromBitmapImage(bitmapImage);
-        }
-
-        args.Data.SetStorageItems(new[] { file });
-        args.Data.RequestedOperation = DataPackageOperation.Copy;
-        deferral.Complete();
     }
 }
