@@ -355,7 +355,7 @@ public sealed partial class PreviewStack : UserControl
             if (child is PreviewImage img)
             {
                 if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
-                    img.ZoomedWidthSpace = (int)ActualWidth - 24;
+                    img.ZoomedWidthSpace = (int)ActualWidth - 40;
                 img.ZoomPreview = IsZoomingPreview;
             }
         }
