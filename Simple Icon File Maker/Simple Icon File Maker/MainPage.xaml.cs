@@ -2,7 +2,6 @@ using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Models;
 using System;
@@ -15,7 +14,6 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using Windows.Storage.Streams;
 using Windows.System;
 using WinRT.Interop;
 
@@ -468,12 +466,8 @@ public sealed partial class MainPage : Page
             UIElementCollection uIElements = PreviewsGrid.Children;
 
             foreach (UIElement element in uIElements)
-            {
                 if (element is PreviewStack stack)
-                {
                     await stack.SaveIconAsync(OutPutPath);
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -496,30 +490,6 @@ public sealed partial class MainPage : Page
         CheckIfRefreshIsNeeded();
     }
 
-    private async Task<bool> UpdateSourceImageFromStream(IRandomAccessStream fileStream)
-    {
-        BitmapImage bitmapImage = new();
-        // Decode pixel sizes are optional
-        // It's generally a good optimization to decode to match the size you'll display
-        // bitmapImage.DecodePixelHeight = decodePixelHeight;
-        // bitmapImage.DecodePixelWidth = decodePixelWidth;
-
-        try
-        {
-            await bitmapImage.SetSourceAsync(fileStream);
-        }
-        catch (Exception ex)
-        {
-            errorInfoBar.IsOpen = true;
-            errorInfoBar.Message = ex.Message;
-            closeInfoBarStoryboard.Begin();
-            ConfigUiWelcome();
-            return false;
-        }
-
-        MainImage.Source = bitmapImage;
-        return true;
-    }
     private void ZoomPreviewToggleButton_Click(object sender, RoutedEventArgs e)
     {
         if (ZoomPreviewToggleButton.IsChecked is not bool isZoomingPreview)

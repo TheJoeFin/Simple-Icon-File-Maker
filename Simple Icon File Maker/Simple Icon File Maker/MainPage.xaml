@@ -118,12 +118,10 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>
-            <Grid RowSpacing="12">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="12">
                 <Viewbox
                     MaxHeight="140"
                     Margin="24,24,24,24"
@@ -144,7 +142,7 @@
                     Maximum="100"
                     Minimum="0"
                     Visibility="Collapsed" />
-            </Grid>
+            </StackPanel>
 
             <StackPanel
                 x:Name="ClearAppBarButton"
