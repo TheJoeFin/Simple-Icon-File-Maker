@@ -135,6 +135,7 @@
                     Grid.Row="1"
                     HorizontalAlignment="Center"
                     Text="Loading image and generating previews..."
+                    TextWrapping="Wrap"
                     Visibility="Collapsed" />
                 <ProgressBar
                     x:Name="InitialLoadProgressBar"

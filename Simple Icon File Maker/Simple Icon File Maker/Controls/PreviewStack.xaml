@@ -20,7 +20,10 @@
             VerticalAlignment="Center"
             Orientation="Vertical"
             Spacing="12">
-            <TextBlock x:Name="LoadingText" HorizontalAlignment="Center" />
+            <TextBlock
+                x:Name="LoadingText"
+                HorizontalAlignment="Center"
+                TextWrapping="Wrap" />
             <ProgressBar
                 x:Name="ImagesProgressBar"
                 Width="128"
