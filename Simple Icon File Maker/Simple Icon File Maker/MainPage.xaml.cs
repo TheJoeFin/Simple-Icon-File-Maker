@@ -1,3 +1,4 @@
+using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -145,6 +146,7 @@ public sealed partial class MainPage : Page
         ImagePath = string.Empty;
         DragOperationDeferral def = e.GetDeferral();
         e.Handled = true;
+        def.Complete();
 
         if (e.DataView.Contains(StandardDataFormats.Bitmap))
         {
@@ -156,7 +158,6 @@ public sealed partial class MainPage : Page
             {
                 Debug.WriteLine("bitmap, update not success");
                 ConfigUiWelcome();
-                def.Complete();
                 return;
             }
 
@@ -173,7 +174,6 @@ public sealed partial class MainPage : Page
             {
                 Debug.WriteLine("dropped URI, not supported");
                 ConfigUiWelcome();
-                def.Complete();
                 return;
             }
 
@@ -188,8 +188,6 @@ public sealed partial class MainPage : Page
 
             await TryToOpenStorageItems(storageItems);
         }
-
-        def.Complete();
     }
 
     private async Task TryToOpenStorageItems(IReadOnlyList<IStorageItem> storageItems)
@@ -228,9 +226,19 @@ public sealed partial class MainPage : Page
         }
 
         InitialLoadProgressBar.Value = 0;
-        StorageFile imageFile = await StorageFile.GetFileFromPathAsync(ImagePath);
-        using IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read);
-        bool success = await UpdateSourceImageFromStream(fileStream);
+
+        try
+        {
+            MagickImage image = new(ImagePath);
+            MainImage.Source = await image.ToImageSource();
+        }
+        catch (Exception ex)
+        {
+            errorInfoBar.IsOpen = true;
+            errorInfoBar.Message = ex.Message;
+            closeInfoBarStoryboard.Begin();
+            ConfigUiWelcome();
+        }
 
         List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
         PreviewStack previewStack = new(ImagePath, selectedSizes);
