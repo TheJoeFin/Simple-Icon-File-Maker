@@ -12,7 +12,7 @@ public static class MagickImageExtensions
     public static async Task<ImageSource> ToImageSource(this MagickImage image)
     {
         using MemoryStream memoryStream = new();
-        await image.WriteAsync(memoryStream, MagickFormat.Png);
+        await image.WriteAsync(memoryStream);
         memoryStream.Position = 0;
 
         BitmapImage bitmapImage = new();
