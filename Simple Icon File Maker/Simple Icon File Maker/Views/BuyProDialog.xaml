@@ -1,0 +1,38 @@
+﻿<ContentDialog
+    x:Class="Simple_Icon_File_Maker.BuyProDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Simple_Icon_File_Maker.Models"
+    Title="Edit Icon Sizes"
+    Loaded="ContentDialog_Loaded"
+    PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+    PrimaryButtonText="Save"
+    SecondaryButtonText="Cancel"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Margin="12,20" Spacing="20">
+            <TextBlock>
+                Simple Icon File Maker is a free app, but you can support the developer by purchasing the Pro version.
+            </TextBlock>
+
+            <TextBlock x:Name="PriceTextBlock" Text="loading price..." />
+
+            <Button
+                x:Name="BuyProButton"
+                Click="BuyProButton_Click"
+                IsEnabled="False"
+                Style="{StaticResource AccentButtonStyle}">
+                <Button.Content>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Buy Pro" />
+                        <SymbolIcon Symbol="Shop" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>
