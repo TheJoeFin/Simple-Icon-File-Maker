@@ -62,4 +62,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Windows\" />
+    <Folder Include="Views\" />
+  </ItemGroup>
 </Project>
