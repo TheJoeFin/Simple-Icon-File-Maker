@@ -226,10 +226,21 @@
                     x:Name="EditSizes"
                     Height="32"
                     Click="EditSizes_Click"
-                    Content="&#xE70F;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="Edit icon sizes" />
+                    ToolTipService.ToolTip="Edit icon sizes">
+                    <Grid>
+                        <FontIcon FontSize="16" Glyph="&#xE70F;" />
+                        <FontIcon
+                            FontSize="12"
+                            Foreground="Goldenrod"
+                            Glyph="&#xE72E;">
+                            <FontIcon.RenderTransform>
+                                <TransformGroup>
+                                    <TranslateTransform X="12" Y="6" />
+                                </TransformGroup>
+                            </FontIcon.RenderTransform>
+                        </FontIcon>
+                    </Grid>
+                </Button>
                 <Button
                     x:Name="SelectWebButton"
                     Height="32"

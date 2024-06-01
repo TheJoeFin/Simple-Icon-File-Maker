@@ -7,7 +7,8 @@
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     Title="Edit Icon Sizes"
     PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-    PrimaryButtonText="Close"
+    PrimaryButtonText="Save"
+    SecondaryButtonText="Cancel"
     mc:Ignorable="d">
 
     <ScrollViewer>
