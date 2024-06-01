@@ -24,6 +24,7 @@
     <None Remove="AboutDialog.xaml" />
     <None Remove="Controls\PreviewStack.xaml" />
     <None Remove="MainPage.xaml" />
+    <None Remove="Views\EditSizesDialog.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SimpleIconMaker.ico" />
@@ -61,10 +62,12 @@
     <Page Update="AboutDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Views\EditSizesDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Windows\" />
-    <Folder Include="Views\" />
   </ItemGroup>
 </Project>

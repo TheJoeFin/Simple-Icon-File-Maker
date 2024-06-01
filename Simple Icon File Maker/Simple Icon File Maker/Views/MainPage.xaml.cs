@@ -531,4 +531,14 @@ public sealed partial class MainPage : Page
             }
         }
     }
+
+    private async void EditSizes_Click(object sender, RoutedEventArgs e)
+    {
+        EditSizesDialog aboutWindow = new()
+        {
+            XamlRoot = Content.XamlRoot
+        };
+
+        _ = await aboutWindow.ShowAsync();
+    }
 }
