@@ -5,29 +5,43 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
-    Title="Edit Icon Sizes"
+    Title="Upgrade to Pro today!"
     Loaded="ContentDialog_Loaded"
-    PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
-    PrimaryButtonText="Save"
-    SecondaryButtonText="Cancel"
+    PrimaryButtonText="Cancel"
     mc:Ignorable="d">
 
     <ScrollViewer>
         <StackPanel Margin="12,20" Spacing="20">
-            <TextBlock>
-                Simple Icon File Maker is a free app, but you can support the developer by purchasing the Pro version.
+            <TextBlock Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords">
+                Simple Icon File Maker is a free app, but you can enable extra features and support the developer by purchasing the Pro version.
             </TextBlock>
 
-            <TextBlock x:Name="PriceTextBlock" Text="loading price..." />
+            <TextBlock
+                x:Name="PriceTextBlock"
+                HorizontalAlignment="Center"
+                Style="{StaticResource HeaderTextBlockStyle}"
+                Text="loading price..." />
+
+            <TextBlock>
+                <Bold>Features of the Simple Icon File Maker Pro</Bold> <LineBreak />
+                ● Configure default sizes<LineBreak />
+                ● Add custom sizes<LineBreak />
+                ● Batch generate .ico files (coming soon!)<LineBreak />
+                ● Add background and border to images (coming soon!)<LineBreak />
+                ● And more!<LineBreak />
+            </TextBlock>
 
             <Button
                 x:Name="BuyProButton"
+                Width="200"
+                Padding="12"
+                HorizontalAlignment="Center"
                 Click="BuyProButton_Click"
                 IsEnabled="False"
                 Style="{StaticResource AccentButtonStyle}">
                 <Button.Content>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Buy Pro" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <TextBlock Text="Upgrade to Pro" />
                         <SymbolIcon Symbol="Shop" />
                     </StackPanel>
                 </Button.Content>

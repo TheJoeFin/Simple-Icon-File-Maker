@@ -1,5 +1,4 @@
 using ImageMagick;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -14,8 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.Store;
-using Windows.Services.Store;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.System;
@@ -35,12 +32,6 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
-
-#if DEBUG
-        licenseInformation = CurrentAppSimulator.LicenseInformation;
-#else
-        licenseInformation = CurrentApp.LicenseInformation;
-#endif
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -544,9 +535,6 @@ public sealed partial class MainPage : Page
 
     private async void EditSizes_Click(object sender, RoutedEventArgs e)
     {
-        await BuyPro();
-        return;
-
         bool ownsPro = await StoreService.OwnsPro();
         if (!ownsPro)
         {
@@ -566,59 +554,5 @@ public sealed partial class MainPage : Page
             _ = await buyProDialog.ShowAsync();
         }
 
-    }
-
-    public LicenseInformation licenseInformation { get; private set; }
-    private readonly string proName = "pro-features";
-
-    private async Task BuyPro()
-    {
-        if (licenseInformation.ProductLicenses[proName].IsActive == false)
-        {
-            try
-            {
-                // The customer doesn't own this feature, so
-                // show the purchase dialog.
-                StorePurchaseProperties proProps = new(proName);
-                StoreContext store = StoreContext.GetDefault();
-                var result = await store.GetAssociatedStoreProductsAsync(new string[] { "Durable", "Consumable" });
-                if (result.ExtendedError is not null)
-                {
-                    throw new Exception("Failed to get items from store");
-                }
-
-                foreach (var item in result.Products)
-                {
-                    StoreProduct product = item.Value;
-
-                    if (product.InAppOfferToken == proName)
-                    {
-                        Window buyWindow = new();
-                        IntPtr windowHandleSave = WindowNative.GetWindowHandle(buyWindow);
-                        InitializeWithWindow.Initialize(product, windowHandleSave);
-
-                        await product.RequestPurchaseAsync();
-                    }
-                }
-
-                //Check the license state to determine if the in-app purchase was successful.
-                if (licenseInformation.ProductLicenses[proName].IsActive)
-                    return;
-            }
-            catch (Exception ex)
-            {
-                // The in-app purchase was not completed because
-                // an error occurred.
-                // FailedProPurchase.IsOpen = true;
-                Debug.WriteLine(ex.Message);
-#if DEBUG
-                throw ex;
-#endif
-            }
-        }
-        else
-        {
-            // The customer already owns this feature.
-        }
     }
 }

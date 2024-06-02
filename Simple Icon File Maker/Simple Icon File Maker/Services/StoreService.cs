@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI.Helpers;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Concurrent;
@@ -111,9 +112,8 @@ public class StoreService
         if (addOnProduct is null)
             return StorePurchaseStatus.ServerError;
 
-        Window window = new();
-        IntPtr hwnd = WindowNative.GetWindowHandle(window);
-        InitializeWithWindow.Initialize(addOnProduct, hwnd);
+        IntPtr hwnd = WindowNative.GetWindowHandle(App.m_window);
+        InitializeWithWindow.Initialize(_context, hwnd);
 
         /// Attempt purchase
         StorePurchaseResult? result = await addOnProduct.RequestPurchaseAsync();
