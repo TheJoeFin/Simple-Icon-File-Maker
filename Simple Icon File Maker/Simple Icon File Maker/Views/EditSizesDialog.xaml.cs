@@ -1,6 +1,9 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -8,7 +11,7 @@ namespace Simple_Icon_File_Maker;
 
 public sealed partial class EditSizesDialog : ContentDialog
 {
-    ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
+    ObservableCollection<IconSize> IconSizes { get; set; } = new();
 
 
     public EditSizesDialog()
@@ -48,5 +51,27 @@ public sealed partial class EditSizesDialog : ContentDialog
         IconSideComparer iconComparer = new();
         foreach (IconSize iconSize in IconSizes)
             iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
+    }
+
+    private async void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        await IconSizeHelper.Save(IconSizes);
+    }
+
+    private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuFlyoutItem flyoutItem)
+            return;
+
+        if (flyoutItem.DataContext is IconSize iconSize)
+            IconSizes.Remove(iconSize);
+    }
+
+    private async void ContentDialog_Loaded(object sender, RoutedEventArgs e)
+    {
+        List<IconSize> loadedSizes = await IconSizeHelper.GetIconSizes();
+
+        foreach (IconSize size in loadedSizes)
+            IconSizes.Add(size);
     }
 }

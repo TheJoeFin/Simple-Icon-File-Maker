@@ -14,6 +14,8 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 
     public bool IsEnabled { get; set; } = true;
 
+    public bool IsHidden { get; set; } = false;
+
     public string Tooltip => $"{SideLength} x {SideLength}";
 
     public IconSize()

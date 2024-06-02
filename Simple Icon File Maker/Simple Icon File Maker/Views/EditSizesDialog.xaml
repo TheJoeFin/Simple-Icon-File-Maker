@@ -6,6 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     Title="Edit Icon Sizes"
+    Loaded="ContentDialog_Loaded"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
     PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
     PrimaryButtonText="Save"
     SecondaryButtonText="Cancel"
@@ -36,23 +38,32 @@
                 ItemsSource="{x:Bind IconSizes}"
                 SelectionMode="None">
                 <ListView.Header>
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <TextBlock Text="Hidden" />
+                    <StackPanel Orientation="Horizontal" Spacing="24">
+                        <TextBlock Text="Is Hidden" />
                         <TextBlock Text="On by default" />
                     </StackPanel>
                 </ListView.Header>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:IconSize">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="32">
                             <ToggleButton
                                 Content="&#xED1A;"
                                 FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                IsChecked="{x:Bind IsHidden, Mode=TwoWay}"
                                 ToolTipService.ToolTip="Hide this size" />
                             <CheckBox
                                 Content="{x:Bind Tooltip}"
                                 IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
                                 Tapped="CheckBox_Tapped" />
+                            <StackPanel.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem
+                                        x:Name="DeleteMenuItem"
+                                        Click="DeleteMenuItem_Click"
+                                        Icon="Delete"
+                                        Text="Delete this size" />
+                                </MenuFlyout>
+                            </StackPanel.ContextFlyout>
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

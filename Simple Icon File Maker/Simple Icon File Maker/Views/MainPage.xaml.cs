@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Simple_Icon_File_Maker.Controls;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.Services;
 using System;
@@ -22,7 +23,7 @@ namespace Simple_Icon_File_Maker;
 
 public sealed partial class MainPage : Page
 {
-    ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
+    ObservableCollection<IconSize> IconSizes { get; set; } = new();
 
     readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
 
@@ -34,11 +35,23 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
-    private void Page_Loaded(object sender, RoutedEventArgs e)
+    private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        SelectTheseIcons(IconSize.GetWindowsSizesFull());
+        await LoadIconSizes();
 
         SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
+    }
+
+    private async Task LoadIconSizes()
+    {
+        IconSizes.Clear();
+        List<IconSize> loadedSizes = await IconSizeHelper.GetIconSizes();
+
+        foreach (IconSize size in loadedSizes)
+            if (!size.IsHidden)
+                IconSizes.Add(size);
+
+        CheckIfRefreshIsNeeded();
     }
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
@@ -536,11 +549,16 @@ public sealed partial class MainPage : Page
     private async void EditSizes_Click(object sender, RoutedEventArgs e)
     {
         bool ownsPro = await StoreService.OwnsPro();
-        if (!ownsPro)
+        if (ownsPro)
         {
             EditSizesDialog aboutWindow = new()
             {
                 XamlRoot = Content.XamlRoot
+            };
+
+            aboutWindow.Closed += async (s, e) =>
+            {
+                await LoadIconSizes();
             };
 
             _ = await aboutWindow.ShowAsync();

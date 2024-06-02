@@ -232,7 +232,7 @@
                         <FontIcon
                             FontSize="12"
                             Foreground="Goldenrod"
-                            Glyph="&#xE72E;">
+                            Glyph="&#xE785;">
                             <FontIcon.RenderTransform>
                                 <TransformGroup>
                                     <TranslateTransform X="12" Y="6" />
