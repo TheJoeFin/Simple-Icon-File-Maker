@@ -114,6 +114,9 @@
                                 <FontIcon FontSize="16" Glyph="&#xE8E5;" />
                                 <TextBlock Text="Browse and select an image" TextAlignment="Center" />
                             </StackPanel>
+                            <Button.KeyboardAccelerators>
+                                <KeyboardAccelerator Key="O" Modifiers="Control" />
+                            </Button.KeyboardAccelerators>
                         </Button>
                     </StackPanel>
                 </StackPanel>
@@ -330,6 +333,9 @@
                             <FontIcon FontSize="16" Glyph="&#xE74E;" />
                             <TextBlock VerticalAlignment="Center" Text="Save icon" />
                         </StackPanel>
+                        <Button.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="S" Modifiers="Control" />
+                        </Button.KeyboardAccelerators>
                     </Button>
                     <Button
                         x:Name="SaveAllBTN"
