@@ -335,7 +335,6 @@
                         x:Name="SaveAllBTN"
                         Click="SaveAllBTN_Click"
                         IsEnabled="False"
-                        Style="{StaticResource AccentButtonStyle}"
                         ToolTipService.ToolTip="Save all images as a combined .ico and each size as a .png">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <FontIcon FontSize="16" Glyph="&#xE78C;" />

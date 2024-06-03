@@ -15,7 +15,7 @@
 
     <ScrollViewer>
         <StackPanel Margin="12,20" Spacing="20">
-            <TextBlock>
+            <TextBlock TextWrapping="WrapWholeWords">
                 Add or remove sizes for the icon. Toggle if the size is visible or, and check the box if the size should be the default sizes when Simple Icon File Maker opens.
             </TextBlock>
             <StackPanel Orientation="Horizontal" Spacing="8">
