@@ -60,8 +60,8 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
     {
         return
         new IconSize[] {
-            new() { SideLength = 1024, IsSelected = false },
-            new() { SideLength = 512, IsSelected = false },
+            //new() { SideLength = 1024, IsSelected = false },
+            //new() { SideLength = 512, IsSelected = false },
             new() { SideLength = 256 },
             new() { SideLength = 192, IsSelected = false },
             new() { SideLength = 180, IsSelected = false},
