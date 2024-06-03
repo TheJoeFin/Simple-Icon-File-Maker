@@ -26,9 +26,13 @@
                 <NumberBox
                     x:Name="NewSizeNumberBox"
                     Width="200"
+                    Maximum="256"
                     Minimum="4"
                     SpinButtonPlacementMode="Inline" />
             </StackPanel>
+            <TextBlock TextWrapping="WrapWholeWords">
+                Currently the maximum size is 256x256 this is a limitation of Image Magick, but I am working on a solution to increase the maximum size.
+            </TextBlock>
             <TextBlock Style="{StaticResource SubtitleTextBlockStyle}">
                 Sizes
             </TextBlock>
