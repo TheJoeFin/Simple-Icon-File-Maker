@@ -60,20 +60,20 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
     {
         return
         new IconSize[] {
-            new() { SideLength = 1024 },
-            new() { SideLength = 512 },
+            new() { SideLength = 1024, IsSelected = false },
+            new() { SideLength = 512, IsSelected = false },
             new() { SideLength = 256 },
-            new() { SideLength = 192 },
-            new() { SideLength = 180},
+            new() { SideLength = 192, IsSelected = false },
+            new() { SideLength = 180, IsSelected = false},
             new() { SideLength = 128 },
-            new() { SideLength = 72},
+            new() { SideLength = 72, IsSelected = false},
             new() { SideLength = 64 },
-            new() { SideLength = 60},
-            new() { SideLength = 48},
-            new() { SideLength = 40},
+            new() { SideLength = 60, IsSelected = false},
+            new() { SideLength = 48, IsSelected = false },
+            new() { SideLength = 40, IsSelected = false},
             new() { SideLength = 32 },
-            new() { SideLength = 24},
-            new() { SideLength = 20},
+            new() { SideLength = 24, IsSelected = false},
+            new() { SideLength = 20, IsSelected = false},
             new() { SideLength = 16 },
         };
     }
