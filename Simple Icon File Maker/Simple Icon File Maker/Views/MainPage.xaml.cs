@@ -35,10 +35,8 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
-    private async void Page_Loaded(object sender, RoutedEventArgs e)
+    private void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        await LoadIconSizes();
-
         SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
     }
 
@@ -107,6 +105,13 @@ public sealed partial class MainPage : Page
                 }
             }
         }
+
+        MagickImage image = new(ImagePath);
+        int smallerSide = Math.Min(image.Width, image.Height);
+
+        foreach (IconSize size in IconSizes)
+            if (size.SideLength > smallerSide)
+                size.IsEnabled = false;
 
         if (anyRefreshAvailable)
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
@@ -238,6 +243,7 @@ public sealed partial class MainPage : Page
         }
 
         InitialLoadProgressBar.Value = 0;
+        await LoadIconSizes();
 
         try
         {
@@ -548,27 +554,36 @@ public sealed partial class MainPage : Page
 
     private async void EditSizes_Click(object sender, RoutedEventArgs e)
     {
-        bool ownsPro = await StoreService.OwnsPro();
+        bool ownsPro = false;
+        string ownsProKey = "OwnsPro";
+        try
+        {
+            var settings =ApplicationData.Current.LocalSettings;
+            bool settingExists = settings.Values.ContainsKey(ownsProKey);
+
+            if (!settingExists)
+            {
+                ownsPro = await StoreService.OwnsPro();
+                settings.Values[ownsProKey] = ownsPro;
+            }
+            else
+                ownsPro = (bool)settings.Values[ownsProKey];
+        }
+        catch (Exception ex)
+        {
+            ownsPro = await StoreService.OwnsPro();
+            Debug.WriteLine(ex.Message);
+        }
+
         if (ownsPro)
         {
-            EditSizesDialog aboutWindow = new()
-            {
-                XamlRoot = Content.XamlRoot
-            };
-
-            aboutWindow.Closed += async (s, e) =>
-            {
-                await LoadIconSizes();
-            };
-
-            _ = await aboutWindow.ShowAsync();
+            EditSizesDialog editSizesDialog = new() { XamlRoot = Content.XamlRoot };
+            editSizesDialog.Closed += async (s, e) => { await LoadIconSizes(); };
+            _ = await editSizesDialog.ShowAsync();
         }
         else
         {
-            BuyProDialog buyProDialog = new()
-            {
-                XamlRoot = Content.XamlRoot
-            };
+            BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
             _ = await buyProDialog.ShowAsync();
         }
 

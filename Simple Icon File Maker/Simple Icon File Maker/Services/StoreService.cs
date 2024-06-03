@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.Services.Store;
+using Windows.Storage;
 using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker.Services;
@@ -27,7 +28,42 @@ public class StoreService
 
     public static async Task<StorePurchaseStatus> BuyPro()
     {
-        return await PurchaseAddOn(proFeaturesId);
+        string ownsProKey = "OwnsPro";
+        StorePurchaseStatus purchaseResult = await PurchaseAddOn(proFeaturesId);
+
+        bool ownsPro = false;
+
+        switch (purchaseResult)
+        {
+            case StorePurchaseStatus.Succeeded:
+                ownsPro = true;
+                break;
+            case StorePurchaseStatus.AlreadyPurchased:
+                ownsPro = true;
+                break;
+            case StorePurchaseStatus.NotPurchased:
+                break;
+            case StorePurchaseStatus.NetworkError:
+                break;
+            case StorePurchaseStatus.ServerError:
+                ownsPro = true;
+                break;
+            default:
+                break;
+        }
+
+        try
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            settings.Values[ownsProKey] = ownsPro;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+
+        return purchaseResult;
     }
 
     public static async Task<string> ProPrice()

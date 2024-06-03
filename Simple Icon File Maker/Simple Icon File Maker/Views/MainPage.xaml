@@ -226,7 +226,7 @@
                     x:Name="EditSizes"
                     Height="32"
                     Click="EditSizes_Click"
-                    ToolTipService.ToolTip="Edit icon sizes">
+                    ToolTipService.ToolTip="Edit icon sizes (Pro only)">
                     <Grid>
                         <FontIcon FontSize="16" Glyph="&#xE70F;" />
                         <FontIcon
