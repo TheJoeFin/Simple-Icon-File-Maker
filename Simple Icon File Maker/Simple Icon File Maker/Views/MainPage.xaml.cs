@@ -3,7 +3,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Simple_Icon_File_Maker.Controls;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
+using Simple_Icon_File_Maker.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +23,7 @@ namespace Simple_Icon_File_Maker;
 
 public sealed partial class MainPage : Page
 {
-    ObservableCollection<IconSize> IconSizes { get; set; } = new(IconSize.GetAllSizes());
+    ObservableCollection<IconSize> IconSizes { get; set; } = new();
 
     readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
 
@@ -35,9 +37,19 @@ public sealed partial class MainPage : Page
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        SelectTheseIcons(IconSize.GetWindowsSizesFull());
-
         SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
+    }
+
+    private async Task LoadIconSizes()
+    {
+        IconSizes.Clear();
+        List<IconSize> loadedSizes = await IconSizeHelper.GetIconSizes();
+
+        foreach (IconSize size in loadedSizes)
+            if (!size.IsHidden)
+                IconSizes.Add(size);
+
+        CheckIfRefreshIsNeeded();
     }
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
@@ -93,6 +105,13 @@ public sealed partial class MainPage : Page
                 }
             }
         }
+
+        MagickImage image = new(ImagePath);
+        int smallerSide = Math.Min(image.Width, image.Height);
+
+        foreach (IconSize size in IconSizes)
+            if (size.SideLength > smallerSide)
+                size.IsEnabled = false;
 
         if (anyRefreshAvailable)
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
@@ -224,6 +243,7 @@ public sealed partial class MainPage : Page
         }
 
         InitialLoadProgressBar.Value = 0;
+        await LoadIconSizes();
 
         try
         {
@@ -530,5 +550,42 @@ public sealed partial class MainPage : Page
                 stack.UpdateSizeAndZoom();
             }
         }
+    }
+
+    private async void EditSizes_Click(object sender, RoutedEventArgs e)
+    {
+        bool ownsPro = false;
+        string ownsProKey = "OwnsPro";
+        try
+        {
+            var settings =ApplicationData.Current.LocalSettings;
+            bool settingExists = settings.Values.ContainsKey(ownsProKey);
+
+            if (!settingExists)
+            {
+                ownsPro = await StoreService.OwnsPro();
+                settings.Values[ownsProKey] = ownsPro;
+            }
+            else
+                ownsPro = (bool)settings.Values[ownsProKey];
+        }
+        catch (Exception ex)
+        {
+            ownsPro = await StoreService.OwnsPro();
+            Debug.WriteLine(ex.Message);
+        }
+
+        if (ownsPro)
+        {
+            EditSizesDialog editSizesDialog = new() { XamlRoot = Content.XamlRoot };
+            editSizesDialog.Closed += async (s, e) => { await LoadIconSizes(); };
+            _ = await editSizesDialog.ShowAsync();
+        }
+        else
+        {
+            BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
+            _ = await buyProDialog.ShowAsync();
+        }
+
     }
 }

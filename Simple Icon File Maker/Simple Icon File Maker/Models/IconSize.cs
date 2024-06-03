@@ -14,6 +14,8 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 
     public bool IsEnabled { get; set; } = true;
 
+    public bool IsHidden { get; set; } = false;
+
     public string Tooltip => $"{SideLength} x {SideLength}";
 
     public IconSize()
@@ -58,8 +60,8 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
     {
         return
         new IconSize[] {
-            //new() { SideLength = 1024, IsSelected = false },
-            //new() { SideLength = 512, IsSelected = false },
+            new() { SideLength = 1024 },
+            new() { SideLength = 512 },
             new() { SideLength = 256 },
             new() { SideLength = 192 },
             new() { SideLength = 180},
@@ -105,7 +107,6 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
     {
         return
         new IconSize[] {
-            //16x16, 32x32, 48x48
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
@@ -114,14 +115,9 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 
     public override int GetHashCode()
     {
-        // https://stackoverflow.com/a/263416/7438031
-        // 9/26/2023
-        unchecked // Overflow is fine, just wrap
-        {
-            int hash = 17;
-            hash += 23 + (IsSelected ? 1 : 0);
-            return hash * 23 + SideLength;
-        }
+        int hash = 17;
+        hash += 23 + (IsSelected ? 1 : 0);
+        return hash * 23 + SideLength;
     }
 }
 
