@@ -30,14 +30,24 @@ public sealed partial class MainPage : Page
     private string ImagePath = "";
     private string OutPutPath = "";
 
+    private bool OwnsPro { get; set; } = false;
+
     public MainPage()
     {
         InitializeComponent();
     }
 
-    private void Page_Loaded(object sender, RoutedEventArgs e)
+    private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
         SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
+
+        OwnsPro = await StoreService.OwnsPro();
+
+        if (!OwnsPro)
+        {
+            UpgradeProHypBtn.Visibility = Visibility.Visible;
+            UpgradeProHypBtn2.Visibility = Visibility.Visible;
+        }
     }
 
     private async Task LoadIconSizes()
@@ -554,26 +564,7 @@ public sealed partial class MainPage : Page
 
     private async void EditSizes_Click(object sender, RoutedEventArgs e)
     {
-        bool ownsPro = false;
-        string ownsProKey = "OwnsPro";
-        try
-        {
-            var settings =ApplicationData.Current.LocalSettings;
-            bool settingExists = settings.Values.ContainsKey(ownsProKey);
-
-            if (!settingExists)
-            {
-                ownsPro = await StoreService.OwnsPro();
-                settings.Values[ownsProKey] = ownsPro;
-            }
-            else
-                ownsPro = (bool)settings.Values[ownsProKey];
-        }
-        catch (Exception ex)
-        {
-            ownsPro = await StoreService.OwnsPro();
-            Debug.WriteLine(ex.Message);
-        }
+        bool ownsPro = await StoreService.OwnsPro();
 
         if (ownsPro)
         {
@@ -587,5 +578,11 @@ public sealed partial class MainPage : Page
             _ = await buyProDialog.ShowAsync();
         }
 
+    }
+
+    private async void UpgradeToProHyperlinkButton_Click(object sender, RoutedEventArgs e)
+    {
+        BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
+        _ = await buyProDialog.ShowAsync();
     }
 }

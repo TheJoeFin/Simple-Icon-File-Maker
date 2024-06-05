@@ -121,6 +121,18 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>
+            <HyperlinkButton
+                x:Name="UpgradeProHypBtn"
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Click="UpgradeToProHyperlinkButton_Click"
+                Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <SymbolIcon Symbol="Shop" />
+                    <TextBlock Text="Upgrade to Pro Today!" />
+                </StackPanel>
+            </HyperlinkButton>
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -147,15 +159,31 @@
                     Visibility="Collapsed" />
             </StackPanel>
 
-            <StackPanel
+            <Grid
                 x:Name="ClearAppBarButton"
                 Grid.Row="1"
                 Margin="0,0,8,-4"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal"
-                Spacing="8"
+                ColumnSpacing="8"
                 Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <HyperlinkButton
+                    x:Name="UpgradeProHypBtn2"
+                    Grid.Row="2"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Click="UpgradeToProHyperlinkButton_Click"
+                    Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <SymbolIcon Symbol="Shop" />
+                        <TextBlock Text="Upgrade to Pro" />
+                    </StackPanel>
+                </HyperlinkButton>
                 <Button
+                    Grid.Column="1"
                     Height="32"
                     HorizontalAlignment="Left"
                     Click="InfoAppBarButton_Click"
@@ -166,6 +194,7 @@
                         Glyph="&#xE946;" />
                 </Button>
                 <Button
+                    Grid.Column="2"
                     Width="138"
                     Height="32"
                     Padding="0"
@@ -178,7 +207,7 @@
                         <TextBlock Text="Clear image" TextAlignment="Center" />
                     </StackPanel>
                 </Button>
-            </StackPanel>
+            </Grid>
 
             <InfoBar
                 x:Name="errorInfoBar"
@@ -433,6 +462,7 @@
                         <Setter Target="PreviewCard.Visibility" Value="Visible" />
                         <Setter Target="ClearAppBarButton.Visibility" Value="Visible" />
                         <Setter Target="dropHere.Visibility" Value="Collapsed" />
+                        <Setter Target="UpgradeProHypBtn.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

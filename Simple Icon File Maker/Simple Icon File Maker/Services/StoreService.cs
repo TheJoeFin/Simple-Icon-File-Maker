@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Services.Store;
 using Windows.Storage;
@@ -23,7 +24,28 @@ public class StoreService
 
     public static async Task<bool> OwnsPro()
     {
-        return await IsOwnedAsync(proFeaturesId);
+        bool ownsPro = false;
+        string ownsProKey = "OwnsPro";
+        try
+        {
+            var settings = ApplicationData.Current.LocalSettings;
+            bool settingExists = settings.Values.ContainsKey(ownsProKey);
+
+            if (!settingExists)
+            {
+                ownsPro = await IsOwnedAsync(proFeaturesId);
+                settings.Values[ownsProKey] = ownsPro;
+            }
+            else
+                ownsPro = (bool)settings.Values[ownsProKey];
+        }
+        catch (Exception ex)
+        {
+            ownsPro = await IsOwnedAsync(proFeaturesId);
+            Debug.WriteLine(ex.Message);
+        }
+
+        return ownsPro;
     }
 
     public static async Task<StorePurchaseStatus> BuyPro()
