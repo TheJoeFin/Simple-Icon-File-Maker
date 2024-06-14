@@ -13,7 +13,7 @@
     <ScrollViewer>
         <StackPanel Margin="12,20" Spacing="20">
             <TextBlock Style="{StaticResource BodyTextBlockStyle}" TextWrapping="WrapWholeWords">
-                Simple Icon File Maker is a free app, but you can enable extra features and support the developer by purchasing the Pro version.
+                Simple Icon File Maker is a free app, but with Pro you will be supporting independent open source Windows App development and enable features to make you even more productive!
             </TextBlock>
 
             <TextBlock
