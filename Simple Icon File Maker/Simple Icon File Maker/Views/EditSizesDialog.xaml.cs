@@ -1,6 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 using System.Collections.Generic;
@@ -55,7 +56,7 @@ public sealed partial class EditSizesDialog : ContentDialog
 
     private async void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        await IconSizeHelper.Save(IconSizes);
+        await App.GetService<IIconSizesService>().Save(IconSizes);
     }
 
     private void DeleteMenuItem_Click(object sender, RoutedEventArgs e)

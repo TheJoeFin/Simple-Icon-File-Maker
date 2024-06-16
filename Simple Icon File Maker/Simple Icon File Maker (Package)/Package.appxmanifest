@@ -9,7 +9,7 @@
   <Identity
     Name="40087JoeFinApps.SimpleIconFileMaker"
     Publisher="CN=153F3B0F-BA3D-4964-8098-71AC78A1DF6A"
-    Version="1.9.0.0" />
+    Version="1.9.1.0" />
 
   <Properties>
     <DisplayName>Simple Icon File Maker</DisplayName>
@@ -38,12 +38,26 @@
         Square44x44Logo="Images\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png"  ShortName="Simple Icon File Maker" Square71x71Logo="Images\SmallTile.png" Square310x310Logo="Images\LargeTile.png">
           <uap:ShowNameOnTiles>
-            <uap:ShowOn Tile="wide310x150Logo"/>
             <uap:ShowOn Tile="square310x310Logo"/>
+            <uap:ShowOn Tile="wide310x150Logo"/>
+            <uap:ShowOn Tile="square150x150Logo"/>
           </uap:ShowNameOnTiles>
         </uap:DefaultTile >
         <uap:SplashScreen Image="Images\SplashScreen.png" />
+        <uap:LockScreen BadgeLogo="Images\BadgeLogo.png" Notification="badgeAndTileText"/>
       </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="simple-icon-file-maker" DesiredView="default">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.ico</uap:FileType>
+            </uap:SupportedFileTypes>
+            <uap:DisplayName>Simple Icon File Maker</uap:DisplayName>
+            <uap:InfoTip>Open icon file and see all sizes</uap:InfoTip>
+            <uap:Logo>Images\Image128.png</uap:Logo>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

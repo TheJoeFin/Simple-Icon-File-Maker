@@ -1,12 +1,7 @@
 ﻿using Simple_Icon_File_Maker.Models;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace Simple_Icon_File_Maker.Helpers;

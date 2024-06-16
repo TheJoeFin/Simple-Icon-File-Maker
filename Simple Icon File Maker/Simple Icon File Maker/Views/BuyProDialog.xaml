@@ -47,6 +47,11 @@
                 </Button.Content>
             </Button>
 
+            <InfoBar
+                x:Name="ErrorInfoBar"
+                IsOpen="False"
+                Severity="Error" />
+
         </StackPanel>
     </ScrollViewer>
 </ContentDialog>

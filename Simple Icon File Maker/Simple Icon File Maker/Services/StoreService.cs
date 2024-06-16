@@ -1,18 +1,14 @@
 ﻿using CommunityToolkit.WinUI.Helpers;
-using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using System;
+using Simple_Icon_File_Maker.Contracts.Services;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Windows.Services.Store;
 using Windows.Storage;
 using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker.Services;
 
-public class StoreService
+public class StoreService : IStoreService
 {
     private static readonly ConcurrentDictionary<string, StoreProduct> _productsCache = new();
     private static readonly ConcurrentDictionary<string, bool> _ownershipCache = new();
@@ -22,13 +18,49 @@ public class StoreService
 
     public event EventHandler<string>? ProductPurchased;
 
-    public static async Task<bool> OwnsPro()
+    private bool? _ownsPro;
+
+    public bool OwnsPro
+    {
+        get
+        {
+            if (_ownsPro is null)
+                return false;
+
+            return _ownsPro.Value;
+        }
+    }
+
+    private string? _proPrice;
+
+    public string ProPrice
+    {
+        get
+        {
+            if (_proPrice is null)
+                return "---";
+
+            return _proPrice;
+        }
+    }
+
+    public StoreService()
+    {
+    }
+
+    public async Task InitializeAsync()
+    {
+        _ownsPro = await ownsPro();
+        _proPrice = await proPrice();
+    }
+
+    private async Task<bool> ownsPro()
     {
         bool ownsPro = false;
         string ownsProKey = "OwnsPro";
         try
         {
-            var settings = ApplicationData.Current.LocalSettings;
+            ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
             bool settingExists = settings.Values.ContainsKey(ownsProKey);
 
             if (!settingExists)
@@ -37,7 +69,14 @@ public class StoreService
                 settings.Values[ownsProKey] = ownsPro;
             }
             else
-                ownsPro = (bool)settings.Values[ownsProKey];
+            {
+                bool previouslySetOwnedPro = (bool)settings.Values[ownsProKey];
+
+                if (previouslySetOwnedPro)
+                    return true;
+
+                ownsPro = await IsOwnedAsync(proFeaturesId);
+            }
         }
         catch (Exception ex)
         {
@@ -48,47 +87,52 @@ public class StoreService
         return ownsPro;
     }
 
-    public static async Task<StorePurchaseStatus> BuyPro()
+    public async Task<StorePurchaseStatus> BuyPro()
     {
         string ownsProKey = "OwnsPro";
         StorePurchaseStatus purchaseResult = await PurchaseAddOn(proFeaturesId);
 
-        bool ownsPro = false;
+        bool setSetting = false;
 
         switch (purchaseResult)
         {
             case StorePurchaseStatus.Succeeded:
-                ownsPro = true;
+                _ownsPro = true;
+                setSetting = true;
                 break;
             case StorePurchaseStatus.AlreadyPurchased:
-                ownsPro = true;
+                _ownsPro = true;
+                setSetting = true;
                 break;
             case StorePurchaseStatus.NotPurchased:
                 break;
             case StorePurchaseStatus.NetworkError:
                 break;
             case StorePurchaseStatus.ServerError:
-                ownsPro = true;
+                _ownsPro = true;
+                setSetting = false;
                 break;
             default:
                 break;
         }
 
-        try
+        if (setSetting)
         {
-            var settings = ApplicationData.Current.LocalSettings;
-            settings.Values[ownsProKey] = ownsPro;
-        }
-        catch (Exception)
-        {
-
-            throw;
+            try
+            {
+                ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
+                settings.Values[ownsProKey] = _ownsPro;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         return purchaseResult;
     }
 
-    public static async Task<string> ProPrice()
+    private async Task<string> proPrice()
     {
         return await GetPriceAsync(proFeaturesId);
     }
@@ -107,7 +151,7 @@ public class StoreService
         if (appLicense is null)
             return false;
 
-        foreach (var addOnLicense in appLicense.AddOnLicenses)
+        foreach (KeyValuePair<string, StoreLicense> addOnLicense in appLicense.AddOnLicenses)
         {
             StoreLicense license = addOnLicense.Value;
             if (license.InAppOfferToken == iapId && license.IsActive)
@@ -147,7 +191,7 @@ public class StoreService
     {
         StorePurchaseStatus result = await PurchaseAddOn(iapId);
 
-        if (result == StorePurchaseStatus.Succeeded || result == StorePurchaseStatus.AlreadyPurchased)
+        if (result is StorePurchaseStatus.Succeeded or StorePurchaseStatus.AlreadyPurchased)
             _ownershipCache[iapId] = true;
 
         if (result == StorePurchaseStatus.Succeeded)

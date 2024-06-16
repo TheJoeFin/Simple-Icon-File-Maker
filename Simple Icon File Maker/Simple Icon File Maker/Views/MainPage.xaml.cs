@@ -2,17 +2,12 @@ using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Controls;
-using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
-using Simple_Icon_File_Maker.Services;
-using System;
-using System.Collections.Generic;
+using Simple_Icon_File_Maker.ViewModels;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -27,33 +22,47 @@ public sealed partial class MainPage : Page
 
     readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
 
+    private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
     private string OutPutPath = "";
 
-    private bool OwnsPro { get; set; } = false;
+    MainViewModel ViewModel { get; } = new();
 
     public MainPage()
     {
         InitializeComponent();
+        ConfigBlankState();
+        DataContext = ViewModel;
+        dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
+        dispatcherTimer.Tick += DispatcherTimer_Tick;
     }
 
-    private async void Page_Loaded(object sender, RoutedEventArgs e)
+    private async void DispatcherTimer_Tick(object? sender, object e)
+    {
+        dispatcherTimer.Stop();
+
+        await LoadFromImagePath();
+    }
+
+    private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
 
-        OwnsPro = await StoreService.OwnsPro();
+        if (App.cliArgs?.Length > 1)
+            ImagePath = App.cliArgs[1];
 
-        if (!OwnsPro)
+        if (!App.GetService<IStoreService>().OwnsPro)
         {
             UpgradeProHypBtn.Visibility = Visibility.Visible;
             UpgradeProHypBtn2.Visibility = Visibility.Visible;
         }
+        dispatcherTimer.Start();
     }
 
-    private async Task LoadIconSizes()
+    private void LoadIconSizes()
     {
         IconSizes.Clear();
-        List<IconSize> loadedSizes = await IconSizeHelper.GetIconSizes();
+        List<IconSize> loadedSizes = App.GetService<IIconSizesService>().IconSizes;
 
         foreach (IconSize size in loadedSizes)
             if (!size.IsHidden)
@@ -157,6 +166,9 @@ public sealed partial class MainPage : Page
         CheckIfRefreshIsNeeded();
     }
 
+    private void ConfigBlankState() => 
+        VisualStateManager.GoToState(this, UiStates.BlankState.ToString(), true);
+
     private void ConfigUiThinking() =>
     VisualStateManager.GoToState(this, UiStates.ThinkingState.ToString(), true);
 
@@ -253,12 +265,12 @@ public sealed partial class MainPage : Page
         }
 
         InitialLoadProgressBar.Value = 0;
-        await LoadIconSizes();
+        LoadIconSizes();
 
         try
         {
             MagickImage image = new(ImagePath);
-            MainImage.Source = await image.ToImageSource();
+            MainImage.Source = image.ToImageSource();
         }
         catch (Exception ex)
         {
@@ -448,12 +460,8 @@ public sealed partial class MainPage : Page
             UIElementCollection uIElements = PreviewsGrid.Children;
 
             foreach (UIElement element in uIElements)
-            {
                 if (element is PreviewStack stack)
-                {
                     await stack.SaveAllImagesAsync(OutPutPath);
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -564,12 +572,12 @@ public sealed partial class MainPage : Page
 
     private async void EditSizes_Click(object sender, RoutedEventArgs e)
     {
-        bool ownsPro = await StoreService.OwnsPro();
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
 
         if (ownsPro)
         {
             EditSizesDialog editSizesDialog = new() { XamlRoot = Content.XamlRoot };
-            editSizesDialog.Closed += async (s, e) => { await LoadIconSizes(); };
+            editSizesDialog.Closed += (s, e) => { LoadIconSizes(); };
             _ = await editSizesDialog.ShowAsync();
         }
         else

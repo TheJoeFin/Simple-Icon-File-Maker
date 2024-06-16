@@ -6,4 +6,5 @@ public enum UiStates
     ThinkingState = 1,
     ImageSelectedState = 2,
     UnsupportedFileFormat = 3,
+    BlankState = 4,
 }
