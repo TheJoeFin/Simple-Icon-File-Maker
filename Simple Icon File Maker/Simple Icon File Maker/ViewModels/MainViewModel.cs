@@ -6,7 +6,7 @@ namespace Simple_Icon_File_Maker.ViewModels;
 
 public partial class MainViewModel : ObservableRecipient, INavigationAware
 {
-    MainViewModel()
+    public MainViewModel()
     {
     }
 

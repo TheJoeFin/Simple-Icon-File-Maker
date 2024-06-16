@@ -2,17 +2,14 @@ using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.Services;
-using System;
-using System.Collections.Generic;
+using Simple_Icon_File_Maker.ViewModels;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
@@ -30,11 +27,12 @@ public sealed partial class MainPage : Page
     private string ImagePath = "";
     private string OutPutPath = "";
 
-    private bool OwnsPro { get; set; } = false;
+    MainViewModel ViewModel { get; } = new();
 
     public MainPage()
     {
         InitializeComponent();
+        DataContext = ViewModel;
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -44,13 +42,11 @@ public sealed partial class MainPage : Page
         if (App.cliArgs?.Length > 1)
             ImagePath = App.cliArgs[1];
 
-        //OwnsPro = await StoreService.OwnsPro();
-
-        //if (!OwnsPro)
-        //{
-        //    UpgradeProHypBtn.Visibility = Visibility.Visible;
-        //    UpgradeProHypBtn2.Visibility = Visibility.Visible;
-        //}
+        if (!App.GetService<IStoreService>().OwnsPro)
+        {
+            UpgradeProHypBtn.Visibility = Visibility.Visible;
+            UpgradeProHypBtn2.Visibility = Visibility.Visible;
+        }
     }
 
     private async Task LoadIconSizes()
@@ -451,12 +447,8 @@ public sealed partial class MainPage : Page
             UIElementCollection uIElements = PreviewsGrid.Children;
 
             foreach (UIElement element in uIElements)
-            {
                 if (element is PreviewStack stack)
-                {
                     await stack.SaveAllImagesAsync(OutPutPath);
-                }
-            }
         }
         catch (Exception ex)
         {
@@ -567,7 +559,7 @@ public sealed partial class MainPage : Page
 
     private async void EditSizes_Click(object sender, RoutedEventArgs e)
     {
-        bool ownsPro = await StoreService.OwnsPro();
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
 
         if (ownsPro)
         {

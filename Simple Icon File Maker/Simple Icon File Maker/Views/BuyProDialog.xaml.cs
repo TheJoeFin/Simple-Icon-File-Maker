@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Simple_Icon_File_Maker.Services;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Windows.Services.Store;
 
 namespace Simple_Icon_File_Maker;
@@ -14,7 +14,7 @@ public sealed partial class BuyProDialog : ContentDialog
 
     private async void BuyProButton_Click(object sender, RoutedEventArgs e)
     {
-        StorePurchaseStatus result = await StoreService.BuyPro();
+        StorePurchaseStatus result = await App.GetService<IStoreService>().BuyPro();
 
         if (result is StorePurchaseStatus.Succeeded or StorePurchaseStatus.AlreadyPurchased)
         {
@@ -23,9 +23,9 @@ public sealed partial class BuyProDialog : ContentDialog
         }
     }
 
-    private async void ContentDialog_Loaded(object sender, RoutedEventArgs e)
+    private void ContentDialog_Loaded(object sender, RoutedEventArgs e)
     {
-        PriceTextBlock.Text = await StoreService.ProPrice();
+        PriceTextBlock.Text = App.GetService<IStoreService>().ProPrice;
         BuyProButton.IsEnabled = true;
     }
 }
