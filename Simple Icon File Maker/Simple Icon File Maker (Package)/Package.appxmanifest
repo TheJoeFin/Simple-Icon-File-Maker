@@ -44,6 +44,18 @@
         </uap:DefaultTile >
         <uap:SplashScreen Image="Images\SplashScreen.png" />
       </uap:VisualElements>
+      <Extensions>
+        <uap:Extension Category="windows.fileTypeAssociation">
+          <uap:FileTypeAssociation Name="simple-icon-file-maker" DesiredView="default">
+            <uap:SupportedFileTypes>
+              <uap:FileType>.ico</uap:FileType>
+            </uap:SupportedFileTypes>
+            <uap:DisplayName>Simple Icon File Maker</uap:DisplayName>
+            <uap:InfoTip>Open icon file and see all sizes</uap:InfoTip>
+            <uap:Logo>Images\Image128.png</uap:Logo>
+          </uap:FileTypeAssociation>
+        </uap:Extension>
+      </Extensions>
     </Application>
   </Applications>
 

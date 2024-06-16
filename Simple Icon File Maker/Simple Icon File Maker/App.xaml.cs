@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using System;
 
 namespace Simple_Icon_File_Maker;
 
@@ -11,9 +12,12 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
+        cliArgs = Environment.GetCommandLineArgs();
+
         m_window = new MainWindow();
         m_window.Activate();
     }
 
     public static Window? m_window;
+    public static string[]? cliArgs;
 }
