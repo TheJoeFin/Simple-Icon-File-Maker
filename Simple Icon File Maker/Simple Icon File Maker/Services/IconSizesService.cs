@@ -1,19 +1,25 @@
 ﻿using Simple_Icon_File_Maker.Contracts.Services;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 
 namespace Simple_Icon_File_Maker.Services;
 
-internal class IconSizesService : IIconSizesService
+public class IconSizesService : IIconSizesService
 {
     public List<IconSize> IconSizes { get; private set; } = new();
 
-    public Task InitializeAsync()
+    public IconSizesService()
     {
-        throw new NotImplementedException();
     }
 
-    public Task Save(IEnumerable<IconSize> iconSizes)
+    public async Task InitializeAsync()
     {
-        throw new NotImplementedException();
+        IconSizes = await IconSizeHelper.GetIconSizes();
+    }
+
+    public async Task Save(IEnumerable<IconSize> iconSizes)
+    {
+        IconSizes = iconSizes.ToList();
+        await IconSizeHelper.Save(IconSizes);
     }
 }

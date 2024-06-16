@@ -2,8 +2,9 @@
 
 namespace Simple_Icon_File_Maker.Contracts.Services;
 
-internal interface IIconSizesService
+public interface IIconSizesService
 {
+    List<IconSize> IconSizes { get; }
     Task Save(IEnumerable<IconSize> iconSizes);
 
     Task InitializeAsync();

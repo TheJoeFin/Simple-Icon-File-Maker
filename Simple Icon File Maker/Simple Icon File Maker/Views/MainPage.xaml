@@ -5,6 +5,7 @@
     x:Class="Simple_Icon_File_Maker.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:CommunityToolkit.WinUI.UI.Animations"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
@@ -21,6 +22,10 @@
             </Style.Setters>
         </Style>
     </Page.Resources>
+
+    <animations:Implicit.Animations>
+        <animations:OpacityAnimation />
+    </animations:Implicit.Animations>
 
     <Grid
         Padding="16,2,16,16"
@@ -444,6 +449,14 @@
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="InterfaceStates">
+                <VisualState x:Name="BlankState">
+                    <VisualState.Setters>
+                        <Setter Target="dropHere.Visibility" Value="Collapsed" />
+                        <Setter Target="errorInfoBar.IsOpen" Value="False" />
+                        <Setter Target="LoadingText.Visibility" Value="Collapsed" />
+                        <Setter Target="InitialLoadProgressBar.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
                 <VisualState x:Name="WelcomeState" />
                 <VisualState x:Name="ThinkingState">
                     <VisualState.Setters>

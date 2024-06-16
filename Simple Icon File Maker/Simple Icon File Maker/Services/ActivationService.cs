@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Controls;
 
 using Simple_Icon_File_Maker.Activation;
 using Simple_Icon_File_Maker.Contracts.Services;
-// using Simple_Icon_File_Maker.Views;
 
 namespace Simple_Icon_File_Maker.Services;
 
@@ -12,15 +11,21 @@ public class ActivationService : IActivationService
     private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly IIconSizesService _iconSizesService;
     private readonly IStoreService _storeService;
     private UIElement? _shell = null;
 
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService, IStoreService storeService)
+    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler,
+                             IEnumerable<IActivationHandler> activationHandlers,
+                             IThemeSelectorService themeSelectorService,
+                             IStoreService storeService,
+                             IIconSizesService iconSizesService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
         _storeService = storeService;
+        _iconSizesService = iconSizesService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -67,6 +72,7 @@ public class ActivationService : IActivationService
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
         await _storeService.InitializeAsync().ConfigureAwait(false);
+        await _iconSizesService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }
 

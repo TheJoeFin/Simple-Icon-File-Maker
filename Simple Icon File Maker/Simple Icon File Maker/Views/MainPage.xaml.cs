@@ -4,9 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Controls;
-using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
-using Simple_Icon_File_Maker.Services;
 using Simple_Icon_File_Maker.ViewModels;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -24,6 +22,7 @@ public sealed partial class MainPage : Page
 
     readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
 
+    private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
     private string OutPutPath = "";
 
@@ -32,7 +31,17 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
+        ConfigBlankState();
         DataContext = ViewModel;
+        dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
+        dispatcherTimer.Tick += DispatcherTimer_Tick;
+    }
+
+    private async void DispatcherTimer_Tick(object? sender, object e)
+    {
+        dispatcherTimer.Stop();
+
+        await LoadFromImagePath();
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -47,12 +56,13 @@ public sealed partial class MainPage : Page
             UpgradeProHypBtn.Visibility = Visibility.Visible;
             UpgradeProHypBtn2.Visibility = Visibility.Visible;
         }
+        dispatcherTimer.Start();
     }
 
-    private async Task LoadIconSizes()
+    private void LoadIconSizes()
     {
         IconSizes.Clear();
-        List<IconSize> loadedSizes = await IconSizeHelper.GetIconSizes();
+        List<IconSize> loadedSizes = App.GetService<IIconSizesService>().IconSizes;
 
         foreach (IconSize size in loadedSizes)
             if (!size.IsHidden)
@@ -156,6 +166,9 @@ public sealed partial class MainPage : Page
         CheckIfRefreshIsNeeded();
     }
 
+    private void ConfigBlankState() => 
+        VisualStateManager.GoToState(this, UiStates.BlankState.ToString(), true);
+
     private void ConfigUiThinking() =>
     VisualStateManager.GoToState(this, UiStates.ThinkingState.ToString(), true);
 
@@ -252,12 +265,12 @@ public sealed partial class MainPage : Page
         }
 
         InitialLoadProgressBar.Value = 0;
-        await LoadIconSizes();
+        LoadIconSizes();
 
         try
         {
             MagickImage image = new(ImagePath);
-            MainImage.Source = await image.ToImageSource();
+            MainImage.Source = image.ToImageSource();
         }
         catch (Exception ex)
         {
@@ -564,7 +577,7 @@ public sealed partial class MainPage : Page
         if (ownsPro)
         {
             EditSizesDialog editSizesDialog = new() { XamlRoot = Content.XamlRoot };
-            editSizesDialog.Closed += async (s, e) => { await LoadIconSizes(); };
+            editSizesDialog.Closed += (s, e) => { LoadIconSizes(); };
             _ = await editSizesDialog.ShowAsync();
         }
         else
