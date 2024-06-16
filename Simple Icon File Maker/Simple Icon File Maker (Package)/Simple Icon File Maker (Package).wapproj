@@ -84,6 +84,9 @@
     <Content Include="Images\Wide310x150Logo.scale-200.png" />
     <Content Include="Square44x44Logo.scale-100.png" />
     <Content Include="Square44x44Logo.scale-200.png" />
+    <Content Include="Square44x44Logo.targetsize-16_altform-lightunplated.png" />
+    <Content Include="Square44x44Logo.targetsize-16_altform-unplated.png" />
+    <Content Include="Square44x44Logo.targetsize-24_altform-lightunplated.png" />
     <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -93,10 +96,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240428000">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240607001">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
     <PackageReference Include="WinUIEx" Version="2.3.4" />
