@@ -84,7 +84,9 @@
                         x:Name="SupportedFilesTextBlock"
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Drag and drop an image here" />
+                        IsTextSelectionEnabled="True"
+                        Text="Drag and drop an image here"
+                        TextWrapping="Wrap" />
 
                     <StackPanel
                         x:Name="OpenBTN"

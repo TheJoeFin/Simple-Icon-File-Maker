@@ -37,17 +37,20 @@ public sealed partial class MainPage : Page
         InitializeComponent();
     }
 
-    private async void Page_Loaded(object sender, RoutedEventArgs e)
+    private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
 
-        OwnsPro = await StoreService.OwnsPro();
+        if (App.cliArgs?.Length > 1)
+            ImagePath = App.cliArgs[1];
 
-        if (!OwnsPro)
-        {
-            UpgradeProHypBtn.Visibility = Visibility.Visible;
-            UpgradeProHypBtn2.Visibility = Visibility.Visible;
-        }
+        //OwnsPro = await StoreService.OwnsPro();
+
+        //if (!OwnsPro)
+        //{
+        //    UpgradeProHypBtn.Visibility = Visibility.Visible;
+        //    UpgradeProHypBtn2.Visibility = Visibility.Visible;
+        //}
     }
 
     private async Task LoadIconSizes()
