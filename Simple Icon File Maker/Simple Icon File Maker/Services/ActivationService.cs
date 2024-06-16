@@ -33,14 +33,14 @@ public class ActivationService : IActivationService
         // Execute tasks before activation.
         await InitializeAsync();
 
-        if (App.m_window is null)
+        if (App.m_window is not MainWindow mainWin)
             return;
 
         // Set the MainWindow Content.
-        if (App.m_window?.Content == null)
+        if (mainWin.ContentFrame.Content is null)
         {
             _shell = App.GetService<MainPage>();
-            App.m_window.Content = _shell ?? new Frame();
+            mainWin.ContentFrame.Content = _shell ?? new Frame();
         }
 
         // Handle activation via ActivationHandlers.
@@ -71,7 +71,7 @@ public class ActivationService : IActivationService
     private async Task InitializeAsync()
     {
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
-        await _storeService.InitializeAsync().ConfigureAwait(false);
+        await _storeService.InitializeAsync().ConfigureAwait(true);
         await _iconSizesService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }

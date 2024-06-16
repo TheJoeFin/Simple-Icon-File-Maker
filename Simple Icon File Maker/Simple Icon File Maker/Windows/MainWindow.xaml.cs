@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using System;
 using WinRT.Interop;
 using WinUIEx;
 
@@ -10,6 +10,7 @@ namespace Simple_Icon_File_Maker;
 public sealed partial class MainWindow : WindowEx
 {
     private readonly AppWindow? m_AppWindow;
+    public Frame ContentFrame { get; set; } = new();
 
     public MainWindow()
     {
