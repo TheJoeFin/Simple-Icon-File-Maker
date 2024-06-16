@@ -18,7 +18,7 @@ public class StoreService : IStoreService
 
     public event EventHandler<string>? ProductPurchased;
 
-    private bool? _ownsPro = false;
+    private bool? _ownsPro;
 
     public bool OwnsPro
     {
@@ -69,7 +69,14 @@ public class StoreService : IStoreService
                 settings.Values[ownsProKey] = ownsPro;
             }
             else
-                ownsPro = (bool)settings.Values[ownsProKey];
+            {
+                bool previouslySetOwnedPro = (bool)settings.Values[ownsProKey];
+
+                if (previouslySetOwnedPro)
+                    return true;
+
+                ownsPro = await IsOwnedAsync(proFeaturesId);
+            }
         }
         catch (Exception ex)
         {
@@ -85,17 +92,16 @@ public class StoreService : IStoreService
         string ownsProKey = "OwnsPro";
         StorePurchaseStatus purchaseResult = await PurchaseAddOn(proFeaturesId);
 
-        bool ownsPro = false;
         bool setSetting = false;
 
         switch (purchaseResult)
         {
             case StorePurchaseStatus.Succeeded:
-                ownsPro = true;
+                _ownsPro = true;
                 setSetting = true;
                 break;
             case StorePurchaseStatus.AlreadyPurchased:
-                ownsPro = true;
+                _ownsPro = true;
                 setSetting = true;
                 break;
             case StorePurchaseStatus.NotPurchased:
@@ -103,7 +109,7 @@ public class StoreService : IStoreService
             case StorePurchaseStatus.NetworkError:
                 break;
             case StorePurchaseStatus.ServerError:
-                ownsPro = true;
+                _ownsPro = true;
                 setSetting = false;
                 break;
             default:
@@ -115,7 +121,7 @@ public class StoreService : IStoreService
             try
             {
                 ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
-                settings.Values[ownsProKey] = ownsPro;
+                settings.Values[ownsProKey] = _ownsPro;
             }
             catch (Exception)
             {

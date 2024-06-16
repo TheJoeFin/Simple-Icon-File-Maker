@@ -21,6 +21,9 @@ public sealed partial class BuyProDialog : ContentDialog
             Hide();
             return;
         }
+
+        ErrorInfoBar.Message = $"Purchase failed, {result}. Please try again later.";
+        ErrorInfoBar.IsOpen = true;
     }
 
     private void ContentDialog_Loaded(object sender, RoutedEventArgs e)
