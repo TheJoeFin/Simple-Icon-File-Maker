@@ -37,7 +37,7 @@
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240607001" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
     <PackageReference Include="WinUIEx" Version="2.3.4" />
     <Manifest Include="$(ApplicationManifest)" />
