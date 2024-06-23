@@ -137,7 +137,7 @@
                 Visibility="Collapsed">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="Shop" />
-                    <TextBlock Text="Upgrade to Pro Today!" />
+                    <TextBlock Text="Do more with Pro..." />
                 </StackPanel>
             </HyperlinkButton>
             <StackPanel
