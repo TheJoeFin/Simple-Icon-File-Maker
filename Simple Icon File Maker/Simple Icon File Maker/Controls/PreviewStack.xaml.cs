@@ -118,7 +118,7 @@ public sealed partial class PreviewStack : UserControl
         }
     }
 
-    public async Task<bool> GeneratePreviewImagesAsync(IProgress<int> progress)
+    public async Task<bool> GeneratePreviewImagesAsync(IProgress<int> progress, string path = "")
     {
         string? openedPath = Path.GetDirectoryName(imagePath);
         string? name = Path.GetFileNameWithoutExtension(imagePath);

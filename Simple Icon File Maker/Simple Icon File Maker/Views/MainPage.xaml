@@ -176,6 +176,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
                 <HyperlinkButton
                     x:Name="UpgradeProHypBtn2"
@@ -200,8 +201,28 @@
                         FontSize="16"
                         Glyph="&#xE946;" />
                 </Button>
+                <DropDownButton Grid.Column="2" Height="32">
+                    <DropDownButton.Content>
+                        <Viewbox>
+                            <FontIcon Glyph="&#xE790;" />
+                        </Viewbox>
+                    </DropDownButton.Content>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout>
+                            <MenuFlyoutItem IsEnabled="False" Text="Undo" />
+                            <MenuFlyoutItem IsEnabled="False" Text="Redo" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem
+                                x:Name="BlackWhiteButton"
+                                Click="BlackWhiteButton_Click"
+                                Text="Black and White" />
+                            <MenuFlyoutItem x:Name="InvertButton" Text="Invert" />
+                            <MenuFlyoutItem x:Name="TintButton" Text="Color Tint" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
                 <Button
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Width="138"
                     Height="32"
                     Padding="0"

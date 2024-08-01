@@ -410,6 +410,11 @@ public sealed partial class MainPage : Page
     {
         RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
 
+        await RefreshPreviews();
+    }
+
+    private async Task RefreshPreviews()
+    {
         UIElementCollection uIElements = PreviewsGrid.Children;
 
         Progress<int> progress = new(percent =>
@@ -420,7 +425,7 @@ public sealed partial class MainPage : Page
         foreach (UIElement element in uIElements)
         {
             if (element is PreviewStack stack)
-                await stack.GeneratePreviewImagesAsync(progress);
+                await stack.GeneratePreviewImagesAsync(progress, ImagePath);
         }
 
         bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
@@ -592,5 +597,23 @@ public sealed partial class MainPage : Page
     {
         BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
         _ = await buyProDialog.ShowAsync();
+    }
+
+    private async void BlackWhiteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string bwFilePath = Path.Combine(sf.Path, $"{ImagePath}_bw.png");
+        MagickImage image = new(ImagePath);
+
+        image.Grayscale();
+        await image.WriteAsync(bwFilePath);
+        ImagePath = bwFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
     }
 }
