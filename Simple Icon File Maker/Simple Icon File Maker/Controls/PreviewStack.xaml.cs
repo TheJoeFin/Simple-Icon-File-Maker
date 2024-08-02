@@ -1,23 +1,18 @@
-using ImageMagick.ImageOptimizers;
 using ImageMagick;
+using ImageMagick.ImageOptimizers;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Simple_Icon_File_Maker.Models;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using Windows.Storage;
 using System.Drawing;
-using Microsoft.UI.Xaml;
-using System.Linq;
+using Windows.Storage;
 
 namespace Simple_Icon_File_Maker.Controls;
 
 public sealed partial class PreviewStack : UserControl
 {
-    private readonly string imagePath;
-    private Dictionary<int, string> imagePaths = new();
+    private string imagePath;
+    private Dictionary<int, string> imagePaths = [];
     private Size? SourceImageSize;
     private readonly MagickImage mainImage;
     private readonly string iconRootString;
@@ -71,9 +66,9 @@ public sealed partial class PreviewStack : UserControl
 
     public async Task SaveIconAsync(string outputPath)
     {
-        MagickImageCollection collection = new();
+        MagickImageCollection collection = [];
 
-        foreach ((_, string path ) in imagePaths)
+        foreach ((_, string path) in imagePaths)
             collection.Add(path);
 
         await Task.Run(async () =>
@@ -120,6 +115,9 @@ public sealed partial class PreviewStack : UserControl
 
     public async Task<bool> GeneratePreviewImagesAsync(IProgress<int> progress, string path = "")
     {
+        if (!string.IsNullOrWhiteSpace(path))
+            imagePath = path;
+
         string? openedPath = Path.GetDirectoryName(imagePath);
         string? name = Path.GetFileNameWithoutExtension(imagePath);
 
@@ -187,7 +185,7 @@ public sealed partial class PreviewStack : UserControl
 
         await firstPassImage.WriteAsync(croppedImagePath);
 
-        MagickImageCollection collection = new();
+        MagickImageCollection collection = [];
 
         List<int> selectedSizes = ChosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
 
@@ -265,7 +263,7 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
 
         MagickImageCollection collection = new(imagePath);
-        Dictionary<int, string> iconImages = new();
+        Dictionary<int, string> iconImages = [];
 
         int currentLocation = 0;
         int totalImages = collection.Count;
@@ -274,7 +272,7 @@ public sealed partial class PreviewStack : UserControl
             Debug.WriteLine($"Image: {image.Width}x{image.Height}");
             string imageName = $"{Path.GetFileNameWithoutExtension(imagePath)}-{image.Width}.png";
 
-            string pathForSingleImage = Path.Combine(iconRootString,imageName);
+            string pathForSingleImage = Path.Combine(iconRootString, imageName);
             await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
 
             imagePaths.Add(image.Width, pathForSingleImage);
@@ -311,7 +309,7 @@ public sealed partial class PreviewStack : UserControl
     public async Task UpdatePreviewsAsync()
     {
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        foreach (var pair in imagePaths)
+        foreach (KeyValuePair<int, string> pair in imagePaths)
         {
             if (pair.Value is not string imagePath)
                 return;
@@ -350,7 +348,7 @@ public sealed partial class PreviewStack : UserControl
     {
         UIElementCollection previewBoxes = PreviewStackPanel.Children;
 
-        foreach (var child in previewBoxes)
+        foreach (UIElement? child in previewBoxes)
         {
             if (child is PreviewImage img)
             {

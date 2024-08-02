@@ -80,7 +80,7 @@
                     <FontIcon
                         FontSize="36"
                         Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                        Glyph="&#xE8C8;" />
+                        Glyph="&#xE91B;" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -169,7 +169,7 @@
             <Grid
                 x:Name="ClearAppBarButton"
                 Grid.Row="1"
-                Margin="0,0,8,-4"
+                Margin="8,0,8,-4"
                 ColumnSpacing="8"
                 Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
@@ -187,7 +187,7 @@
                     Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <SymbolIcon Symbol="Shop" />
-                        <TextBlock Text="Upgrade to Pro" />
+                        <TextBlock Text="Get Pro" />
                     </StackPanel>
                 </HyperlinkButton>
                 <Button
@@ -201,23 +201,49 @@
                         FontSize="16"
                         Glyph="&#xE946;" />
                 </Button>
-                <DropDownButton Grid.Column="2" Height="32">
+                <DropDownButton
+                    x:Name="EditImageColorDropDownButton"
+                    Grid.Column="2"
+                    Height="32"
+                    Click="EditImageColorDropDownButton_Click"
+                    IsEnabled="True"
+                    ToolTipService.ToolTip="Change color of the image">
                     <DropDownButton.Content>
-                        <Viewbox>
-                            <FontIcon Glyph="&#xE790;" />
-                        </Viewbox>
+                        <Grid>
+                            <FontIcon FontSize="16" Glyph="&#xE790;" />
+                            <FontIcon
+                                FontSize="8"
+                                Foreground="Goldenrod"
+                                Glyph="&#xE785;">
+                                <FontIcon.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="-12" Y="6" />
+                                    </TransformGroup>
+                                </FontIcon.RenderTransform>
+                            </FontIcon>
+                        </Grid>
                     </DropDownButton.Content>
                     <DropDownButton.Flyout>
-                        <MenuFlyout>
+                        <MenuFlyout Opening="MenuFlyout_Opening">
                             <MenuFlyoutItem IsEnabled="False" Text="Undo" />
                             <MenuFlyoutItem IsEnabled="False" Text="Redo" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem
+                                x:Name="GrayScaleButton"
+                                Click="GrayScaleButton_Click"
+                                Text="Grayscale" />
+                            <MenuFlyoutItem
                                 x:Name="BlackWhiteButton"
                                 Click="BlackWhiteButton_Click"
-                                Text="Black and White" />
-                            <MenuFlyoutItem x:Name="InvertButton" Text="Invert" />
-                            <MenuFlyoutItem x:Name="TintButton" Text="Color Tint" />
+                                Text="Black &amp; White (OTSU)" />
+                            <MenuFlyoutItem
+                                x:Name="BlackWhiteKapurButton"
+                                Click="BlackWhiteButton_Click2"
+                                Text="Black &amp; White (Kapur)" />
+                            <MenuFlyoutItem
+                                x:Name="InvertButton"
+                                Click="InvertButton_Click"
+                                Text="Invert" />
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>
@@ -290,7 +316,7 @@
                     <Grid>
                         <FontIcon FontSize="16" Glyph="&#xE70F;" />
                         <FontIcon
-                            FontSize="12"
+                            FontSize="8"
                             Foreground="Goldenrod"
                             Glyph="&#xE785;">
                             <FontIcon.RenderTransform>

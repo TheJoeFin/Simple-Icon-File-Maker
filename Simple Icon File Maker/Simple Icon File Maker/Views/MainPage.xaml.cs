@@ -590,7 +590,6 @@ public sealed partial class MainPage : Page
             BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
             _ = await buyProDialog.ShowAsync();
         }
-
     }
 
     private async void UpgradeToProHyperlinkButton_Click(object sender, RoutedEventArgs e)
@@ -605,15 +604,101 @@ public sealed partial class MainPage : Page
             return;
 
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        string bwFilePath = Path.Combine(sf.Path, $"{ImagePath}_bw.png");
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw.{extension}");
         MagickImage image = new(ImagePath);
-
+        
         image.Grayscale();
+        image.AutoThreshold(AutoThresholdMethod.OTSU);
         await image.WriteAsync(bwFilePath);
         ImagePath = bwFilePath;
 
         MainImage.Source = image.ToImageSource();
 
         await RefreshPreviews();
+    }
+
+    private async void BlackWhiteButton_Click2(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw.{extension}");
+        MagickImage image = new(ImagePath);
+
+        image.Grayscale();
+        image.AutoThreshold(AutoThresholdMethod.Kapur);
+        await image.WriteAsync(bwFilePath);
+        ImagePath = bwFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void InvertButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string invFilePath = Path.Combine(sf.Path, $"{fileName}_inv.{extension}");
+        MagickImage image = new(ImagePath);
+
+        image.Negate(Channels.RGB);
+        await image.WriteAsync(invFilePath);
+        ImagePath = invFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void GrayScaleButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string grayFilePath = Path.Combine(sf.Path, $"{fileName}_gray.{extension}");
+        MagickImage image = new(ImagePath);
+
+        image.Grayscale();
+        await image.WriteAsync(grayFilePath);
+        ImagePath = grayFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void EditImageColorDropDownButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
+
+        if (ownsPro)
+            return;
+
+        BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
+        _ = await buyProDialog.ShowAsync();
+    }
+
+    private void MenuFlyout_Opening(object sender, object e)
+    {
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
+
+        if (ownsPro)
+            return;
+
+        if (sender is MenuFlyout flyout)
+            flyout.Hide();
     }
 }
