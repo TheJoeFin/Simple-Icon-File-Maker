@@ -1,0 +1,131 @@
+﻿<Page
+    x:Class="Simple_Icon_File_Maker.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer MinWidth="500">
+        <StackPanel
+            Padding="80,20,20,20"
+            HorizontalAlignment="Stretch"
+            Spacing="4">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <Button Command="{x:Bind ViewModel.GoBackCommand}">
+                    <StackPanel
+                        Margin="6,4"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <SymbolIcon Symbol="Back" />
+                        <TextBlock Text="Back" />
+                    </StackPanel>
+                </Button>
+                <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
+            </StackPanel>
+            <controls:SettingsExpander
+                Description="© 2024, All rights reserved"
+                Header="Simple Icon File Maker"
+                IsExpanded="True">
+                <TextBlock x:Name="VersionNumber" IsTextSelectionEnabled="True" />
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                        <StackPanel Orientation="Vertical">
+                            <HyperlinkButton
+                                x:Name="SourceBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/TheJoeFin/Simple-Icon-File-Maker">
+                                Source code on GitHub
+                            </HyperlinkButton>
+                            <HyperlinkButton
+                                x:Name="ReviewBTN"
+                                Margin="-12,0,0,0"
+                                Click="ReviewBTN_Click">
+                                Rate / Review on the Microsoft Store
+                            </HyperlinkButton>
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+
+            <controls:SettingsExpander Header="Change log">
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard Header="v 1.2.2">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● Added the ability to remove color from image for the icon<LineBreak />
+                                ● Update packages<LineBreak />
+                                ● Move about to seperate page<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+
+            <controls:SettingsExpander Header="Created by">
+                <controls:SettingsExpander.HeaderIcon>
+                    <SymbolIcon Symbol="OtherUser" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                        <StackPanel Orientation="Vertical" Spacing="12">
+                            <HyperlinkButton
+                                x:Name="TheJoeFinBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/TheJoeFin">
+                                TheJoeFin (GitHub)
+                            </HyperlinkButton>
+                            <TextBlock
+                                Margin="0,16,0,0"
+                                FontWeight="SemiBold"
+                                Text="UI Design by:" />
+                            <HyperlinkButton
+                                x:Name="NielsBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/niels9001">
+                                Niels Laute (GitHub)
+                            </HyperlinkButton>
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+            <controls:SettingsExpander Header="Libraries used:">
+                <controls:SettingsExpander.HeaderIcon>
+                    <SymbolIcon Symbol="Library" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
+                        <StackPanel Orientation="Vertical" Spacing="12">
+                            <HyperlinkButton
+                                x:Name="MagickDotNetBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/dlemstra/Magick.NET">
+                                The .NET library for ImageMagick: Magick.NET
+                            </HyperlinkButton>
+                            <HyperlinkButton
+                                x:Name="WindowsAppSDKBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/microsoft/WindowsAppSDK">
+                                Windows App SDK
+                            </HyperlinkButton>
+                            <HyperlinkButton
+                                x:Name="WinUIBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/Microsoft/microsoft-ui-xaml">
+                                WinUI 3
+                            </HyperlinkButton>
+                            <HyperlinkButton
+                                x:Name="WinUIExBTN"
+                                Margin="-12,0,0,0"
+                                NavigateUri="https://github.com/dotMorten/WinUIEx">
+                                WinUIEx
+                            </HyperlinkButton>
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -15,16 +15,18 @@
     <PackageIcon>Image128.png</PackageIcon>
 	<ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Image128.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="AboutDialog.xaml" />
+    <None Remove="AboutPage.xaml" />
     <None Remove="Controls\PreviewStack.xaml" />
     <None Remove="MainPage.xaml" />
     <None Remove="Views\BuyProDialog.xaml" />
     <None Remove="Views\EditSizesDialog.xaml" />
+    <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="SimpleIconMaker.ico" />
@@ -32,6 +34,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.0.240109" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.10.0" />
@@ -63,7 +66,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="AboutDialog.xaml">
+    <Page Update="AboutPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\BuyProDialog.xaml">
@@ -76,5 +79,11 @@
 
   <ItemGroup>
     <Folder Include="Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

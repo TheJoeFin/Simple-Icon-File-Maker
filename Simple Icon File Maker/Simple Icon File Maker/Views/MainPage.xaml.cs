@@ -27,7 +27,7 @@ public sealed partial class MainPage : Page
     private string OutPutPath = "";
     private UndoRedo undoRedo = new();
 
-    MainViewModel ViewModel { get; } = new();
+    MainViewModel ViewModel { get; }
 
     public MainPage()
     {
@@ -36,6 +36,7 @@ public sealed partial class MainPage : Page
         DataContext = ViewModel;
         dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
         dispatcherTimer.Tick += DispatcherTimer_Tick;
+        ViewModel = App.GetService<MainViewModel>();
 
         undoRedo.UndoButton = UndoButton;
         undoRedo.RedoButton = RedoButton;
@@ -312,16 +313,6 @@ public sealed partial class MainPage : Page
             SaveAllBTN.IsEnabled = false;
             ConfigUiWelcome();
         }
-    }
-
-    private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
-    {
-        AboutDialog aboutWindow = new()
-        {
-            XamlRoot = Content.XamlRoot
-        };
-
-        _ = await aboutWindow.ShowAsync();
     }
 
     private async void OpenBTN_Click(object sender, RoutedEventArgs e)

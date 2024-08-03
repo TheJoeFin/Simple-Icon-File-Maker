@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 
 using Simple_Icon_File_Maker.Activation;
 using Simple_Icon_File_Maker.Contracts.Services;
+using Simple_Icon_File_Maker.Views;
 
 namespace Simple_Icon_File_Maker.Services;
 
@@ -33,21 +34,18 @@ public class ActivationService : IActivationService
         // Execute tasks before activation.
         await InitializeAsync();
 
-        if (App.m_window is not MainWindow mainWin)
-            return;
-
         // Set the MainWindow Content.
-        if (mainWin.ContentFrame.Content is null)
+        if (App.MainWindow.Content is null)
         {
-            _shell = App.GetService<MainPage>();
-            mainWin.ContentFrame.Content = _shell ?? new Frame();
+            _shell = App.GetService<ShellPage>();
+            App.MainWindow.Content = _shell ?? new Frame();
         }
 
         // Handle activation via ActivationHandlers.
         await HandleActivationAsync(activationArgs);
 
         // Activate the MainWindow.
-        App.m_window.Activate();
+        App.MainWindow.Activate();
 
         // Execute tasks after activation.
         await StartupAsync();
