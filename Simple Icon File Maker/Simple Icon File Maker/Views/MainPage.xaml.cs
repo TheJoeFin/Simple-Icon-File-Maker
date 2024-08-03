@@ -36,6 +36,9 @@ public sealed partial class MainPage : Page
         DataContext = ViewModel;
         dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
         dispatcherTimer.Tick += DispatcherTimer_Tick;
+
+        undoRedo.UndoButton = UndoButton;
+        undoRedo.RedoButton = RedoButton;
     }
 
     private async void DispatcherTimer_Tick(object? sender, object e)
@@ -719,19 +722,21 @@ public sealed partial class MainPage : Page
             flyout.Hide();
     }
 
-    private void UndoButton_Click(object sender, RoutedEventArgs e)
+    private async void UndoButton_Click(object sender, RoutedEventArgs e)
     {
         if (!undoRedo.CanUndo)
             return;
 
-        undoRedo.Undo();
+        ImagePath = undoRedo.Undo();
+        await RefreshPreviews();
     }
 
-    private void RedoButton_Click(object sender, RoutedEventArgs e)
+    private async void RedoButton_Click(object sender, RoutedEventArgs e)
     {
         if (!undoRedo.CanRedo)
             return;
 
-        undoRedo.Redo();
+        ImagePath = undoRedo.Redo();
+        await RefreshPreviews();
     }
 }

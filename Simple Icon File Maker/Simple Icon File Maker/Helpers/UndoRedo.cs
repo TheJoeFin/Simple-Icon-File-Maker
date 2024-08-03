@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
 using System.Drawing;
+using Microsoft.UI.Xaml;
 
 namespace Simple_Icon_File_Maker;
 
@@ -9,6 +10,9 @@ public class UndoRedo
 {
     private readonly Stack<UndoRedoItem> _undoStack = new();
     private readonly Stack<UndoRedoItem> _redoStack = new();
+
+    public Control? UndoButton { get; set; }
+    public Control? RedoButton { get; set; }
 
     public bool CanUndo => _undoStack.Count > 0;
     public bool CanRedo => _redoStack.Count > 0;
@@ -19,6 +23,12 @@ public class UndoRedo
     {
         _undoStack.Push(item);
         _redoStack.Clear();
+
+        if (UndoButton is not null)
+            UndoButton.IsEnabled = CanUndo;
+
+        if (RedoButton is not null)
+            RedoButton.IsEnabled = CanRedo;
     }
 
     public string Undo()
@@ -29,6 +39,13 @@ public class UndoRedo
         UndoRedoItem item = _undoStack.Pop();
         string newPath = item.Undo();
         _redoStack.Push(item);
+
+        if (UndoButton is not null)
+            UndoButton.IsEnabled = CanUndo;
+
+        if (RedoButton is not null)
+            RedoButton.IsEnabled = CanRedo;
+
         return newPath;
     }
 
@@ -40,6 +57,13 @@ public class UndoRedo
         UndoRedoItem item = _redoStack.Pop();
         string newPath = item.Redo();
         _undoStack.Push(item);
+
+        if (UndoButton is not null)
+            UndoButton.IsEnabled = CanUndo;
+
+        if (RedoButton is not null)
+            RedoButton.IsEnabled = CanRedo;
+
         return newPath;
     }
 }
