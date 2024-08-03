@@ -11,7 +11,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public void NavigateToAbout()
     {
-        NavigationService.NavigateTo(typeof(AboutViewModel).FullName);
+        NavigationService.NavigateTo(typeof(AboutViewModel).FullName!);
     }
 
     INavigationService NavigationService

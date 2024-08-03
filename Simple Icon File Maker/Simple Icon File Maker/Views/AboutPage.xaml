@@ -28,6 +28,9 @@
                 Description="© 2024, All rights reserved"
                 Header="Simple Icon File Maker"
                 IsExpanded="True">
+                <controls:SettingsExpander.HeaderIcon>
+                    <FontIcon FontSize="16" Glyph="&#xE946;" />
+                </controls:SettingsExpander.HeaderIcon>
                 <TextBlock x:Name="VersionNumber" IsTextSelectionEnabled="True" />
                 <controls:SettingsExpander.Items>
                     <controls:SettingsCard HorizontalContentAlignment="Left" ContentAlignment="Left">
@@ -50,8 +53,11 @@
             </controls:SettingsExpander>
 
             <controls:SettingsExpander Header="Change log">
+                <controls:SettingsExpander.HeaderIcon>
+                    <SymbolIcon Symbol="List" />
+                </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
-                    <controls:SettingsCard Header="v 1.2.2">
+                    <controls:SettingsCard Header="v 1.10">
                         <controls:SettingsCard.Description>
                             <TextBlock>
                                 <LineBreak />
