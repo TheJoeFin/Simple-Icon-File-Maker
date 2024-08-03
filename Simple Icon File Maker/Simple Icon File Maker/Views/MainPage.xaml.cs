@@ -25,6 +25,7 @@ public sealed partial class MainPage : Page
     private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
     private string OutPutPath = "";
+    private UndoRedo undoRedo = new();
 
     MainViewModel ViewModel { get; } = new();
 
@@ -612,6 +613,10 @@ public sealed partial class MainPage : Page
         image.Grayscale();
         image.AutoThreshold(AutoThresholdMethod.OTSU);
         await image.WriteAsync(bwFilePath);
+        
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, bwFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
         ImagePath = bwFilePath;
 
         MainImage.Source = image.ToImageSource();
@@ -627,13 +632,17 @@ public sealed partial class MainPage : Page
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(ImagePath);
         string extension = Path.GetExtension(ImagePath);
-        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw.{extension}");
+        string bwkFilePath = Path.Combine(sf.Path, $"{fileName}_bwk.{extension}");
         MagickImage image = new(ImagePath);
 
         image.Grayscale();
         image.AutoThreshold(AutoThresholdMethod.Kapur);
-        await image.WriteAsync(bwFilePath);
-        ImagePath = bwFilePath;
+        await image.WriteAsync(bwkFilePath);
+
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, bwkFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
+        ImagePath = bwkFilePath;
 
         MainImage.Source = image.ToImageSource();
 
@@ -653,6 +662,10 @@ public sealed partial class MainPage : Page
 
         image.Negate(Channels.RGB);
         await image.WriteAsync(invFilePath);
+
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, invFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
         ImagePath = invFilePath;
 
         MainImage.Source = image.ToImageSource();
@@ -673,6 +686,10 @@ public sealed partial class MainPage : Page
 
         image.Grayscale();
         await image.WriteAsync(grayFilePath);
+
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, grayFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
         ImagePath = grayFilePath;
 
         MainImage.Source = image.ToImageSource();
@@ -700,5 +717,21 @@ public sealed partial class MainPage : Page
 
         if (sender is MenuFlyout flyout)
             flyout.Hide();
+    }
+
+    private void UndoButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!undoRedo.CanUndo)
+            return;
+
+        undoRedo.Undo();
+    }
+
+    private void RedoButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!undoRedo.CanRedo)
+            return;
+
+        undoRedo.Redo();
     }
 }

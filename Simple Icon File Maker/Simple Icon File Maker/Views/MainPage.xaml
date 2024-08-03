@@ -225,8 +225,16 @@
                     </DropDownButton.Content>
                     <DropDownButton.Flyout>
                         <MenuFlyout Opening="MenuFlyout_Opening">
-                            <MenuFlyoutItem IsEnabled="False" Text="Undo" />
-                            <MenuFlyoutItem IsEnabled="False" Text="Redo" />
+                            <MenuFlyoutItem
+                                x:Name="UndoButton"
+                                Click="UndoButton_Click"
+                                IsEnabled="False"
+                                Text="Undo" />
+                            <MenuFlyoutItem
+                                x:Name="RedoButton"
+                                Click="RedoButton_Click"
+                                IsEnabled="False"
+                                Text="Redo" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem
                                 x:Name="GrayScaleButton"
