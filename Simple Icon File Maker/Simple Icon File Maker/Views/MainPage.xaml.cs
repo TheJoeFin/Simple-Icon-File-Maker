@@ -610,7 +610,7 @@ public sealed partial class MainPage : Page
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(ImagePath);
         string extension = Path.GetExtension(ImagePath);
-        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw.{extension}");
+        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw{extension}");
         MagickImage image = new(ImagePath);
         
         image.Grayscale();
@@ -635,7 +635,7 @@ public sealed partial class MainPage : Page
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(ImagePath);
         string extension = Path.GetExtension(ImagePath);
-        string bwkFilePath = Path.Combine(sf.Path, $"{fileName}_bwk.{extension}");
+        string bwkFilePath = Path.Combine(sf.Path, $"{fileName}_bwk{extension}");
         MagickImage image = new(ImagePath);
 
         image.Grayscale();
@@ -660,7 +660,7 @@ public sealed partial class MainPage : Page
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(ImagePath);
         string extension = Path.GetExtension(ImagePath);
-        string invFilePath = Path.Combine(sf.Path, $"{fileName}_inv.{extension}");
+        string invFilePath = Path.Combine(sf.Path, $"{fileName}_inv{extension}");
         MagickImage image = new(ImagePath);
 
         image.Negate(Channels.RGB);
@@ -684,7 +684,7 @@ public sealed partial class MainPage : Page
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(ImagePath);
         string extension = Path.GetExtension(ImagePath);
-        string grayFilePath = Path.Combine(sf.Path, $"{fileName}_gray.{extension}");
+        string grayFilePath = Path.Combine(sf.Path, $"{fileName}_gray{extension}");
         MagickImage image = new(ImagePath);
 
         image.Grayscale();
