@@ -1,5 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using System;
+using Simple_Icon_File_Maker.ViewModels;
 using Windows.ApplicationModel;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -7,12 +7,14 @@ using Windows.ApplicationModel;
 
 namespace Simple_Icon_File_Maker;
 
-public sealed partial class AboutDialog : ContentDialog
+public sealed partial class AboutPage : Page
 {
-    public AboutDialog()
+    AboutViewModel ViewModel { get; }
+
+    public AboutPage()
     {
         InitializeComponent();
-
+        ViewModel = App.GetService<AboutViewModel>();
         VersionNumber.Text = GetAppDescription();
     }
 
@@ -22,7 +24,7 @@ public sealed partial class AboutDialog : ContentDialog
         PackageId packageId = package.Id;
         PackageVersion version = packageId.Version;
 
-        return $"{package.DisplayName} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+        return $"Version {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
     }
 
     private async void ReviewBTN_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

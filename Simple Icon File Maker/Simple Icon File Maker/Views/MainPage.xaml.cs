@@ -25,8 +25,9 @@ public sealed partial class MainPage : Page
     private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
     private string OutPutPath = "";
+    private UndoRedo undoRedo = new();
 
-    MainViewModel ViewModel { get; } = new();
+    MainViewModel ViewModel { get; }
 
     public MainPage()
     {
@@ -35,6 +36,10 @@ public sealed partial class MainPage : Page
         DataContext = ViewModel;
         dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
         dispatcherTimer.Tick += DispatcherTimer_Tick;
+        ViewModel = App.GetService<MainViewModel>();
+
+        undoRedo.UndoButton = UndoButton;
+        undoRedo.RedoButton = RedoButton;
     }
 
     private async void DispatcherTimer_Tick(object? sender, object e)
@@ -310,16 +315,6 @@ public sealed partial class MainPage : Page
         }
     }
 
-    private async void InfoAppBarButton_Click(object sender, RoutedEventArgs e)
-    {
-        AboutDialog aboutWindow = new()
-        {
-            XamlRoot = Content.XamlRoot
-        };
-
-        _ = await aboutWindow.ShowAsync();
-    }
-
     private async void OpenBTN_Click(object sender, RoutedEventArgs e)
     {
         Button? openButton = sender as Button;
@@ -410,6 +405,11 @@ public sealed partial class MainPage : Page
     {
         RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
 
+        await RefreshPreviews();
+    }
+
+    private async Task RefreshPreviews()
+    {
         UIElementCollection uIElements = PreviewsGrid.Children;
 
         Progress<int> progress = new(percent =>
@@ -420,7 +420,7 @@ public sealed partial class MainPage : Page
         foreach (UIElement element in uIElements)
         {
             if (element is PreviewStack stack)
-                await stack.GeneratePreviewImagesAsync(progress);
+                await stack.GeneratePreviewImagesAsync(progress, ImagePath);
         }
 
         bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
@@ -585,12 +585,149 @@ public sealed partial class MainPage : Page
             BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
             _ = await buyProDialog.ShowAsync();
         }
-
     }
 
     private async void UpgradeToProHyperlinkButton_Click(object sender, RoutedEventArgs e)
     {
         BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
         _ = await buyProDialog.ShowAsync();
+    }
+
+    private async void BlackWhiteButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw{extension}");
+        MagickImage image = new(ImagePath);
+        
+        image.Grayscale();
+        image.AutoThreshold(AutoThresholdMethod.OTSU);
+        await image.WriteAsync(bwFilePath);
+        
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, bwFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
+        ImagePath = bwFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void BlackWhiteButton_Click2(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string bwkFilePath = Path.Combine(sf.Path, $"{fileName}_bwk{extension}");
+        MagickImage image = new(ImagePath);
+
+        image.Grayscale();
+        image.AutoThreshold(AutoThresholdMethod.Kapur);
+        await image.WriteAsync(bwkFilePath);
+
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, bwkFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
+        ImagePath = bwkFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void InvertButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string invFilePath = Path.Combine(sf.Path, $"{fileName}_inv{extension}");
+        MagickImage image = new(ImagePath);
+
+        image.Negate(Channels.RGB);
+        await image.WriteAsync(invFilePath);
+
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, invFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
+        ImagePath = invFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void GrayScaleButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+        string fileName = Path.GetFileNameWithoutExtension(ImagePath);
+        string extension = Path.GetExtension(ImagePath);
+        string grayFilePath = Path.Combine(sf.Path, $"{fileName}_gray{extension}");
+        MagickImage image = new(ImagePath);
+
+        image.Grayscale();
+        await image.WriteAsync(grayFilePath);
+
+        MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, grayFilePath);
+        undoRedo.AddUndo(undoRedoItem);
+
+        ImagePath = grayFilePath;
+
+        MainImage.Source = image.ToImageSource();
+
+        await RefreshPreviews();
+    }
+
+    private async void EditImageColorDropDownButton_Click(object sender, RoutedEventArgs e)
+    {
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
+
+        if (ownsPro)
+            return;
+
+        BuyProDialog buyProDialog = new() { XamlRoot = Content.XamlRoot };
+        _ = await buyProDialog.ShowAsync();
+    }
+
+    private void MenuFlyout_Opening(object sender, object e)
+    {
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
+
+        if (ownsPro)
+            return;
+
+        if (sender is MenuFlyout flyout)
+            flyout.Hide();
+    }
+
+    private async void UndoButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!undoRedo.CanUndo)
+            return;
+
+        ImagePath = undoRedo.Undo();
+        await RefreshPreviews();
+    }
+
+    private async void RedoButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!undoRedo.CanRedo)
+            return;
+
+        ImagePath = undoRedo.Redo();
+        await RefreshPreviews();
     }
 }

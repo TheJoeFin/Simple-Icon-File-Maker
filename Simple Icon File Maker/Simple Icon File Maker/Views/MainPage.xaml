@@ -80,7 +80,7 @@
                     <FontIcon
                         FontSize="36"
                         Foreground="{ThemeResource AccentFillColorDefaultBrush}"
-                        Glyph="&#xE8C8;" />
+                        Glyph="&#xE91B;" />
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -102,7 +102,7 @@
                         <Button
                             Height="32"
                             HorizontalAlignment="Left"
-                            Click="InfoAppBarButton_Click"
+                            Command="{x:Bind ViewModel.NavigateToAboutCommand}"
                             ToolTipService.ToolTip="About Simple Icon File Maker">
                             <FontIcon
                                 VerticalAlignment="Center"
@@ -169,11 +169,12 @@
             <Grid
                 x:Name="ClearAppBarButton"
                 Grid.Row="1"
-                Margin="0,0,8,-4"
+                Margin="8,0,8,-4"
                 ColumnSpacing="8"
                 Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
@@ -186,22 +187,76 @@
                     Visibility="Collapsed">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <SymbolIcon Symbol="Shop" />
-                        <TextBlock Text="Upgrade to Pro" />
+                        <TextBlock Text="Get Pro" />
                     </StackPanel>
                 </HyperlinkButton>
                 <Button
                     Grid.Column="1"
                     Height="32"
                     HorizontalAlignment="Left"
-                    Click="InfoAppBarButton_Click"
+                    Command="{x:Bind ViewModel.NavigateToAboutCommand}"
                     ToolTipService.ToolTip="About Simple Icon File Maker">
                     <FontIcon
                         VerticalAlignment="Center"
                         FontSize="16"
                         Glyph="&#xE946;" />
                 </Button>
-                <Button
+                <DropDownButton
+                    x:Name="EditImageColorDropDownButton"
                     Grid.Column="2"
+                    Height="32"
+                    Click="EditImageColorDropDownButton_Click"
+                    IsEnabled="True"
+                    ToolTipService.ToolTip="Change color of the image">
+                    <DropDownButton.Content>
+                        <Grid>
+                            <FontIcon FontSize="16" Glyph="&#xE790;" />
+                            <FontIcon
+                                FontSize="8"
+                                Foreground="Goldenrod"
+                                Glyph="&#xE785;">
+                                <FontIcon.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="-12" Y="6" />
+                                    </TransformGroup>
+                                </FontIcon.RenderTransform>
+                            </FontIcon>
+                        </Grid>
+                    </DropDownButton.Content>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Opening="MenuFlyout_Opening">
+                            <MenuFlyoutItem
+                                x:Name="UndoButton"
+                                Click="UndoButton_Click"
+                                IsEnabled="False"
+                                Text="Undo" />
+                            <MenuFlyoutItem
+                                x:Name="RedoButton"
+                                Click="RedoButton_Click"
+                                IsEnabled="False"
+                                Text="Redo" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem
+                                x:Name="GrayScaleButton"
+                                Click="GrayScaleButton_Click"
+                                Text="Grayscale" />
+                            <MenuFlyoutItem
+                                x:Name="BlackWhiteButton"
+                                Click="BlackWhiteButton_Click"
+                                Text="Black &amp; White (OTSU)" />
+                            <MenuFlyoutItem
+                                x:Name="BlackWhiteKapurButton"
+                                Click="BlackWhiteButton_Click2"
+                                Text="Black &amp; White (Kapur)" />
+                            <MenuFlyoutItem
+                                x:Name="InvertButton"
+                                Click="InvertButton_Click"
+                                Text="Invert" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <Button
+                    Grid.Column="3"
                     Width="138"
                     Height="32"
                     Padding="0"
@@ -269,7 +324,7 @@
                     <Grid>
                         <FontIcon FontSize="16" Glyph="&#xE70F;" />
                         <FontIcon
-                            FontSize="12"
+                            FontSize="8"
                             Foreground="Goldenrod"
                             Glyph="&#xE785;">
                             <FontIcon.RenderTransform>

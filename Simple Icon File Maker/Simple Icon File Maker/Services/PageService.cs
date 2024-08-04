@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.ViewModels;
+using Simple_Icon_File_Maker.Views;
 
 namespace Simple_Icon_File_Maker.Services;
 
@@ -14,6 +15,8 @@ public class PageService : IPageService
     public PageService()
     {
         Configure<MainViewModel, MainPage>();
+        Configure<ShellViewModel, ShellPage>();
+        Configure<AboutViewModel, AboutPage>();
     }
 
     public Type GetPageType(string key)

@@ -7,27 +7,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     mc:Ignorable="d">
-
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="32" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <Grid x:Name="titleBar">
-            <StackPanel
-                Margin="16,8,8,8"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
-                <Image Source="../SimpleIconMaker.ico" />
-                <TextBlock
-                    Margin="12,0,0,0"
-                    FontSize="12"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Simple Icon File Maker" />
-            </StackPanel>
-        </Grid>
-        <Frame Grid.Row="1" Content="{x:Bind ContentFrame, Mode=OneWay}" />
-    </Grid>
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
 
 
 </winuiex:WindowEx>
