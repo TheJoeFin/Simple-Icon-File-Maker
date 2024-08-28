@@ -2,22 +2,16 @@
 using CommunityToolkit.Mvvm.Input;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
+using Simple_Icon_File_Maker.Services;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
-public partial class MainViewModel : ObservableRecipient, INavigationAware
+public partial class MultiViewModel : ObservableRecipient, INavigationAware
 {
-
     [RelayCommand]
-    public void NavigateToAbout()
+    public void GoBack()
     {
-        NavigationService.NavigateTo(typeof(AboutViewModel).FullName!);
-    }
-
-    [RelayCommand]
-    public void NavigateToMulti()
-    {
-        NavigationService.NavigateTo(typeof(MultiViewModel).FullName!);
+        NavigationService.GoBack();
     }
 
     INavigationService NavigationService
@@ -25,18 +19,16 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         get;
     }
 
-    public MainViewModel(INavigationService navigationService)
+    public MultiViewModel(INavigationService navigationService)
     {
         NavigationService = navigationService;
     }
 
     public void OnNavigatedFrom()
     {
-        
     }
 
     public void OnNavigatedTo(object parameter)
     {
-        
     }
 }

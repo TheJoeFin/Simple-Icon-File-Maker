@@ -72,6 +72,8 @@ public partial class App : Application
             services.AddTransient<MainViewModel>();
             services.AddTransient<AboutPage>();
             services.AddTransient<AboutViewModel>();
+            services.AddTransient<MultiPage>();
+            services.AddTransient<MultiViewModel>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

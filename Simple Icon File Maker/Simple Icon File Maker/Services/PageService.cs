@@ -17,6 +17,7 @@ public class PageService : IPageService
         Configure<MainViewModel, MainPage>();
         Configure<ShellViewModel, ShellPage>();
         Configure<AboutViewModel, AboutPage>();
+        Configure<MultiViewModel, MultiPage>();
     }
 
     public Type GetPageType(string key)

@@ -18,8 +18,8 @@
                         Margin="6,4"
                         Orientation="Horizontal"
                         Spacing="8">
-                        <SymbolIcon Symbol="Back" />
-                        <TextBlock Text="Back" />
+                        <SymbolIcon Symbol="Home" />
+                        <TextBlock Text="Start Page" />
                     </StackPanel>
                 </Button>
                 <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />

@@ -125,6 +125,16 @@
                                 <KeyboardAccelerator Key="O" Modifiers="Control" />
                             </Button.KeyboardAccelerators>
                         </Button>
+                        <Button
+                            Height="32"
+                            HorizontalAlignment="Left"
+                            Command="{x:Bind ViewModel.NavigateToMultiCommand}"
+                            ToolTipService.ToolTip="Open a folder of images">
+                            <FontIcon
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Glyph="&#xE8DE;" />
+                        </Button>
                     </StackPanel>
                 </StackPanel>
             </Grid>
