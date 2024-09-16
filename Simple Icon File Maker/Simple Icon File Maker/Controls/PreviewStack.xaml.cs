@@ -275,6 +275,9 @@ public sealed partial class PreviewStack : UserControl
             string pathForSingleImage = Path.Combine(iconRootString, imageName);
             await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
 
+            if (imagePaths.ContainsKey(image.Width))
+                continue;
+
             imagePaths.Add(image.Width, pathForSingleImage);
 
             iconImages.Add(image.Width, imagePath);
