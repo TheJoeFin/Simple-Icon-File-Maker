@@ -131,7 +131,7 @@ public sealed partial class MainPage : Page
         }
 
         MagickImage image = new(ImagePath);
-        int smallerSide = Math.Min(image.Width, image.Height);
+        int smallerSide = (int)Math.Min(image.Width, image.Height);
 
         foreach (IconSize size in IconSizes)
             if (size.SideLength > smallerSide)
