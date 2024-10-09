@@ -9,9 +9,10 @@
 
     <ScrollViewer MinWidth="500">
         <StackPanel
+            MaxWidth="1000"
             Padding="80,20,20,20"
             HorizontalAlignment="Stretch"
-            Spacing="4">
+            Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <Button Command="{x:Bind ViewModel.GoBackCommand}">
                     <StackPanel
@@ -52,25 +53,7 @@
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
-            <controls:SettingsExpander Header="Change log">
-                <controls:SettingsExpander.HeaderIcon>
-                    <SymbolIcon Symbol="List" />
-                </controls:SettingsExpander.HeaderIcon>
-                <controls:SettingsExpander.Items>
-                    <controls:SettingsCard Header="v 1.10">
-                        <controls:SettingsCard.Description>
-                            <TextBlock>
-                                <LineBreak />
-                                ● Added the ability to remove color from image for the icon<LineBreak />
-                                ● Update packages<LineBreak />
-                                ● Move about to seperate page<LineBreak />
-                            </TextBlock>
-                        </controls:SettingsCard.Description>
-                    </controls:SettingsCard>
-                </controls:SettingsExpander.Items>
-            </controls:SettingsExpander>
-
-            <controls:SettingsExpander Header="Created by">
+            <controls:SettingsExpander Header="Created by" IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>
                     <SymbolIcon Symbol="OtherUser" />
                 </controls:SettingsExpander.HeaderIcon>
@@ -97,7 +80,26 @@
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
-            <controls:SettingsExpander Header="Libraries used:">
+
+            <controls:SettingsExpander Header="Change log">
+                <controls:SettingsExpander.HeaderIcon>
+                    <SymbolIcon Symbol="List" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard Header="v 1.10">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● Added the ability to remove color from image for the icon<LineBreak />
+                                ● Update packages<LineBreak />
+                                ● Move about to seperate page<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+
+            <controls:SettingsExpander Header="Libraries used:" IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>
                     <SymbolIcon Symbol="Library" />
                 </controls:SettingsExpander.HeaderIcon>
