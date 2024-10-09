@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Simple_Icon_File_Maker.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:storage="using:Windows.Storage"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
@@ -24,5 +25,12 @@
                 <TextBlock Text="Start Page" />
             </StackPanel>
         </Button>
+        <ListView ItemsSource="{x:Bind ViewModel.Files}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="storage:IStorageFile">
+                    <TextBlock Text="{x:Bind Name}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </StackPanel>
 </Page>

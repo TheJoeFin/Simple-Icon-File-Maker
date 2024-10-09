@@ -9,7 +9,7 @@ namespace Simple_Icon_File_Maker;
 
 public sealed partial class AboutPage : Page
 {
-    AboutViewModel ViewModel { get; }
+    public AboutViewModel ViewModel { get; }
 
     public AboutPage()
     {

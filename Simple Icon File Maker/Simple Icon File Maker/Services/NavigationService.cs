@@ -83,7 +83,7 @@ public class NavigationService : INavigationService
 
     public bool NavigateTo(string pageKey, object? parameter = null, bool clearNavigation = false)
     {
-        var pageType = _pageService.GetPageType(pageKey);
+        Type pageType = _pageService.GetPageType(pageKey);
 
         if (_frame != null && (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed))))
         {
@@ -138,20 +138,20 @@ public class NavigationService : INavigationService
 
     private void OnNavigated(object sender, NavigationEventArgs e)
     {
-        if (sender is Frame frame)
+        if (sender is not Frame frame)
+            return;
+
+        // clear navigation if tag is true
+        if (frame.Tag is true)
         {
-            var clearNavigation = (bool)frame.Tag;
-            if (clearNavigation)
-            {
-                frame.BackStack.Clear();
-            }
-
-            if (frame.GetPageViewModel() is INavigationAware navigationAware)
-            {
-                navigationAware.OnNavigatedTo(e.Parameter);
-            }
-
-            Navigated?.Invoke(sender, e);
+            frame.BackStack.Clear();
         }
+
+        if (frame.GetPageViewModel() is INavigationAware navigationAware)
+        {
+            navigationAware.OnNavigatedTo(e.Parameter);
+        }
+
+        Navigated?.Invoke(sender, e);
     }
 }

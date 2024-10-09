@@ -5,7 +5,7 @@ namespace Simple_Icon_File_Maker.Views;
 
 public sealed partial class MultiPage : Page
 {
-    MultiViewModel ViewModel { get; }
+    public MultiViewModel ViewModel { get; }
 
 
     public MultiPage()

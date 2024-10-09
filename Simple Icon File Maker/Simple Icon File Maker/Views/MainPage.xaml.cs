@@ -2,8 +2,10 @@ using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Simple_Icon_File_Maker.Constants;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Controls;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.ViewModels;
 using System.Collections.ObjectModel;
@@ -20,14 +22,12 @@ public sealed partial class MainPage : Page
 {
     ObservableCollection<IconSize> IconSizes { get; set; } = new();
 
-    readonly HashSet<string> SupportedImageFormats = new() { ".png", ".bmp", ".jpeg", ".jpg", ".ico" };
-
     private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
     private string OutPutPath = "";
-    private UndoRedo undoRedo = new();
+    private readonly UndoRedo undoRedo = new();
 
-    MainViewModel ViewModel { get; }
+    public MainViewModel ViewModel { get; }
 
     public MainPage()
     {
@@ -51,7 +51,7 @@ public sealed partial class MainPage : Page
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        SupportedFilesTextBlock.Text = $"({string.Join(", ", SupportedImageFormats)})";
+        SupportedFilesTextBlock.Text = $"({string.Join(", ", FileTypes.SupportedImageFormats)})";
 
         if (App.cliArgs?.Length > 1)
             ImagePath = App.cliArgs[1];
@@ -130,12 +130,12 @@ public sealed partial class MainPage : Page
             }
         }
 
+        // TODO order the icon frames by size and choose the largest size to compare
         MagickImage image = new(ImagePath);
         int smallerSide = (int)Math.Min(image.Width, image.Height);
 
         foreach (IconSize size in IconSizes)
-            if (size.SideLength > smallerSide)
-                size.IsEnabled = false;
+            size.IsEnabled = size.SideLength <= smallerSide;
 
         if (anyRefreshAvailable)
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
@@ -171,7 +171,7 @@ public sealed partial class MainPage : Page
         CheckIfRefreshIsNeeded();
     }
 
-    private void ConfigBlankState() => 
+    private void ConfigBlankState() =>
         VisualStateManager.GoToState(this, UiStates.BlankState.ToString(), true);
 
     private void ConfigUiThinking() =>
@@ -198,7 +198,7 @@ public sealed partial class MainPage : Page
 
             ImagePath = await e.DataView.GetTextAsync();
 
-            if (!SupportedImageFormats.Contains(Path.GetExtension(ImagePath)))
+            if (!ImagePath.IsSupportedImageFormat())
             {
                 Debug.WriteLine("bitmap, update not success");
                 ConfigUiWelcome();
@@ -214,7 +214,7 @@ public sealed partial class MainPage : Page
 
             string extension = Path.GetExtension(s.AbsolutePath) ?? string.Empty;
 
-            if (!SupportedImageFormats.Contains(extension))
+            if (!ImagePath.IsSupportedImageFormat())
             {
                 Debug.WriteLine("dropped URI, not supported");
                 ConfigUiWelcome();
@@ -240,8 +240,7 @@ public sealed partial class MainPage : Page
         // Iterate through all the items to find an image, stop at first success
         foreach (IStorageItem item in storageItems)
         {
-            if (item is StorageFile file &&
-                SupportedImageFormats.Contains(file.FileType.ToLowerInvariant()))
+            if (item is StorageFile file && file.IsSupportedImageFormat())
             {
                 ImagePath = file.Path;
                 await LoadFromImagePath();
@@ -327,7 +326,7 @@ public sealed partial class MainPage : Page
             SuggestedStartLocation = PickerLocationId.PicturesLibrary
         };
 
-        foreach (string extension in SupportedImageFormats)
+        foreach (string extension in FileTypes.SupportedImageFormats)
             picker.FileTypeFilter.Add(extension);
 
         Window window = new();
@@ -603,11 +602,11 @@ public sealed partial class MainPage : Page
         string extension = Path.GetExtension(ImagePath);
         string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw{extension}");
         MagickImage image = new(ImagePath);
-        
+
         image.Grayscale();
         image.AutoThreshold(AutoThresholdMethod.OTSU);
         await image.WriteAsync(bwFilePath);
-        
+
         MagickImageUndoRedoItem undoRedoItem = new(MainImage, ImagePath, bwFilePath);
         undoRedo.AddUndo(undoRedoItem);
 

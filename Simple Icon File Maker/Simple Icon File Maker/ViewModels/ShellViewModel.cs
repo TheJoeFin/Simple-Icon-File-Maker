@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml.Navigation;
 using Simple_Icon_File_Maker.Contracts.Services;
+using Simple_Icon_File_Maker.Contracts.ViewModels;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
