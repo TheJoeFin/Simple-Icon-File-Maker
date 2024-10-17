@@ -26,7 +26,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
             ViewMode = PickerViewMode.Thumbnail,
             CommitButtonText = "Select",
-
+            FileTypeFilter = { "*" }
         };
 
         Window saveWindow = new();
