@@ -137,6 +137,8 @@ public sealed partial class MainPage : Page
         foreach (IconSize size in IconSizes)
             size.IsEnabled = size.SideLength <= smallerSide;
 
+        SizeDisabledWarning.IsOpen = IconSizes.Any(x => !x.IsEnabled);
+
         if (anyRefreshAvailable)
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
         else
@@ -388,6 +390,8 @@ public sealed partial class MainPage : Page
 
         foreach (IconSize size in IconSizes)
             size.IsEnabled = size.SideLength <= smallerSide;
+
+        SizeDisabledWarning.IsOpen = IconSizes.Any(x => !x.IsEnabled);
     }
 
     private async void OpenFolderBTN_Click(object sender, RoutedEventArgs e)
