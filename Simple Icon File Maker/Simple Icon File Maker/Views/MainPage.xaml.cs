@@ -212,8 +212,6 @@ public sealed partial class MainPage : Page
             Debug.WriteLine("dropped URI");
             Uri s = await e.DataView.GetUriAsync();
 
-            string extension = Path.GetExtension(s.AbsolutePath) ?? string.Empty;
-
             if (!ImagePath.IsSupportedImageFormat())
             {
                 Debug.WriteLine("dropped URI, not supported");
@@ -382,6 +380,14 @@ public sealed partial class MainPage : Page
 
         foreach (IconSize size in orderedIcons)
             IconSizes.Add(size);
+
+        int smallerSide = 0;
+
+        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            smallerSide = IconSizes.First(x => x.IsSelected).SideLength;
+
+        foreach (IconSize size in IconSizes)
+            size.IsEnabled = size.SideLength <= smallerSide;
     }
 
     private async void OpenFolderBTN_Click(object sender, RoutedEventArgs e)
