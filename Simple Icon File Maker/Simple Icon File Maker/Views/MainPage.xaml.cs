@@ -20,7 +20,7 @@ namespace Simple_Icon_File_Maker;
 
 public sealed partial class MainPage : Page
 {
-    ObservableCollection<IconSize> IconSizes { get; set; } = new();
+    ObservableCollection<IconSize> IconSizes { get; set; } = [];
 
     private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
@@ -234,7 +234,7 @@ public sealed partial class MainPage : Page
 
     private async Task TryToOpenStorageItems(IReadOnlyList<IStorageItem> storageItems)
     {
-        List<string> failedItemNames = new();
+        List<string> failedItemNames = [];
         // Iterate through all the items to find an image, stop at first success
         foreach (IStorageItem item in storageItems)
         {
@@ -347,8 +347,8 @@ public sealed partial class MainPage : Page
 
     private void SelectIconSizes()
     {
-        List<IconSize> chosenSizes = new();
-        SelectTheseIcons(Array.Empty<IconSize>());
+        List<IconSize> chosenSizes = [];
+        SelectTheseIcons([]);
 
         UIElementCollection uIElements = PreviewsGrid.Children;
 
@@ -375,7 +375,7 @@ public sealed partial class MainPage : Page
                 IconSizes.Add(size);
         }
 
-        List<IconSize> orderedIcons = IconSizes.OrderByDescending(size => size.SideLength).ToList();
+        List<IconSize> orderedIcons = [.. IconSizes.OrderByDescending(size => size.SideLength)];
         IconSizes.Clear();
 
         foreach (IconSize size in orderedIcons)
@@ -442,7 +442,7 @@ public sealed partial class MainPage : Page
         {
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
         };
-        savePicker.FileTypeChoices.Add("ICO File", new List<string>() { ".ico" });
+        savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
         savePicker.DefaultFileExtension = ".ico";
         savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
@@ -486,7 +486,7 @@ public sealed partial class MainPage : Page
         {
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
         };
-        savePicker.FileTypeChoices.Add("ICO File", new List<string>() { ".ico" });
+        savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
         savePicker.DefaultFileExtension = ".ico";
         savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
