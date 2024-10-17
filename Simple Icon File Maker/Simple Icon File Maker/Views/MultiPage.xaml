@@ -39,57 +39,56 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel
-            Grid.RowSpan="2"
-            Orientation="Vertical"
-            Spacing="12">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <SymbolIcon Symbol="Folder" />
-                <TextBlock
-                    HorizontalAlignment="Left"
-                    Text="{x:Bind ViewModel.FolderName}"
-                    TextWrapping="WrapWholeWords" />
-            </StackPanel>
-            <Button
-                Width="138"
-                Height="32"
-                Padding="0"
-                HorizontalAlignment="Left"
-                Command="{x:Bind ViewModel.GoBackCommand}"
-                ToolTipService.ToolTip="Close folder and return to start page">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="16" Glyph="&#xE894;" />
-                    <TextBlock Text="Close Folder" TextAlignment="Center" />
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <!--  Folder name and details  -->
+            <Grid
+                Margin="0,0,0,12"
+                Padding="16"
+                Style="{StaticResource CardStyle}">
+                <StackPanel
+                    Grid.Row="0"
+                    Orientation="Vertical"
+                    Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Folder" />
+                        <TextBlock
+                            HorizontalAlignment="Left"
+                            Text="{x:Bind ViewModel.FolderName}"
+                            TextWrapping="WrapWholeWords" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="BrowsePhotos" />
+                        <TextBlock TextWrapping="WrapWholeWords">
+                            <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+                            <Run Text="&#160;image files in the folder." />
+                        </TextBlock>
+                    </StackPanel>
+                    <Button
+                        Width="138"
+                        Height="32"
+                        Padding="0"
+                        HorizontalAlignment="Left"
+                        Command="{x:Bind ViewModel.GoBackCommand}"
+                        ToolTipService.ToolTip="Close folder and return to start page">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE894;" />
+                            <TextBlock Text="Close Folder" TextAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
-            </Button>
-            <TextBlock TextWrapping="WrapWholeWords">
-                <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
-                <Run Text="&#160;image files in the folder." />
-            </TextBlock>
+            </Grid>
 
-            <InfoBar
-                x:Name="errorInfoBar"
-                Title="Error loading the image"
-                MaxWidth="320"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Bottom"
-                IsClosable="True"
-                Severity="Error">
-                <InfoBar.Resources>
-                    <Storyboard x:Name="closeInfoBarStoryboard">
-                        <ObjectAnimationUsingKeyFrames
-                            Storyboard.TargetName="errorInfoBar"
-                            Storyboard.TargetProperty="IsOpen"
-                            Duration="0:0:15">
-                            <DiscreteObjectKeyFrame KeyTime="0:0:15" Value="False" />
-                        </ObjectAnimationUsingKeyFrames>
-                    </Storyboard>
-                </InfoBar.Resources>
-            </InfoBar>
-
-            <!--  Settings card:  -->
+            <!--  Icon sizes and selections  -->
             <Grid
                 x:Name="SettingsCard"
+                Grid.Row="1"
                 Style="{StaticResource CardStyle}"
                 Visibility="Visible">
                 <Grid.RowDefinitions>
@@ -174,7 +173,7 @@
                 <InfoBar
                     x:Name="SizeDisabledWarning"
                     Grid.Row="1"
-                    IsOpen="True"
+                    IsOpen="False"
                     Severity="Warning">
                     <TextBlock TextWrapping="WrapWholeWords">
                         Sizes larger than the source have been disabled.
@@ -195,6 +194,71 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
+
+            <!--  Save buttons  -->
+            <Grid
+                Grid.Row="2"
+                Margin="0,0,0,12"
+                Padding="16"
+                RowSpacing="12"
+                Style="{StaticResource CardStyle}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Button
+                    x:Name="SaveBTN"
+                    Grid.Row="0"
+                    IsEnabled="False"
+                    Style="{StaticResource AccentButtonStyle}"
+                    ToolTipService.ToolTip="Save .ico files for every images  in this folder">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <FontIcon FontSize="16" Glyph="&#xE74E;" />
+                        <TextBlock VerticalAlignment="Center" Text="Save all icon files" />
+                    </StackPanel>
+                </Button>
+                <Expander Grid.Row="1" IsExpanded="False">
+                    <Expander.Header>
+                        <TextBlock Text="Save options" />
+                    </Expander.Header>
+                    <Expander.Content>
+                        <StackPanel Spacing="4">
+                            <CheckBox Content="Option" />
+                            <CheckBox Content="Option" />
+                            <CheckBox Content="Option" />
+                            <CheckBox Content="Option" />
+                        </StackPanel>
+                    </Expander.Content>
+                </Expander>
+            </Grid>
+        </Grid>
+
+        <InfoBar
+            x:Name="errorInfoBar"
+            Title="Error loading the image"
+            MaxWidth="320"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
+            IsClosable="True"
+            Severity="Error">
+            <InfoBar.Resources>
+                <Storyboard x:Name="closeInfoBarStoryboard">
+                    <ObjectAnimationUsingKeyFrames
+                        Storyboard.TargetName="errorInfoBar"
+                        Storyboard.TargetProperty="IsOpen"
+                        Duration="0:0:15">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:15" Value="False" />
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
+            </InfoBar.Resources>
+        </InfoBar>
+        <StackPanel
+            Grid.RowSpan="2"
+            Orientation="Vertical"
+            Spacing="12">
+
+            <!--  Settings card:  -->
+
         </StackPanel>
         <ProgressBar Visibility="Collapsed" Value="{x:Bind ViewModel.Progress, Mode=OneWay}" />
         <Grid
