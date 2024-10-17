@@ -7,7 +7,6 @@ using Windows.Storage;
 using Simple_Icon_File_Maker.Constants;
 using Microsoft.UI.Xaml;
 using Simple_Icon_File_Maker.Controls;
-using Simple_Icon_File_Maker.Services;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.Helpers;
 
@@ -21,17 +20,59 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<UIElement> Previews { get; } = [];
 
+    public ObservableCollection<IconSize> IconSizes { get; set; } = [];
+
+    private bool folderLoadCancelled = false;
+
     [ObservableProperty]
     private int progress = 0;
 
     [ObservableProperty]
     private bool loadingImages = false;
 
+    [ObservableProperty]
+    private string folderName = "Folder name";
+
+    [ObservableProperty]
+    private int numberOfImageFiles = 0;
+
     [RelayCommand]
     public void GoBack()
     {
+        folderLoadCancelled = true;
         NavigationService.GoBack();
     }
+
+    [RelayCommand]
+    public void SelectAllSizes()
+    {
+
+    }
+
+    [RelayCommand]
+    public void DeselectAllSizes()
+    {
+
+    }
+
+    [RelayCommand]
+    public void SelectWindowsSizes()
+    {
+
+    }
+
+    [RelayCommand]
+    public void SelectWebSizes()
+    {
+
+    }
+
+    [RelayCommand]
+    public void EditIconSizes()
+    {
+
+    }
+
 
     INavigationService NavigationService
     {
@@ -45,6 +86,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     public void OnNavigatedFrom()
     {
+        folderLoadCancelled = true;
     }
 
     public async void OnNavigatedTo(object parameter)
@@ -52,12 +94,32 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         if (parameter is StorageFolder folder)
             _folder = folder;
 
+        FolderName = _folder?.DisplayName ?? "Folder name";
+
         Progress<int> progress = new(percent =>
         {
             Progress = percent;
         });
 
+        LoadIconSizes();
         await LoadFiles(progress);
+    }
+
+    private void LoadIconSizes()
+    {
+        IconSizes.Clear();
+        List<IconSize> loadedSizes = App.GetService<IIconSizesService>().IconSizes;
+
+        foreach (IconSize size in loadedSizes)
+            if (!size.IsHidden)
+                IconSizes.Add(size);
+
+        CheckIfRefreshIsNeeded();
+    }
+
+    private void CheckIfRefreshIsNeeded()
+    {
+        
     }
 
     private async Task LoadFiles(IProgress<int> progress)
@@ -74,7 +136,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         foreach (StorageFile file in tempFiles)
         {
-            if (!file.IsSupportedImageFormat())
+            if (!file.IsSupportedImageFormat() || folderLoadCancelled)
                 continue;
 
             PreviewStack preview = new(file.Path, sizes)
@@ -87,6 +149,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             Previews.Add(preview);
             bool successs = await preview.InitializeAsync(progress);
         }
+
+        NumberOfImageFiles = Previews.Count;
 
         LoadingImages = false;
     }
