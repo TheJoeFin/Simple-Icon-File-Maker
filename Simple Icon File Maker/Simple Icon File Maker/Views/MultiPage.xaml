@@ -8,6 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     xmlns:storage="using:Windows.Storage"
+    x:Name="MultiFilePage"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
@@ -23,7 +24,7 @@
     </Page.Resources>
 
     <Grid
-        Padding="16,2,16,16"
+        Padding="16,0,16,16"
         Background="Transparent"
         ColumnSpacing="12"
         RowSpacing="12">
@@ -187,6 +188,8 @@
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:IconSize">
                             <CheckBox
+                                Command="{Binding ElementName=MultiFilePage, Path=ViewModel.SizeCheckbox_TappedCommand}"
+                                CommandParameter="{x:Bind}"
                                 Content="{x:Bind Tooltip}"
                                 IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                                 IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
@@ -198,7 +201,6 @@
             <!--  Save buttons  -->
             <Grid
                 Grid.Row="2"
-                Margin="0,0,0,12"
                 Padding="16"
                 RowSpacing="12"
                 Style="{StaticResource CardStyle}">
@@ -211,7 +213,7 @@
                     Grid.Row="0"
                     IsEnabled="False"
                     Style="{StaticResource AccentButtonStyle}"
-                    ToolTipService.ToolTip="Save .ico files for every images  in this folder">
+                    ToolTipService.ToolTip="Save previews into .ico files for every images in this folder">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <FontIcon FontSize="16" Glyph="&#xE74E;" />
                         <TextBlock VerticalAlignment="Center" Text="Save all icon files" />
@@ -265,7 +267,42 @@
             Grid.Row="1"
             Grid.Column="1"
             Style="{StaticResource CardStyle}">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Padding="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Height="32" Command="{x:Bind ViewModel.RegenPreviewsCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="16"
+                            Text="&#xE72C;" />
+                        <TextBlock VerticalAlignment="Center" Text="Regenerate All Previews" />
+                    </StackPanel>
+                </Button>
+
+                <ToggleButton
+                    Grid.Column="2"
+                    Height="32"
+                    Content="&#xE8A3;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
+                    Tapped="{x:Bind ViewModel.ZoomPreviews}" />
+            </Grid>
+
+            <ScrollViewer
+                Grid.Row="1"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Auto">
                 <ItemsControl
                     Grid.Row="1"
                     Padding="6"

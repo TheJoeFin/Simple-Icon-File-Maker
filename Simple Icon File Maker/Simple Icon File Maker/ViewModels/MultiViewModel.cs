@@ -18,7 +18,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<StorageFile> Files { get; } = [];
 
-    public ObservableCollection<UIElement> Previews { get; } = [];
+    public ObservableCollection<PreviewStack> Previews { get; } = [];
 
     public ObservableCollection<IconSize> IconSizes { get; set; } = [];
 
@@ -35,6 +35,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     private int numberOfImageFiles = 0;
+
+    [ObservableProperty]
+    private bool arePreviewsZoomed = false;
 
     [RelayCommand]
     public void GoBack()
@@ -73,6 +76,33 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     }
 
+    [RelayCommand]
+    public async Task RegenPreviews()
+    {
+        Progress<int> progress = new(percent =>
+        {
+            Progress = percent;
+        });
+
+        foreach (PreviewStack stack in Previews)
+            await stack.GeneratePreviewImagesAsync(progress);
+    }
+
+    [RelayCommand]
+    public void ZoomPreviews()
+    {
+        foreach (PreviewStack stack in Previews)
+        {
+            stack.IsZoomingPreview = ArePreviewsZoomed;
+            stack.UpdateSizeAndZoom();
+        }
+    }
+
+    [RelayCommand]
+    public void SizeCheckbox_Tapped()
+    {
+        
+    }
 
     INavigationService NavigationService
     {
@@ -119,7 +149,31 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     private void CheckIfRefreshIsNeeded()
     {
-        
+        bool anyRefreshAvailable = false;
+        foreach (PreviewStack stack in Previews)
+        {
+            _ = stack.ChooseTheseSizes(IconSizes);
+
+            if (stack.CanRefresh)
+            {
+                anyRefreshAvailable = true;
+                break;
+            }
+        }
+
+        // TODO order the icon frames by size and choose the largest size to compare
+        // MagickImage image = new(ImagePath);
+        // int smallerSide = (int)Math.Min(image.Width, image.Height);
+        // 
+        // foreach (IconSize size in IconSizes)
+        //     size.IsEnabled = size.SideLength <= smallerSide;
+
+        // SizeDisabledWarning.IsOpen = IconSizes.Any(x => !x.IsEnabled);
+
+        // if (anyRefreshAvailable)
+        //     RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
+        // else
+        //     RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
     }
 
     private async Task LoadFiles(IProgress<int> progress)
