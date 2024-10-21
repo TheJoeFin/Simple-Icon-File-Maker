@@ -3,16 +3,23 @@
     x:Class="Simple_Icon_File_Maker.Views.MultiPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Simple_Icon_File_Maker.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Simple_Icon_File_Maker.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     xmlns:storage="using:Windows.Storage"
+    xmlns:tk="using:CommunityToolkit.WinUI.Controls"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     x:Name="MultiFilePage"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
     <Page.Resources>
+        <converters:BoolToPrimaryButtonStyleConverter x:Key="IsPrimary" />
+        <toolkitConverters:BoolNegationConverter x:Key="BoolInv" />
+
         <Style x:Key="CardStyle" TargetType="Grid">
             <Style.Setters>
                 <Setter Property="BorderThickness" Value="1" />
@@ -41,7 +48,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
@@ -49,10 +56,7 @@
             </Grid.RowDefinitions>
 
             <!--  Folder name and details  -->
-            <Grid
-                Margin="0,0,0,12"
-                Padding="16"
-                Style="{StaticResource CardStyle}">
+            <Grid Padding="16" Style="{StaticResource CardStyle}">
                 <StackPanel
                     Grid.Row="0"
                     Orientation="Vertical"
@@ -201,37 +205,24 @@
             <!--  Save buttons  -->
             <Grid
                 Grid.Row="2"
-                Padding="16"
-                RowSpacing="12"
+                Padding="0"
                 Style="{StaticResource CardStyle}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto" />
-                    <RowDefinition Height="auto" />
-                </Grid.RowDefinitions>
-                <Button
-                    x:Name="SaveBTN"
-                    Grid.Row="0"
-                    IsEnabled="False"
-                    Style="{StaticResource AccentButtonStyle}"
-                    ToolTipService.ToolTip="Save previews into .ico files for every images in this folder">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <FontIcon FontSize="16" Glyph="&#xE74E;" />
-                        <TextBlock VerticalAlignment="Center" Text="Save all icon files" />
-                    </StackPanel>
-                </Button>
-                <Expander Grid.Row="1" IsExpanded="False">
-                    <Expander.Header>
-                        <TextBlock Text="Save options" />
-                    </Expander.Header>
-                    <Expander.Content>
-                        <StackPanel Spacing="4">
-                            <CheckBox Content="Option" />
-                            <CheckBox Content="Option" />
-                            <CheckBox Content="Option" />
-                            <CheckBox Content="Option" />
-                        </StackPanel>
-                    </Expander.Content>
-                </Expander>
+                <tk:SettingsExpander Description="Expand for more options" HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}">
+                    <Button
+                        Command="{x:Bind ViewModel.SaveAllIconsCommand}"
+                        Content="Save All"
+                        IsEnabled="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolInv}}"
+                        Style="{StaticResource AccentButtonStyle}" />
+
+                    <tk:SettingsExpander.Items>
+                        <tk:SettingsCard ContentAlignment="Left" Description="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons">
+                            <CheckBox Content="Option 1" />
+                        </tk:SettingsCard>
+                        <tk:SettingsCard ContentAlignment="Left" Description="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons">
+                            <CheckBox Content="Option 2" />
+                        </tk:SettingsCard>
+                    </tk:SettingsExpander.Items>
+                </tk:SettingsExpander>
             </Grid>
         </Grid>
 
@@ -279,7 +270,10 @@
                     <ColumnDefinition Width="auto" />
                 </Grid.ColumnDefinitions>
 
-                <Button Height="32" Command="{x:Bind ViewModel.RegenPreviewsCommand}">
+                <Button
+                    Height="32"
+                    Command="{x:Bind ViewModel.RegenPreviewsCommand}"
+                    Style="{x:Bind ViewModel.IsRefreshNeeded, Mode=OneWay, Converter={StaticResource IsPrimary}}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock
                             FontFamily="{StaticResource SymbolThemeFontFamily}"

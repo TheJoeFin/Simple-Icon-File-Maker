@@ -39,6 +39,12 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private bool arePreviewsZoomed = false;
 
+    [ObservableProperty]
+    private bool sizeDisabledWarningIsOpen = false;
+
+    [ObservableProperty]
+    private bool isRefreshNeeded = false;
+
     [RelayCommand]
     public void GoBack()
     {
@@ -49,25 +55,33 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public void SelectAllSizes()
     {
+        foreach (IconSize size in IconSizes)
+            size.IsSelected = true;
 
+        CheckIfRefreshIsNeeded();
     }
 
     [RelayCommand]
     public void DeselectAllSizes()
     {
+        foreach (IconSize size in IconSizes)
+            size.IsSelected = false;
 
+        CheckIfRefreshIsNeeded();
     }
 
     [RelayCommand]
     public void SelectWindowsSizes()
     {
-
+        SelectTheseIcons(IconSize.GetWindowsSizesFull());
+        CheckIfRefreshIsNeeded();
     }
 
     [RelayCommand]
     public void SelectWebSizes()
     {
-
+        SelectTheseIcons(IconSize.GetIdealWebSizesFull());
+        CheckIfRefreshIsNeeded();
     }
 
     [RelayCommand]
@@ -79,6 +93,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task RegenPreviews()
     {
+        LoadingImages = true;
+
         Progress<int> progress = new(percent =>
         {
             Progress = percent;
@@ -86,6 +102,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         foreach (PreviewStack stack in Previews)
             await stack.GeneratePreviewImagesAsync(progress);
+
+        LoadingImages = false;
     }
 
     [RelayCommand]
@@ -101,7 +119,14 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public void SizeCheckbox_Tapped()
     {
-        
+        CheckIfRefreshIsNeeded();
+    }
+
+    [RelayCommand]
+    public async Task SaveAllIcons()
+    {
+        foreach (PreviewStack stack in Previews)
+            await stack.SaveIconAsync();
     }
 
     INavigationService NavigationService
@@ -135,6 +160,13 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         await LoadFiles(progress);
     }
 
+    private void SelectTheseIcons(IconSize[] iconSizesToSelect)
+    {
+        IconSideComparer iconComparer = new();
+        foreach (IconSize iconSize in IconSizes)
+            iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
+    }
+
     private void LoadIconSizes()
     {
         IconSizes.Clear();
@@ -151,15 +183,18 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     {
         bool anyRefreshAvailable = false;
         foreach (PreviewStack stack in Previews)
-        {
             _ = stack.ChooseTheseSizes(IconSizes);
 
+        foreach (PreviewStack stack in Previews)
+        {
             if (stack.CanRefresh)
             {
                 anyRefreshAvailable = true;
                 break;
             }
         }
+
+        IsRefreshNeeded = anyRefreshAvailable;
 
         // TODO order the icon frames by size and choose the largest size to compare
         // MagickImage image = new(ImagePath);

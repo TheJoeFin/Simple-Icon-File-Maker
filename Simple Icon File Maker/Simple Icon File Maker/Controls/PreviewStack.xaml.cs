@@ -65,14 +65,20 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
     }
 
-    public async Task SaveIconAsync(string outputPath)
+    public async Task SaveIconAsync(string outputPath = "")
     {
         MagickImageCollection collection = [];
 
         foreach ((_, string path) in imagePaths)
             collection.Add(path);
 
-        await Task.Run(async () =>
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
+                $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
+        }
+
+            await Task.Run(async () =>
         {
             await collection.WriteAsync(outputPath);
 
