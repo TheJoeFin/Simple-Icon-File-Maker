@@ -45,6 +45,15 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [ObservableProperty]
     private bool isRefreshNeeded = false;
 
+    [ObservableProperty]
+    private bool skipIcoFiles = true;
+
+    [ObservableProperty]
+    private bool overwriteFiles = false;
+
+    [ObservableProperty]
+    private bool saveAllImagesAsPngs = false;
+
     [RelayCommand]
     public void GoBack()
     {
@@ -129,6 +138,12 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             await stack.SaveIconAsync();
     }
 
+    [RelayCommand]
+    public async Task ReloadFiles()
+    {
+        await LoadFiles();
+    }
+
     INavigationService NavigationService
     {
         get;
@@ -151,13 +166,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         FolderName = _folder?.DisplayName ?? "Folder name";
 
-        Progress<int> progress = new(percent =>
-        {
-            Progress = percent;
-        });
-
         LoadIconSizes();
-        await LoadFiles(progress);
+        await LoadFiles();
     }
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
@@ -204,20 +214,21 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         //     size.IsEnabled = size.SideLength <= smallerSide;
 
         // SizeDisabledWarning.IsOpen = IconSizes.Any(x => !x.IsEnabled);
-
-        // if (anyRefreshAvailable)
-        //     RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
-        // else
-        //     RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
     }
 
-    private async Task LoadFiles(IProgress<int> progress)
+    private async Task LoadFiles()
     {
         if (_folder is null)
             return;
 
         LoadingImages = true;
         Files.Clear();
+        Previews.Clear();
+
+        Progress<int> progress = new(percent =>
+        {
+            Progress = percent;
+        });
 
         IReadOnlyList<StorageFile> tempFiles = await _folder.GetFilesAsync();
 
@@ -228,6 +239,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             if (!file.IsSupportedImageFormat() || folderLoadCancelled)
                 continue;
 
+            if (SkipIcoFiles && file.FileType == ".ico")
+                continue;
+
             PreviewStack preview = new(file.Path, sizes)
             {
                 MaxWidth = 600,
@@ -236,7 +250,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             };
 
             Previews.Add(preview);
-            bool successs = await preview.InitializeAsync(progress);
+            _ = await preview.InitializeAsync(progress);
         }
 
         NumberOfImageFiles = Previews.Count;

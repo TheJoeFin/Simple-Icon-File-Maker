@@ -75,18 +75,28 @@
                             <Run Text="&#160;image files in the folder." />
                         </TextBlock>
                     </StackPanel>
-                    <Button
-                        Width="138"
-                        Height="32"
-                        Padding="0"
-                        HorizontalAlignment="Left"
-                        Command="{x:Bind ViewModel.GoBackCommand}"
-                        ToolTipService.ToolTip="Close folder and return to start page">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon FontSize="16" Glyph="&#xE894;" />
-                            <TextBlock Text="Close Folder" TextAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Button
+                            Width="138"
+                            Height="32"
+                            Padding="0"
+                            HorizontalAlignment="Left"
+                            Command="{x:Bind ViewModel.GoBackCommand}"
+                            ToolTipService.ToolTip="Close folder and return to start page">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="16" Glyph="&#xE894;" />
+                                <TextBlock Text="Close Folder" TextAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <DropDownButton Content="Options">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout>
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
+                                    <MenuFlyoutItem Command="{x:Bind ViewModel.ReloadFilesCommand}" Text="Refresh files" />
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
 
@@ -215,11 +225,11 @@
                         Style="{StaticResource AccentButtonStyle}" />
 
                     <tk:SettingsExpander.Items>
-                        <tk:SettingsCard ContentAlignment="Left" Description="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons">
-                            <CheckBox Content="Option 1" />
+                        <tk:SettingsCard ContentAlignment="Left" Description="Overwrite existing files when saving new .ico or .png files">
+                            <CheckBox Content="Overwrite" IsChecked="{x:Bind ViewModel.OverwriteFiles, Mode=TwoWay}" />
                         </tk:SettingsCard>
-                        <tk:SettingsCard ContentAlignment="Left" Description="Here the ContentAlignment is set to Left. This is great for e.g. CheckBoxes or RadioButtons">
-                            <CheckBox Content="Option 2" />
+                        <tk:SettingsCard ContentAlignment="Left" Description="Export all sizes as individual .png files">
+                            <CheckBox Content="Save individual images" IsChecked="{x:Bind ViewModel.SaveAllImagesAsPngs, Mode=TwoWay}" />
                         </tk:SettingsCard>
                     </tk:SettingsExpander.Items>
                 </tk:SettingsExpander>
