@@ -16,8 +16,6 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 {
     private StorageFolder? _folder;
 
-    public ObservableCollection<StorageFile> Files { get; } = [];
-
     public ObservableCollection<PreviewStack> Previews { get; } = [];
 
     public ObservableCollection<IconSize> IconSizes { get; set; } = [];
@@ -53,6 +51,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     private bool saveAllImagesAsPngs = false;
+
+    [ObservableProperty]
+    private int sizesGenerating = 0;
 
     [RelayCommand]
     public void GoBack()
@@ -123,6 +124,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         foreach (PreviewStack stack in Previews)
             await stack.GeneratePreviewImagesAsync(progress);
+
+        SizesGenerating = IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
 
         LoadingImages = false;
     }
@@ -234,7 +237,6 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             return;
 
         LoadingImages = true;
-        Files.Clear();
         Previews.Clear();
 
         Progress<int> progress = new(percent =>
@@ -243,6 +245,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         });
 
         IReadOnlyList<StorageFile> tempFiles = await _folder.GetFilesAsync();
+        NumberOfImageFiles = tempFiles.Count(x => x.IsSupportedImageFormat());
 
         List<IconSize> sizes = [..IconSize.GetWindowsSizesFull()];
 
@@ -266,6 +269,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         }
 
         NumberOfImageFiles = Previews.Count;
+        SizesGenerating = IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
 
         LoadingImages = false;
     }
