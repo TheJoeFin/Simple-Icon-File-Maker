@@ -224,11 +224,22 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         // TODO order the icon frames by size and choose the largest size to compare
         // MagickImage image = new(ImagePath);
         // int smallerSide = (int)Math.Min(image.Width, image.Height);
-        // 
-        // foreach (IconSize size in IconSizes)
-        //     size.IsEnabled = size.SideLength <= smallerSide;
 
-        // SizeDisabledWarning.IsOpen = IconSizes.Any(x => !x.IsEnabled);
+        foreach (IconSize size in IconSizes)
+            size.IsEnabled = true;
+
+        int largestSize = IconSizes.Where(x => !x.IsHidden).Max(x => x.SideLength);
+        int smallestSource = 0;
+
+        if (Previews.Count == 0)
+        {
+            SizeDisabledWarningIsOpen = false;
+            return;
+        }
+
+        smallestSource = Previews.Max(x => x.SmallerSourceSide);
+
+        SizeDisabledWarningIsOpen = smallestSource < largestSize;
     }
 
     private async Task LoadFiles()

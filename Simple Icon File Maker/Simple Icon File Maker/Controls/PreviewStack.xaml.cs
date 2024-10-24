@@ -23,6 +23,8 @@ public sealed partial class PreviewStack : UserControl
 
     public bool CanRefresh => CheckIfRefreshIsNeeded();
 
+    public int SmallerSourceSide { get; private set; }
+
     public PreviewStack(string path, List<IconSize> sizes)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
@@ -152,6 +154,8 @@ public sealed partial class PreviewStack : UserControl
         ImagesProgressBar.Value = 10;
         SourceImageSize ??= new Size((int)mainImage.Width, (int)mainImage.Height);
 
+        SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
+
         int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
 
         imagePaths.Clear();
@@ -272,11 +276,16 @@ public sealed partial class PreviewStack : UserControl
         MagickImageCollection collection = new(imagePath);
         List<(string, string)> iconImages = [];
 
+        int largestWidth = (int)collection.Select(x => x.Width).Max();
+        int largestHeight = (int)collection.Select(x => x.Height).Max();
+
+        SmallerSourceSide = Math.Min(largestWidth, largestHeight);
+
         int currentLocation = 0;
         int totalImages = collection.Count;
         foreach (MagickImage image in collection.Cast<MagickImage>())
         {
-            Debug.WriteLine($"Image: {image.Width}x{image.Height}");
+            Debug.WriteLine($"Image: {image}");
             string imageName = $"{image}.png";
 
             string pathForSingleImage = Path.Combine(iconRootString, imageName);

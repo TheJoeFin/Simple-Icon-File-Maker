@@ -188,10 +188,10 @@
                 <InfoBar
                     x:Name="SizeDisabledWarning"
                     Grid.Row="1"
-                    IsOpen="False"
+                    IsOpen="{x:Bind ViewModel.SizeDisabledWarningIsOpen, Mode=OneWay}"
                     Severity="Warning">
                     <TextBlock TextWrapping="WrapWholeWords">
-                        Sizes larger than the source have been disabled.
+                        Sizes larger than the image source will not be generated.
                     </TextBlock>
                 </InfoBar>
                 <ListView
