@@ -94,9 +94,21 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    public void EditIconSizes()
+    public async Task EditIconSizes()
     {
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
 
+        if (ownsPro)
+        {
+            EditSizesDialog editSizesDialog = new();
+            editSizesDialog.Closed += (s, e) => { LoadIconSizes(); };
+            _ = await NavigationService.ShowModal(editSizesDialog);
+        }
+        else
+        {
+            BuyProDialog buyProDialog = new();
+            _ = await NavigationService.ShowModal(buyProDialog);
+        }
     }
 
     [RelayCommand]

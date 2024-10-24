@@ -105,6 +105,26 @@ public class NavigationService : INavigationService
         return false;
     }
 
+    public async Task<bool> ShowModal(ContentDialog dialog, object? parameter = null)
+    {
+        if (_frame is null)
+            return false;
+
+        // When showing a modal, don't trigger navigated away events
+
+        dialog.XamlRoot = _frame.XamlRoot;
+
+        try
+        {
+            var result = await dialog.ShowAsync();
+        }
+        catch
+        {
+            return false;
+        }
+        return true;
+    }
+
     public async Task<bool> ShowAsModal(string pageKey, object? parameter = null)
     {
         if (_frame is null)
