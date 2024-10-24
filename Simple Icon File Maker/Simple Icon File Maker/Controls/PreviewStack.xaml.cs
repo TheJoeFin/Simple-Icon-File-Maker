@@ -13,7 +13,7 @@ namespace Simple_Icon_File_Maker.Controls;
 public sealed partial class PreviewStack : UserControl
 {
     private string imagePath;
-    private readonly Dictionary<int, string> imagePaths = [];
+    private readonly List<(string, string)> imagePaths = [];
     private Size? SourceImageSize;
     private readonly MagickImage mainImage;
     private readonly string iconRootString;
@@ -233,7 +233,7 @@ public sealed partial class PreviewStack : UserControl
             await image.WriteAsync(iconPath, MagickFormat.Png32);
 
             collection.Add(iconPath);
-            imagePaths.Add(sideLength, iconPath);
+            imagePaths.Add((sideLength.ToString(), iconPath));
 
             currentLocation++;
             progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
@@ -270,24 +270,21 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
 
         MagickImageCollection collection = new(imagePath);
-        Dictionary<int, string> iconImages = [];
+        List<(string, string)> iconImages = [];
 
         int currentLocation = 0;
         int totalImages = collection.Count;
         foreach (MagickImage image in collection.Cast<MagickImage>())
         {
             Debug.WriteLine($"Image: {image.Width}x{image.Height}");
-            string imageName = $"{Path.GetFileNameWithoutExtension(imagePath)}-{image.Width}.png";
+            string imageName = $"{image}.png";
 
             string pathForSingleImage = Path.Combine(iconRootString, imageName);
             await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
 
-            if (imagePaths.ContainsKey((int)image.Width))
-                continue;
+            imagePaths.Add((((int)image.Width).ToString(), pathForSingleImage));
 
-            imagePaths.Add((int)image.Width, pathForSingleImage);
-
-            iconImages.Add((int)image.Width, imagePath);
+            iconImages.Add((image.ToString(), imagePath));
             IconSize iconSizeOfIconFrame = new((int)image.Width)
             {
                 IsSelected = true,
@@ -319,12 +316,13 @@ public sealed partial class PreviewStack : UserControl
     public async Task UpdatePreviewsAsync()
     {
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        foreach (KeyValuePair<int, string> pair in imagePaths)
+        foreach ((string sideLength, string path) pair in imagePaths)
         {
-            if (pair.Value is not string imagePath)
-                return;
+            if (pair.path is not string imagePath)
+                continue;
 
-            int sideLength = pair.Key;
+            if (!int.TryParse(pair.sideLength, out int sideLength))
+                continue;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
 
@@ -346,7 +344,11 @@ public sealed partial class PreviewStack : UserControl
                                             .Select(i => i.SideLength)
                                             .ToList();
 
-        List<int> generatedSideLengths = [.. imagePaths.Keys];
+        List<int> generatedSideLengths = [];
+
+        foreach ((string sideLength, string path) pair in imagePaths)
+            if(int.TryParse(pair.sideLength, out int sideLength))
+                generatedSideLengths.Add(sideLength);
 
         if (selectedSideLengths.Count != generatedSideLengths.Count)
             return true;
