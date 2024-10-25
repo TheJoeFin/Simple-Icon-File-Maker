@@ -19,6 +19,7 @@
     <Page.Resources>
         <converters:BoolToPrimaryButtonStyleConverter x:Key="IsPrimary" />
         <toolkitConverters:BoolNegationConverter x:Key="BoolInv" />
+        <toolkitConverters:BoolToVisibilityConverter x:Key="BoolVis" />
 
         <Style x:Key="CardStyle" TargetType="Grid">
             <Style.Setters>
@@ -232,7 +233,10 @@
                     </Button>
 
                     <tk:SettingsExpander.Items>
-                        <tk:SettingsCard ContentAlignment="Left" Description="Overwrite existing files when saving new .ico or .png files">
+                        <tk:SettingsCard
+                            ContentAlignment="Left"
+                            Description="Overwrite existing files when saving new .ico or .png files"
+                            Visibility="Collapsed">
                             <CheckBox Content="Overwrite" IsChecked="{x:Bind ViewModel.OverwriteFiles, Mode=TwoWay}" />
                         </tk:SettingsCard>
                         <tk:SettingsCard ContentAlignment="Left" Description="Export all sizes as individual .png files">
@@ -270,7 +274,6 @@
             <!--  Settings card:  -->
 
         </StackPanel>
-        <ProgressBar Visibility="Collapsed" Value="{x:Bind ViewModel.Progress, Mode=OneWay}" />
         <Grid
             Grid.Row="1"
             Grid.Column="1"
@@ -326,5 +329,19 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
+
+        <Viewbox
+            Grid.Row="1"
+            Grid.Column="1"
+            MaxWidth="300"
+            MaxHeight="300"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Visibility="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolVis}}">
+            <ProgressRing
+                x:Name="LoadingImagesProgress"
+                IsIndeterminate="False"
+                Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
+        </Viewbox>
     </Grid>
 </Page>

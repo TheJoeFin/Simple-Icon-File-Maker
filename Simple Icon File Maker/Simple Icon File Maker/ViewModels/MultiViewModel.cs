@@ -23,7 +23,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     private bool folderLoadCancelled = false;
 
     [ObservableProperty]
-    private int progress = 0;
+    private int fileLoadProgress = 0;
 
     [ObservableProperty]
     private bool loadingImages = false;
@@ -117,13 +117,18 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     {
         LoadingImages = true;
 
-        Progress<int> progress = new(percent =>
-        {
-            Progress = percent;
-        });
+        Progress<int> progress = new();
+
+        // TODO: add the real progress indication
+        FileLoadProgress = 0;
+        int count = 0;
 
         foreach (PreviewStack stack in Previews)
+        {
+            count++;
+            FileLoadProgress = (int)((double)count / NumberOfImageFiles * 100);
             await stack.GeneratePreviewImagesAsync(progress);
+        }
 
         SizesGenerating = IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
 
@@ -149,8 +154,16 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task SaveAllIcons()
     {
-        foreach (PreviewStack stack in Previews)
-            await stack.SaveIconAsync();
+        if (SaveAllImagesAsPngs)
+        {
+            foreach (PreviewStack stack in Previews)
+                await stack.SaveAllImagesAsync();
+        }
+        else
+        {
+            foreach (PreviewStack stack in Previews)
+                await stack.SaveIconAsync();
+        }
     }
 
     [RelayCommand]
@@ -221,14 +234,10 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         IsRefreshNeeded = anyRefreshAvailable;
 
-        // TODO order the icon frames by size and choose the largest size to compare
-        // MagickImage image = new(ImagePath);
-        // int smallerSide = (int)Math.Min(image.Width, image.Height);
-
         foreach (IconSize size in IconSizes)
             size.IsEnabled = true;
 
-        int largestSize = IconSizes.Where(x => !x.IsHidden).Max(x => x.SideLength);
+        int largestSize = IconSizes.Where(x => !x.IsHidden && x.IsSelected).Max(x => x.SideLength);
         int smallestSource = 0;
 
         if (Previews.Count == 0)
@@ -237,7 +246,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             return;
         }
 
-        smallestSource = Previews.Max(x => x.SmallerSourceSide);
+        smallestSource = Previews.Min(x => x.SmallerSourceSide);
 
         SizeDisabledWarningIsOpen = smallestSource < largestSize;
     }
@@ -250,18 +259,21 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         LoadingImages = true;
         Previews.Clear();
 
-        Progress<int> progress = new(percent =>
-        {
-            Progress = percent;
-        });
+        Progress<int> progress = new();
 
         IReadOnlyList<StorageFile> tempFiles = await _folder.GetFilesAsync();
         NumberOfImageFiles = tempFiles.Count(x => x.IsSupportedImageFormat());
 
-        List<IconSize> sizes = [..IconSize.GetWindowsSizesFull()];
+        FileLoadProgress = 0;
+        int count = 0;
+
+        List<IconSize> sizes = IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden).ToList();
 
         foreach (StorageFile file in tempFiles)
         {
+            count++;
+            FileLoadProgress = (int)((double)count / NumberOfImageFiles * 100);
+
             if (!file.IsSupportedImageFormat() || folderLoadCancelled)
                 continue;
 
@@ -281,6 +293,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         NumberOfImageFiles = Previews.Count;
         SizesGenerating = IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
+
+        CheckIfRefreshIsNeeded();
 
         LoadingImages = false;
     }
