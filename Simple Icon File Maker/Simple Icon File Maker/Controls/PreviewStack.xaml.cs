@@ -92,8 +92,14 @@ public sealed partial class PreviewStack : UserControl
         });
     }
 
-    public async Task SaveAllImagesAsync(string outputPath)
+    public async Task SaveAllImagesAsync(string outputPath = "")
     {
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
+                $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
+        }
+
         await SaveIconAsync(outputPath);
 
         string outputFolderPath = Path.GetDirectoryName(outputPath) ?? string.Empty;
@@ -118,7 +124,9 @@ public sealed partial class PreviewStack : UserControl
             string sideLength = justFileName.Split("Image")[1];
             string newName = $"{outputBaseFileName}-{sideLength}.png";
 
-            await imageFile.CopyAsync(outputFolder, newName);
+            NameCollisionOption option = NameCollisionOption.ReplaceExisting;
+
+            await imageFile.CopyAsync(outputFolder, newName, option);
         }
     }
 
