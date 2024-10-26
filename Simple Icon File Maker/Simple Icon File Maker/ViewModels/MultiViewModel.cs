@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.Helpers;
+using Windows.System;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
@@ -175,6 +176,24 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         await LoadFiles();
     }
 
+    [RelayCommand]
+    public async Task OpenFolder()
+    {
+        if (_folder is null)
+            return;
+
+        string outputDirectory = _folder.Path;
+
+        Uri uri = new(outputDirectory);
+        LauncherOptions options = new()
+        {
+            TreatAsUntrusted = false,
+            DesiredRemainingView = Windows.UI.ViewManagement.ViewSizePreference.UseLess
+        };
+
+        _ = await Launcher.LaunchUriAsync(uri, options);
+    }
+
     INavigationService NavigationService
     {
         get;
@@ -195,7 +214,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         if (parameter is StorageFolder folder)
             _folder = folder;
 
-        FolderName = _folder?.DisplayName ?? "Folder name";
+        FolderName = _folder?.Path ?? "Folder path";
+        if (FolderName.Length > 50) // truncate the text from the middle
+            FolderName = string.Concat(FolderName.AsSpan(0, 20), "...", FolderName.AsSpan(FolderName.Length - 20));
 
         LoadIconSizes();
         await LoadFiles();

@@ -57,17 +57,22 @@
             </Grid.RowDefinitions>
 
             <!--  Folder name and details  -->
-            <Grid Padding="16" Style="{StaticResource CardStyle}">
+            <Grid Padding="16,8,8,8" Style="{StaticResource CardStyle}">
                 <StackPanel
                     Grid.Row="0"
                     Orientation="Vertical"
                     Spacing="12">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <SymbolIcon Symbol="Folder" />
-                        <TextBlock
+                        <HyperlinkButton
                             HorizontalAlignment="Left"
-                            Text="{x:Bind ViewModel.FolderName}"
-                            TextWrapping="WrapWholeWords" />
+                            Command="{x:Bind ViewModel.OpenFolderCommand}"
+                            ToolTipService.ToolTip="Open folder...">
+                            <TextBlock
+                                Text="{x:Bind ViewModel.FolderName}"
+                                TextTrimming="WordEllipsis"
+                                TextWrapping="WrapWholeWords" />
+                        </HyperlinkButton>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <SymbolIcon Symbol="BrowsePhotos" />
@@ -76,7 +81,18 @@
                             <Run Text="&#160;image files in the folder." />
                         </TextBlock>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Spacing="12">
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <DropDownButton Content="Options">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout>
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
+                                    <MenuFlyoutItem Command="{x:Bind ViewModel.ReloadFilesCommand}" Text="Refresh files" />
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
                         <Button
                             Width="138"
                             Height="32"
@@ -89,14 +105,6 @@
                                 <TextBlock Text="Close Folder" TextAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <DropDownButton Content="Options">
-                            <DropDownButton.Flyout>
-                                <MenuFlyout>
-                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
-                                    <MenuFlyoutItem Command="{x:Bind ViewModel.ReloadFilesCommand}" Text="Refresh files" />
-                                </MenuFlyout>
-                            </DropDownButton.Flyout>
-                        </DropDownButton>
                     </StackPanel>
                 </StackPanel>
             </Grid>
