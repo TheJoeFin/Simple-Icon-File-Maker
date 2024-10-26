@@ -2,6 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
+using Windows.Storage.Pickers;
+using Windows.Storage;
+using Microsoft.UI.Xaml;
+using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
@@ -12,6 +16,37 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     public void NavigateToAbout()
     {
         NavigationService.NavigateTo(typeof(AboutViewModel).FullName!);
+    }
+
+    [RelayCommand]
+    public async Task NavigateToMulti()
+    {
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
+
+        if (ownsPro)
+        {
+            FolderPicker picker = new()
+            {
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                ViewMode = PickerViewMode.Thumbnail,
+                CommitButtonText = "Select",
+                FileTypeFilter = { "*" }
+            };
+
+            Window saveWindow = new();
+            IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
+            InitializeWithWindow.Initialize(picker, windowHandleSave);
+
+            StorageFolder folder = await picker.PickSingleFolderAsync();
+
+            if (folder is not null)
+                NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, folder);
+        }
+        else
+        {
+            BuyProDialog buyProDialog = new();
+            _ = await NavigationService.ShowModal(buyProDialog);
+        }
     }
 
     INavigationService NavigationService

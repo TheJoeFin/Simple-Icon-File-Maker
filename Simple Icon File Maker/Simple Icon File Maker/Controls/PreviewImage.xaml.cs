@@ -4,10 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
@@ -76,7 +73,7 @@ public sealed partial class PreviewImage : UserControl
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
         };
         string extension = Path.GetExtension(_imageFile.Path);
-        savePicker.FileTypeChoices.Add("Image", new List<string>() { extension });
+        savePicker.FileTypeChoices.Add("Image", [extension]);
         savePicker.SuggestedFileName = $"{OriginalName}-{_sideLength}x{_sideLength}";
         savePicker.DefaultFileExtension = extension;
 

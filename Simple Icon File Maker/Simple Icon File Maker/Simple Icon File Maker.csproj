@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+    <WindowsSdkPackageVersion>10.0.22621.38</WindowsSdkPackageVersion>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <RootNamespace>Simple_Icon_File_Maker</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x86;x64;arm64</Platforms>
@@ -26,6 +28,7 @@
     <None Remove="MainPage.xaml" />
     <None Remove="Views\BuyProDialog.xaml" />
     <None Remove="Views\EditSizesDialog.xaml" />
+    <None Remove="Views\MultiPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -33,15 +36,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.0.240109" />
-    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.0.240109" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.10.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.5.240627000" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.1.240916" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.1.240916" />
+    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.1.240916" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
-    <PackageReference Include="WinUIEx" Version="2.3.4" />
+    <PackageReference Include="WinUIEx" Version="2.4.2" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -78,6 +82,12 @@
 
   <ItemGroup>
     <Folder Include="Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\MultiPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

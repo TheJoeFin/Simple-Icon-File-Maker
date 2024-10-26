@@ -84,7 +84,7 @@ internal class TitleBarHelper
 
     public static void ApplySystemThemeToCaptionButtons()
     {
-        FrameworkElement frame = App.AppTitlebar as FrameworkElement;
+        FrameworkElement? frame = App.AppTitlebar as FrameworkElement;
         if (frame is not null)
             UpdateTitleBar(frame.ActualTheme);
     }

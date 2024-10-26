@@ -9,17 +9,18 @@
 
     <ScrollViewer MinWidth="500">
         <StackPanel
+            MaxWidth="1000"
             Padding="80,20,20,20"
             HorizontalAlignment="Stretch"
-            Spacing="4">
+            Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <Button Command="{x:Bind ViewModel.GoBackCommand}">
                     <StackPanel
                         Margin="6,4"
                         Orientation="Horizontal"
                         Spacing="8">
-                        <SymbolIcon Symbol="Back" />
-                        <TextBlock Text="Back" />
+                        <SymbolIcon Symbol="Home" />
+                        <TextBlock Text="Start Page" />
                     </StackPanel>
                 </Button>
                 <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
@@ -52,25 +53,7 @@
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
 
-            <controls:SettingsExpander Header="Change log">
-                <controls:SettingsExpander.HeaderIcon>
-                    <SymbolIcon Symbol="List" />
-                </controls:SettingsExpander.HeaderIcon>
-                <controls:SettingsExpander.Items>
-                    <controls:SettingsCard Header="v 1.10">
-                        <controls:SettingsCard.Description>
-                            <TextBlock>
-                                <LineBreak />
-                                ● Added the ability to remove color from image for the icon<LineBreak />
-                                ● Update packages<LineBreak />
-                                ● Move about to seperate page<LineBreak />
-                            </TextBlock>
-                        </controls:SettingsCard.Description>
-                    </controls:SettingsCard>
-                </controls:SettingsExpander.Items>
-            </controls:SettingsExpander>
-
-            <controls:SettingsExpander Header="Created by">
+            <controls:SettingsExpander Header="Created by" IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>
                     <SymbolIcon Symbol="OtherUser" />
                 </controls:SettingsExpander.HeaderIcon>
@@ -97,7 +80,37 @@
                     </controls:SettingsCard>
                 </controls:SettingsExpander.Items>
             </controls:SettingsExpander>
-            <controls:SettingsExpander Header="Libraries used:">
+
+            <controls:SettingsExpander Header="Change log">
+                <controls:SettingsExpander.HeaderIcon>
+                    <SymbolIcon Symbol="List" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard Header="v 1.11">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● (Pro) Open a folder and generate batches of .ico files<LineBreak />
+                                ● Bug fixes around opening files with multiple icons of the same size<LineBreak />
+                                ● Info labels saying why some sizes are disabled<LineBreak />
+                                ● Update packages<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
+                    <controls:SettingsCard Header="v 1.10">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● Added the ability to remove color from image for the icon<LineBreak />
+                                ● Update packages<LineBreak />
+                                ● Move about to seperate page<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+
+            <controls:SettingsExpander Header="Libraries used:" IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>
                     <SymbolIcon Symbol="Library" />
                 </controls:SettingsExpander.HeaderIcon>

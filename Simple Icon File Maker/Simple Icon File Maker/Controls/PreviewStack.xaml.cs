@@ -1,4 +1,5 @@
 using ImageMagick;
+using ImageMagick.Factories;
 using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,7 +13,7 @@ namespace Simple_Icon_File_Maker.Controls;
 public sealed partial class PreviewStack : UserControl
 {
     private string imagePath;
-    private Dictionary<int, string> imagePaths = [];
+    private readonly List<(string, string)> imagePaths = [];
     private Size? SourceImageSize;
     private readonly MagickImage mainImage;
     private readonly string iconRootString;
@@ -22,7 +23,9 @@ public sealed partial class PreviewStack : UserControl
 
     public bool CanRefresh => CheckIfRefreshIsNeeded();
 
-    public PreviewStack(string path, List<IconSize> sizes)
+    public int SmallerSourceSide { get; private set; }
+
+    public PreviewStack(string path, List<IconSize> sizes, bool showTitle = false)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         iconRootString = sf.Path;
@@ -32,6 +35,9 @@ public sealed partial class PreviewStack : UserControl
         mainImage = new(path);
 
         InitializeComponent();
+
+        if (showTitle)
+            FileNameText.Text = Path.GetFileName(imagePath);
     }
 
     public async Task<bool> InitializeAsync(IProgress<int> progress)
@@ -46,7 +52,9 @@ public sealed partial class PreviewStack : UserControl
 
     public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
     {
-        List<IconSize> selectedSizes = sizes.Where(x => x.IsSelected && x.IsEnabled).ToList();
+        List<IconSize> selectedSizes = sizes
+            .Where(x => x.IsSelected && x.IsEnabled && x.SideLength <= SmallerSourceSide)
+            .ToList();
         ChosenSizes.Clear();
         ChosenSizes = new(selectedSizes);
 
@@ -64,14 +72,20 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
     }
 
-    public async Task SaveIconAsync(string outputPath)
+    public async Task SaveIconAsync(string outputPath = "")
     {
         MagickImageCollection collection = [];
 
         foreach ((_, string path) in imagePaths)
             collection.Add(path);
 
-        await Task.Run(async () =>
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
+                $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
+        }
+
+            await Task.Run(async () =>
         {
             await collection.WriteAsync(outputPath);
 
@@ -83,8 +97,14 @@ public sealed partial class PreviewStack : UserControl
         });
     }
 
-    public async Task SaveAllImagesAsync(string outputPath)
+    public async Task SaveAllImagesAsync(string outputPath = "")
     {
+        if (string.IsNullOrWhiteSpace(outputPath))
+        {
+            outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
+                $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
+        }
+
         await SaveIconAsync(outputPath);
 
         string outputFolderPath = Path.GetDirectoryName(outputPath) ?? string.Empty;
@@ -109,7 +129,9 @@ public sealed partial class PreviewStack : UserControl
             string sideLength = justFileName.Split("Image")[1];
             string newName = $"{outputBaseFileName}-{sideLength}.png";
 
-            await imageFile.CopyAsync(outputFolder, newName);
+            NameCollisionOption option = NameCollisionOption.ReplaceExisting;
+
+            await imageFile.CopyAsync(outputFolder, newName, option);
         }
     }
 
@@ -143,7 +165,9 @@ public sealed partial class PreviewStack : UserControl
 
         progress.Report(10);
         ImagesProgressBar.Value = 10;
-        SourceImageSize ??= new Size(mainImage.Width, mainImage.Height);
+        SourceImageSize ??= new Size((int)mainImage.Width, (int)mainImage.Height);
+
+        SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
 
         int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
 
@@ -177,7 +201,7 @@ public sealed partial class PreviewStack : UserControl
         ImagesProgressBar.Value = 15;
         using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
         IMagickGeometry size = geoFactory.Create(
-            Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+            (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
         size.IgnoreAspectRatio = false;
         size.FillArea = true;
 
@@ -187,7 +211,10 @@ public sealed partial class PreviewStack : UserControl
 
         MagickImageCollection collection = [];
 
-        List<int> selectedSizes = ChosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
+        List<int> selectedSizes = ChosenSizes
+            .Where(s => s.IsSelected == true)
+            .Select(s => s.SideLength)
+            .ToList();
 
         int baseAtThisPoint = 20;
         progress.Report(baseAtThisPoint);
@@ -206,7 +233,7 @@ public sealed partial class PreviewStack : UserControl
             currentLocation++;
             progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
             ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
-            IMagickGeometry iconSize = geoFactory.Create(sideLength, sideLength);
+            IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
             iconSize.IgnoreAspectRatio = false;
 
             if (smallerSide > sideLength)
@@ -226,7 +253,7 @@ public sealed partial class PreviewStack : UserControl
             await image.WriteAsync(iconPath, MagickFormat.Png32);
 
             collection.Add(iconPath);
-            imagePaths.Add(sideLength, iconPath);
+            imagePaths.Add((sideLength.ToString(), iconPath));
 
             currentLocation++;
             progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
@@ -263,31 +290,33 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
 
         MagickImageCollection collection = new(imagePath);
-        Dictionary<int, string> iconImages = [];
+        List<(string, string)> iconImages = [];
+
+        int largestWidth = (int)collection.Select(x => x.Width).Max();
+        int largestHeight = (int)collection.Select(x => x.Height).Max();
+
+        SmallerSourceSide = Math.Min(largestWidth, largestHeight);
 
         int currentLocation = 0;
         int totalImages = collection.Count;
         foreach (MagickImage image in collection.Cast<MagickImage>())
         {
-            Debug.WriteLine($"Image: {image.Width}x{image.Height}");
-            string imageName = $"{Path.GetFileNameWithoutExtension(imagePath)}-{image.Width}.png";
+            Debug.WriteLine($"Image: {image}");
+            string imageName = $"{image}.png";
 
             string pathForSingleImage = Path.Combine(iconRootString, imageName);
             await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
 
-            if (imagePaths.ContainsKey(image.Width))
-                continue;
+            imagePaths.Add((((int)image.Width).ToString(), pathForSingleImage));
 
-            imagePaths.Add(image.Width, pathForSingleImage);
-
-            iconImages.Add(image.Width, imagePath);
-            IconSize iconSizeOfIconFrame = new(image.Width)
+            iconImages.Add((image.ToString(), imagePath));
+            IconSize iconSizeOfIconFrame = new((int)image.Width)
             {
                 IsSelected = true,
             };
             ChosenSizes.Add(iconSizeOfIconFrame);
 
-            int sideLength = image.Width;
+            int sideLength = (int)image.Width;
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(pathForSingleImage);
 
             PreviewImage previewImage = new(imageSF, sideLength, imageName);
@@ -312,12 +341,13 @@ public sealed partial class PreviewStack : UserControl
     public async Task UpdatePreviewsAsync()
     {
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        foreach (KeyValuePair<int, string> pair in imagePaths)
+        foreach ((string sideLength, string path) pair in imagePaths)
         {
-            if (pair.Value is not string imagePath)
-                return;
+            if (pair.path is not string imagePath)
+                continue;
 
-            int sideLength = pair.Key;
+            if (!int.TryParse(pair.sideLength, out int sideLength))
+                continue;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
 
@@ -339,7 +369,11 @@ public sealed partial class PreviewStack : UserControl
                                             .Select(i => i.SideLength)
                                             .ToList();
 
-        List<int> generatedSideLengths = imagePaths.Keys.ToList();
+        List<int> generatedSideLengths = [];
+
+        foreach ((string sideLength, string path) pair in imagePaths)
+            if(int.TryParse(pair.sideLength, out int sideLength))
+                generatedSideLengths.Add(sideLength);
 
         if (selectedSideLengths.Count != generatedSideLengths.Count)
             return true;

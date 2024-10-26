@@ -120,6 +120,25 @@
                                 <KeyboardAccelerator Key="O" Modifiers="Control" />
                             </Button.KeyboardAccelerators>
                         </Button>
+                        <Button
+                            Height="32"
+                            HorizontalAlignment="Left"
+                            Command="{x:Bind ViewModel.NavigateToMultiCommand}"
+                            ToolTipService.ToolTip="(Pro) Open a folder of images">
+                            <Grid>
+                                <FontIcon FontSize="16" Glyph="&#xE8DE;" />
+                                <FontIcon
+                                    FontSize="8"
+                                    Foreground="Goldenrod"
+                                    Glyph="&#xE785;">
+                                    <FontIcon.RenderTransform>
+                                        <TransformGroup>
+                                            <TranslateTransform X="-12" Y="8" />
+                                        </TransformGroup>
+                                    </FontIcon.RenderTransform>
+                                </FontIcon>
+                            </Grid>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -297,6 +316,7 @@
             Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="48" />
+                <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -373,9 +393,18 @@
                     ToolTipService.ToolTip="Clear all" />
 
             </StackPanel>
+            <InfoBar
+                x:Name="SizeDisabledWarning"
+                Grid.Row="1"
+                IsOpen="True"
+                Severity="Informational">
+                <TextBlock TextWrapping="WrapWholeWords">
+                    Sizes larger than the source have been disabled.
+                </TextBlock>
+            </InfoBar>
             <ListView
                 x:Name="IconSizesListView"
-                Grid.Row="1"
+                Grid.Row="2"
                 ItemsSource="{x:Bind IconSizes, Mode=OneWay}"
                 SelectionMode="None">
                 <ListView.ItemTemplate>
@@ -389,7 +418,7 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Grid
-                Grid.Row="2"
+                Grid.Row="3"
                 Padding="8"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0">

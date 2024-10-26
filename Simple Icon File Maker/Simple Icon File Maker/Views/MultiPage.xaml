@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Simple_Icon_File_Maker.Views.MultiPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:Simple_Icon_File_Maker.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Simple_Icon_File_Maker.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:Simple_Icon_File_Maker.Models"
+    xmlns:storage="using:Windows.Storage"
+    xmlns:tk="using:CommunityToolkit.WinUI.Controls"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="MultiFilePage"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <converters:BoolToPrimaryButtonStyleConverter x:Key="IsPrimary" />
+        <toolkitConverters:BoolNegationConverter x:Key="BoolInv" />
+        <toolkitConverters:BoolToVisibilityConverter x:Key="BoolVis" />
+
+        <Style x:Key="CardStyle" TargetType="Grid">
+            <Style.Setters>
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+            </Style.Setters>
+        </Style>
+    </Page.Resources>
+
+    <Grid
+        Padding="16,0,16,16"
+        Background="Transparent"
+        ColumnSpacing="12"
+        RowSpacing="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition
+                Width="*"
+                MinWidth="330"
+                MaxWidth="420" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1" RowSpacing="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <!--  Folder name and details  -->
+            <Grid Padding="16,8,8,8" Style="{StaticResource CardStyle}">
+                <StackPanel
+                    Grid.Row="0"
+                    Orientation="Vertical"
+                    Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="Folder" />
+                        <HyperlinkButton
+                            HorizontalAlignment="Left"
+                            Command="{x:Bind ViewModel.OpenFolderCommand}"
+                            ToolTipService.ToolTip="Open folder...">
+                            <TextBlock
+                                Text="{x:Bind ViewModel.FolderName}"
+                                TextTrimming="WordEllipsis"
+                                TextWrapping="WrapWholeWords" />
+                        </HyperlinkButton>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <SymbolIcon Symbol="BrowsePhotos" />
+                        <TextBlock TextWrapping="WrapWholeWords">
+                            <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+                            <Run Text="&#160;image files in the folder." />
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <DropDownButton Content="Options">
+                            <DropDownButton.Flyout>
+                                <MenuFlyout>
+                                    <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
+                                    <MenuFlyoutItem Command="{x:Bind ViewModel.ReloadFilesCommand}" Text="Refresh files" />
+                                </MenuFlyout>
+                            </DropDownButton.Flyout>
+                        </DropDownButton>
+                        <Button
+                            Width="138"
+                            Height="32"
+                            Padding="0"
+                            HorizontalAlignment="Left"
+                            Command="{x:Bind ViewModel.GoBackCommand}"
+                            ToolTipService.ToolTip="Close folder and return to start page">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="16" Glyph="&#xE894;" />
+                                <TextBlock Text="Close Folder" TextAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--  Icon sizes and selections  -->
+            <Grid
+                x:Name="SettingsCard"
+                Grid.Row="1"
+                Style="{StaticResource CardStyle}"
+                Visibility="Visible">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Margin="16,0,0,0"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                    Text="Icon sizes" />
+                <StackPanel
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <Button
+                        x:Name="EditSizes"
+                        Height="32"
+                        Command="{x:Bind ViewModel.EditIconSizesCommand}"
+                        ToolTipService.ToolTip="Edit icon sizes (Pro only)">
+                        <Grid>
+                            <FontIcon FontSize="16" Glyph="&#xE70F;" />
+                            <FontIcon
+                                FontSize="8"
+                                Foreground="Goldenrod"
+                                Glyph="&#xE785;">
+                                <FontIcon.RenderTransform>
+                                    <TransformGroup>
+                                        <TranslateTransform X="12" Y="6" />
+                                    </TransformGroup>
+                                </FontIcon.RenderTransform>
+                            </FontIcon>
+                        </Grid>
+                    </Button>
+                    <Button
+                        x:Name="SelectWebButton"
+                        Height="32"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.SelectWebSizesCommand}"
+                        Content="&#xE12B;"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Select Sizes Ideal For Web" />
+                    <Button
+                        x:Name="SelectWindowsButton"
+                        Height="32"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.SelectWindowsSizesCommand}"
+                        Content="&#xE7F8;"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Select Sizes Ideal For Windows (Default)" />
+                    <Button
+                        x:Name="SelectAllButton"
+                        Height="32"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.SelectAllSizesCommand}"
+                        Content="&#xE8B3;"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Select all" />
+
+                    <Button
+                        x:Name="ClearSelectionButton"
+                        Height="32"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.DeselectAllSizesCommand}"
+                        Content="&#xE8E6;"
+                        FontFamily="{StaticResource SymbolThemeFontFamily}"
+                        FontSize="16"
+                        ToolTipService.ToolTip="Clear all" />
+
+                </StackPanel>
+                <InfoBar
+                    x:Name="SizeDisabledWarning"
+                    Grid.Row="1"
+                    IsOpen="{x:Bind ViewModel.SizeDisabledWarningIsOpen, Mode=OneWay}"
+                    Severity="Informational">
+                    <TextBlock TextWrapping="WrapWholeWords">
+                        Sizes larger than the image source will not be generated.
+                    </TextBlock>
+                </InfoBar>
+                <ListView
+                    x:Name="IconSizesListView"
+                    Grid.Row="2"
+                    ItemsSource="{x:Bind ViewModel.IconSizes, Mode=OneWay}"
+                    SelectionMode="None">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="models:IconSize">
+                            <CheckBox
+                                Command="{Binding ElementName=MultiFilePage, Path=ViewModel.SizeCheckbox_TappedCommand}"
+                                CommandParameter="{x:Bind}"
+                                Content="{x:Bind Tooltip}"
+                                IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <!--  Save buttons  -->
+            <Grid
+                Grid.Row="2"
+                Padding="0"
+                Style="{StaticResource CardStyle}">
+                <tk:SettingsExpander Description="Expand for more options" HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}">
+                    <Button
+                        Command="{x:Bind ViewModel.SaveAllIconsCommand}"
+                        IsEnabled="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolInv}}"
+                        Style="{StaticResource AccentButtonStyle}">
+                        <TextBlock>
+                            <Run Text="Save" />
+                            <Run Text="{x:Bind ViewModel.SizesGenerating, Mode=OneWay}" />
+                            <Run Text="size(s) for" />
+                            <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+                            <Run Text="images" />
+                        </TextBlock>
+                    </Button>
+
+                    <tk:SettingsExpander.Items>
+                        <tk:SettingsCard
+                            ContentAlignment="Left"
+                            Description="Overwrite existing files when saving new .ico or .png files"
+                            Visibility="Collapsed">
+                            <CheckBox Content="Overwrite" IsChecked="{x:Bind ViewModel.OverwriteFiles, Mode=TwoWay}" />
+                        </tk:SettingsCard>
+                        <tk:SettingsCard ContentAlignment="Left" Description="Export all sizes as individual .png files">
+                            <CheckBox Content="Save individual images" IsChecked="{x:Bind ViewModel.SaveAllImagesAsPngs, Mode=TwoWay}" />
+                        </tk:SettingsCard>
+                    </tk:SettingsExpander.Items>
+                </tk:SettingsExpander>
+            </Grid>
+        </Grid>
+
+        <InfoBar
+            x:Name="errorInfoBar"
+            Title="Error loading the image"
+            MaxWidth="320"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
+            IsClosable="True"
+            Severity="Error">
+            <InfoBar.Resources>
+                <Storyboard x:Name="closeInfoBarStoryboard">
+                    <ObjectAnimationUsingKeyFrames
+                        Storyboard.TargetName="errorInfoBar"
+                        Storyboard.TargetProperty="IsOpen"
+                        Duration="0:0:15">
+                        <DiscreteObjectKeyFrame KeyTime="0:0:15" Value="False" />
+                    </ObjectAnimationUsingKeyFrames>
+                </Storyboard>
+            </InfoBar.Resources>
+        </InfoBar>
+        <StackPanel
+            Grid.RowSpan="2"
+            Orientation="Vertical"
+            Spacing="12">
+
+            <!--  Settings card:  -->
+
+        </StackPanel>
+        <Grid
+            Grid.Row="1"
+            Grid.Column="1"
+            Style="{StaticResource CardStyle}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Padding="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Height="32"
+                    Command="{x:Bind ViewModel.RegenPreviewsCommand}"
+                    Style="{x:Bind ViewModel.IsRefreshNeeded, Mode=OneWay, Converter={StaticResource IsPrimary}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="16"
+                            Text="&#xE72C;" />
+                        <TextBlock VerticalAlignment="Center" Text="Regenerate All Previews" />
+                    </StackPanel>
+                </Button>
+
+                <ToggleButton
+                    Grid.Column="2"
+                    Height="32"
+                    Content="&#xE8A3;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    FontSize="16"
+                    IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
+                    Tapped="{x:Bind ViewModel.ZoomPreviews}" />
+            </Grid>
+
+            <ScrollViewer
+                Grid.Row="1"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Auto">
+                <ItemsControl
+                    Grid.Row="1"
+                    Padding="6"
+                    ItemsSource="{x:Bind ViewModel.Previews, Mode=OneWay}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            Grid.Column="1"
+            Visibility="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolVis}}">
+            <Viewbox
+                MaxWidth="200"
+                MaxHeight="200"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Grid>
+                    <Ellipse
+                        Width="30"
+                        Height="30"
+                        Fill="{StaticResource CardStrokeColorDefaultSolid}" />
+                    <ProgressRing
+                        x:Name="LoadingImagesProgress"
+                        IsIndeterminate="False"
+                        Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
+                </Grid>
+            </Viewbox>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
+                Style="{StaticResource TitleLargeTextBlockStyle}">
+                <Run Text="{x:Bind ViewModel.CurrentImageRendering, Mode=OneWay}" />
+                <Run Text="/" />
+                <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+            </TextBlock>
+        </Grid>
+    </Grid>
+</Page>
