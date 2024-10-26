@@ -261,7 +261,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         foreach (IconSize size in IconSizes)
             size.IsEnabled = true;
 
-        int largestSize = IconSizes.Where(x => !x.IsHidden && x.IsSelected).Max(x => x.SideLength);
+        IEnumerable<IconSize> sizes = IconSizes.Where(x => !x.IsHidden && x.IsSelected);
+        int largestSize = sizes.Any() ? sizes.Max(x => x.SideLength) : 0;
         int smallestSource = 0;
 
         if (Previews.Count == 0)
