@@ -21,22 +21,32 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task NavigateToMulti()
     {
-        FolderPicker picker = new()
+        bool ownsPro = App.GetService<IStoreService>().OwnsPro;
+
+        if (ownsPro)
         {
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-            ViewMode = PickerViewMode.Thumbnail,
-            CommitButtonText = "Select",
-            FileTypeFilter = { "*" }
-        };
+            FolderPicker picker = new()
+            {
+                SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+                ViewMode = PickerViewMode.Thumbnail,
+                CommitButtonText = "Select",
+                FileTypeFilter = { "*" }
+            };
 
-        Window saveWindow = new();
-        IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
-        InitializeWithWindow.Initialize(picker, windowHandleSave);
+            Window saveWindow = new();
+            IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
+            InitializeWithWindow.Initialize(picker, windowHandleSave);
 
-        StorageFolder folder = await picker.PickSingleFolderAsync();
+            StorageFolder folder = await picker.PickSingleFolderAsync();
 
-        if (folder is not null)
-            NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, folder);
+            if (folder is not null)
+                NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, folder);
+        }
+        else
+        {
+            BuyProDialog buyProDialog = new();
+            _ = await NavigationService.ShowModal(buyProDialog);
+        }
     }
 
     INavigationService NavigationService

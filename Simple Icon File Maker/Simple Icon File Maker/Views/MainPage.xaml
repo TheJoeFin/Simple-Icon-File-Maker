@@ -124,11 +124,20 @@
                             Height="32"
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.NavigateToMultiCommand}"
-                            ToolTipService.ToolTip="Open a folder of images">
-                            <FontIcon
-                                VerticalAlignment="Center"
-                                FontSize="16"
-                                Glyph="&#xE8DE;" />
+                            ToolTipService.ToolTip="(Pro) Open a folder of images">
+                            <Grid>
+                                <FontIcon FontSize="16" Glyph="&#xE8DE;" />
+                                <FontIcon
+                                    FontSize="8"
+                                    Foreground="Goldenrod"
+                                    Glyph="&#xE785;">
+                                    <FontIcon.RenderTransform>
+                                        <TransformGroup>
+                                            <TranslateTransform X="-12" Y="8" />
+                                        </TransformGroup>
+                                    </FontIcon.RenderTransform>
+                                </FontIcon>
+                            </Grid>
                         </Button>
                     </StackPanel>
                 </StackPanel>
