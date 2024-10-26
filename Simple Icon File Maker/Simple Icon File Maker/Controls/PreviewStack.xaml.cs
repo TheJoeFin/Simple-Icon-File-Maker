@@ -25,7 +25,7 @@ public sealed partial class PreviewStack : UserControl
 
     public int SmallerSourceSide { get; private set; }
 
-    public PreviewStack(string path, List<IconSize> sizes)
+    public PreviewStack(string path, List<IconSize> sizes, bool showTitle = false)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         iconRootString = sf.Path;
@@ -35,6 +35,9 @@ public sealed partial class PreviewStack : UserControl
         mainImage = new(path);
 
         InitializeComponent();
+
+        if (showTitle)
+            FileNameText.Text = Path.GetFileName(imagePath);
     }
 
     public async Task<bool> InitializeAsync(IProgress<int> progress)
@@ -208,7 +211,10 @@ public sealed partial class PreviewStack : UserControl
 
         MagickImageCollection collection = [];
 
-        List<int> selectedSizes = ChosenSizes.Where(s => s.IsSelected == true).Select(s => s.SideLength).ToList();
+        List<int> selectedSizes = ChosenSizes
+            .Where(s => s.IsSelected == true)
+            .Select(s => s.SideLength)
+            .ToList();
 
         int baseAtThisPoint = 20;
         progress.Report(baseAtThisPoint);

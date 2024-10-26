@@ -282,7 +282,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             if (SkipIcoFiles && file.FileType == ".ico")
                 continue;
 
-            PreviewStack preview = new(file.Path, sizes)
+            PreviewStack preview = new(file.Path, sizes, true)
             {
                 MaxWidth = 600,
                 MinWidth = 300,
