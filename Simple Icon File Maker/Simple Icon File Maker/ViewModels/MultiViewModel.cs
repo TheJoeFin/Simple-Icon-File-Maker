@@ -35,6 +35,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     private int numberOfImageFiles = 0;
 
     [ObservableProperty]
+    private int currentImageRendering = 0;
+
+    [ObservableProperty]
     private bool arePreviewsZoomed = false;
 
     [ObservableProperty]
@@ -121,12 +124,12 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         // TODO: add the real progress indication
         FileLoadProgress = 0;
-        int count = 0;
+        CurrentImageRendering = 0;
 
         foreach (PreviewStack stack in Previews)
         {
-            count++;
-            FileLoadProgress = (int)((double)count / NumberOfImageFiles * 100);
+            CurrentImageRendering++;
+            FileLoadProgress = (int)((double)CurrentImageRendering / NumberOfImageFiles * 100);
             await stack.GeneratePreviewImagesAsync(progress);
         }
 
@@ -265,17 +268,16 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         NumberOfImageFiles = tempFiles.Count(x => x.IsSupportedImageFormat());
 
         FileLoadProgress = 0;
-        int count = 0;
+        CurrentImageRendering = 0;
 
         List<IconSize> sizes = IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden).ToList();
 
         foreach (StorageFile file in tempFiles)
         {
-            count++;
-            FileLoadProgress = (int)((double)count / NumberOfImageFiles * 100);
-
             if (!file.IsSupportedImageFormat() || folderLoadCancelled)
                 continue;
+
+            CurrentImageRendering++;
 
             if (SkipIcoFiles && file.FileType == ".ico")
                 continue;
@@ -283,11 +285,12 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             PreviewStack preview = new(file.Path, sizes)
             {
                 MaxWidth = 600,
-                MinWidth = 200,
+                MinWidth = 300,
                 Margin = new Thickness(6)
             };
 
             Previews.Add(preview);
+            FileLoadProgress = (int)((double)CurrentImageRendering / NumberOfImageFiles * 100);
             _ = await preview.InitializeAsync(progress);
         }
 

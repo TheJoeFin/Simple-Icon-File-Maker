@@ -330,18 +330,35 @@
             </ScrollViewer>
         </Grid>
 
-        <Viewbox
+        <Grid
             Grid.Row="1"
             Grid.Column="1"
-            MaxWidth="300"
-            MaxHeight="300"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
             Visibility="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolVis}}">
-            <ProgressRing
-                x:Name="LoadingImagesProgress"
-                IsIndeterminate="False"
-                Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
-        </Viewbox>
+            <Viewbox
+                MaxWidth="200"
+                MaxHeight="200"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+                <Grid>
+                    <Ellipse
+                        Width="30"
+                        Height="30"
+                        Fill="{StaticResource CardStrokeColorDefaultSolid}" />
+                    <ProgressRing
+                        x:Name="LoadingImagesProgress"
+                        IsIndeterminate="False"
+                        Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
+                </Grid>
+            </Viewbox>
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
+                Style="{StaticResource TitleLargeTextBlockStyle}">
+                <Run Text="{x:Bind ViewModel.CurrentImageRendering, Mode=OneWay}" />
+                <Run Text="/" />
+                <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+            </TextBlock>
+        </Grid>
     </Grid>
 </Page>

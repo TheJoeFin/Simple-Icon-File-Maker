@@ -49,7 +49,9 @@ public sealed partial class PreviewStack : UserControl
 
     public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
     {
-        List<IconSize> selectedSizes = sizes.Where(x => x.IsSelected && x.IsEnabled).ToList();
+        List<IconSize> selectedSizes = sizes
+            .Where(x => x.IsSelected && x.IsEnabled && x.SideLength <= SmallerSourceSide)
+            .ToList();
         ChosenSizes.Clear();
         ChosenSizes = new(selectedSizes);
 
