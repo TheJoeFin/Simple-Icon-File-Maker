@@ -397,7 +397,7 @@
                 x:Name="SizeDisabledWarning"
                 Grid.Row="1"
                 IsOpen="True"
-                Severity="Warning">
+                Severity="Informational">
                 <TextBlock TextWrapping="WrapWholeWords">
                     Sizes larger than the source have been disabled.
                 </TextBlock>

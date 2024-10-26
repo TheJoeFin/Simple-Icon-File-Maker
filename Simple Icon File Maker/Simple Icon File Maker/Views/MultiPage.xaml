@@ -198,7 +198,7 @@
                     x:Name="SizeDisabledWarning"
                     Grid.Row="1"
                     IsOpen="{x:Bind ViewModel.SizeDisabledWarningIsOpen, Mode=OneWay}"
-                    Severity="Warning">
+                    Severity="Informational">
                     <TextBlock TextWrapping="WrapWholeWords">
                         Sizes larger than the image source will not be generated.
                     </TextBlock>
@@ -234,7 +234,7 @@
                         <TextBlock>
                             <Run Text="Save" />
                             <Run Text="{x:Bind ViewModel.SizesGenerating, Mode=OneWay}" />
-                            <Run Text="size(s) for all" />
+                            <Run Text="size(s) for" />
                             <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
                             <Run Text="images" />
                         </TextBlock>
