@@ -4,15 +4,13 @@ using Microsoft.UI.Xaml.Input;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 
 namespace Simple_Icon_File_Maker;
 
 public sealed partial class EditSizesDialog : ContentDialog
 {
-    ObservableCollection<IconSize> IconSizes { get; set; } = new();
+    private ObservableCollection<IconSize> IconSizes { get; set; } = new();
 
 
     public EditSizesDialog()
@@ -24,7 +22,7 @@ public sealed partial class EditSizesDialog : ContentDialog
 
     private void CheckBox_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        
+
     }
 
     private void AddNewSizeButton_Tapped(object sender, TappedRoutedEventArgs e)
