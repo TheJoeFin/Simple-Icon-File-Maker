@@ -11,7 +11,7 @@
         <StackPanel
             MaxWidth="1000"
             Padding="80,20,20,20"
-            HorizontalAlignment="Stretch"
+            HorizontalAlignment="Center"
             Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="20">
                 <Button Command="{x:Bind ViewModel.GoBackCommand}">
