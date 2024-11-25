@@ -205,7 +205,7 @@ public sealed partial class PreviewStack : UserControl
         size.IgnoreAspectRatio = false;
         size.FillArea = true;
 
-        firstPassImage.Extent(size, Gravity.Center, MagickColor.FromRgba(0, 0, 0, 0));
+        firstPassImage.Extent(size, Gravity.Center);
 
         await firstPassImage.WriteAsync(croppedImagePath);
 
