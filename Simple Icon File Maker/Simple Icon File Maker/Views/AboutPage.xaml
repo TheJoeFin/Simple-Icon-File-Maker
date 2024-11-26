@@ -9,8 +9,7 @@
 
     <ScrollViewer MinWidth="500">
         <StackPanel
-            MaxWidth="1000"
-            Padding="80,20,20,20"
+            Padding="80,20,80,20"
             HorizontalAlignment="Stretch"
             Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="20">
