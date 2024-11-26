@@ -329,9 +329,7 @@ public sealed partial class MainPage : Page
         foreach (string extension in FileTypes.SupportedImageFormats)
             picker.FileTypeFilter.Add(extension);
 
-        Window window = new();
-        IntPtr windowHandle = WindowNative.GetWindowHandle(window);
-        InitializeWithWindow.Initialize(picker, windowHandle);
+        InitializeWithWindow.Initialize(picker, App.MainWindow.WindowHandle);
 
         StorageFile file = await picker.PickSingleFileAsync();
 
@@ -450,9 +448,7 @@ public sealed partial class MainPage : Page
         savePicker.DefaultFileExtension = ".ico";
         savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
-        Window saveWindow = new();
-        IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
-        InitializeWithWindow.Initialize(savePicker, windowHandleSave);
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
         StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -494,9 +490,7 @@ public sealed partial class MainPage : Page
         savePicker.DefaultFileExtension = ".ico";
         savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
-        Window saveWindow = new();
-        IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
-        InitializeWithWindow.Initialize(savePicker, windowHandleSave);
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
         StorageFile file = await savePicker.PickSaveFileAsync();
 

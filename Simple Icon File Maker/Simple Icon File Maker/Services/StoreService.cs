@@ -214,8 +214,7 @@ public class StoreService : IStoreService
         if (addOnProduct is null)
             return StorePurchaseStatus.ServerError;
 
-        IntPtr hwnd = WindowNative.GetWindowHandle(App.m_window);
-        InitializeWithWindow.Initialize(_context, hwnd);
+        InitializeWithWindow.Initialize(_context, App.MainWindow.WindowHandle);
 
         /// Attempt purchase
         StorePurchaseResult? result = await addOnProduct.RequestPurchaseAsync();

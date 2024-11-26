@@ -4,7 +4,6 @@ using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
 using Windows.Storage.Pickers;
 using Windows.Storage;
-using Microsoft.UI.Xaml;
 using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker.ViewModels;
@@ -33,9 +32,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
                 FileTypeFilter = { "*" }
             };
 
-            Window saveWindow = new();
-            IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
-            InitializeWithWindow.Initialize(picker, windowHandleSave);
+            InitializeWithWindow.Initialize(picker, App.MainWindow.WindowHandle);
 
             StorageFolder folder = await picker.PickSingleFolderAsync();
 

@@ -7,7 +7,6 @@ using Simple_Icon_File_Maker.Services;
 using Simple_Icon_File_Maker.Activation;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.Views;
-using WinUIEx;
 using Simple_Icon_File_Maker.ViewModels;
 
 namespace Simple_Icon_File_Maker;
@@ -35,7 +34,7 @@ public partial class App : Application
         return service;
     }
 
-    public static WindowEx MainWindow { get; } = new MainWindow();
+    public static MainWindow MainWindow { get; } = new MainWindow();
 
     public static UIElement? AppTitlebar { get; set; }
 
@@ -97,6 +96,5 @@ public partial class App : Application
         await App.GetService<IActivationService>().ActivateAsync(args);
     }
 
-    public static Window? m_window { get; } = new MainWindow();
     public static string[]? cliArgs { get; } = Environment.GetCommandLineArgs();
 }
