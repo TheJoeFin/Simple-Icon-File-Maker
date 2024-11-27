@@ -33,11 +33,6 @@ public class ThemeSelectorService : IThemeSelectorService
 
     public async Task SetRequestedThemeAsync()
     {
-        if (App.m_window?.Content is FrameworkElement rootElement)
-        {
-            rootElement.RequestedTheme = Theme;
-        }
-
         await Task.CompletedTask;
     }
 

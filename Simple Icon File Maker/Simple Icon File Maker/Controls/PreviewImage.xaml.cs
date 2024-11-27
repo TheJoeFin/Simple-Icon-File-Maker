@@ -77,9 +77,7 @@ public sealed partial class PreviewImage : UserControl
         savePicker.SuggestedFileName = $"{OriginalName}-{_sideLength}x{_sideLength}";
         savePicker.DefaultFileExtension = extension;
 
-        Window saveWindow = new();
-        IntPtr windowHandleSave = WindowNative.GetWindowHandle(saveWindow);
-        InitializeWithWindow.Initialize(savePicker, windowHandleSave);
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
         StorageFile file = await savePicker.PickSaveFileAsync();
 
