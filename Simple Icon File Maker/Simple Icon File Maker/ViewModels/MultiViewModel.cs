@@ -24,40 +24,40 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     private bool folderLoadCancelled = false;
 
     [ObservableProperty]
-    private int fileLoadProgress = 0;
+    public partial int FileLoadProgress { get; set; } = 0;
 
     [ObservableProperty]
-    private bool loadingImages = false;
+    public partial bool LoadingImages { get; set; } = false;
 
     [ObservableProperty]
-    private string folderName = "Folder name";
+    public partial string FolderName { get; set; } = "Folder name";
 
     [ObservableProperty]
-    private int numberOfImageFiles = 0;
+    public partial int NumberOfImageFiles { get; set; } = 0;
 
     [ObservableProperty]
-    private int currentImageRendering = 0;
+    public partial int CurrentImageRendering { get; set; } = 0;
 
     [ObservableProperty]
-    private bool arePreviewsZoomed = false;
+    public partial bool ArePreviewsZoomed { get; set; } = false;
 
     [ObservableProperty]
-    private bool sizeDisabledWarningIsOpen = false;
+    public partial bool SizeDisabledWarningIsOpen { get; set; } = false;
 
     [ObservableProperty]
-    private bool isRefreshNeeded = false;
+    public partial bool IsRefreshNeeded { get; set; } = false;
 
     [ObservableProperty]
-    private bool skipIcoFiles = true;
+    public partial bool SkipIcoFiles { get; set; } = true;
 
     [ObservableProperty]
-    private bool overwriteFiles = false;
+    public partial bool OverwriteFiles { get; set; } = false;
 
     [ObservableProperty]
-    private bool saveAllImagesAsPngs = false;
+    public partial bool SaveAllImagesAsPngs { get; set; } = false;
 
     [ObservableProperty]
-    private int sizesGenerating = 0;
+    public partial int SizesGenerating { get; set; } = 0;
 
     [RelayCommand]
     public void GoBack()

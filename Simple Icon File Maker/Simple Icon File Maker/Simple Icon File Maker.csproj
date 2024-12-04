@@ -19,6 +19,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishAot>true</PublishAot>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Content Remove="Image128.png" />
@@ -37,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0-preview2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0-preview3" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.241112-preview1" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.241112-preview1" />
     <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.241112-preview1" />
