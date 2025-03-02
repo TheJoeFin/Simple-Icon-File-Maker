@@ -6,14 +6,28 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Simple_Icon_File_Maker.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:media="using:CommunityToolkit.WinUI.Media"
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
     <Grid Margin="5" Padding="5">
+
         <Canvas
             Name="mainImageCanvas"
-            Background="Transparent"
             CanDrag="False"
             DragStarting="ImagePreview_DragStarting">
+            <Canvas.Background>
+                <!--  I want to fill the background here with  a TilesBrush  -->
+
+                <!--  This works, but just fills the area with the checker  -->
+                <ImageBrush ImageSource="/Assets/Checker4x.png" />
+
+                <!--  This doesn't work  -->
+                <media:TilesBrush TextureUri="/Assets/Checker4x.png" />
+
+                <!--  This also doesn't work  -->
+                <media:TilesBrush TextureUri="ms-appx:///Assets/Checker4x.png" />
+            </Canvas.Background>
+
             <Canvas.ContextFlyout>
                 <MenuFlyout>
                     <MenuFlyoutItem Click="MenuFlyoutItem_Click" Text="Save Image" />

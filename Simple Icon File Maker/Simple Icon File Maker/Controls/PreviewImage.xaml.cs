@@ -1,3 +1,5 @@
+using CommunityToolkit.WinUI.Media;
+using CommunityToolkit.WinUI.Media.Pipelines;
 using ImageMagick;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
@@ -167,5 +169,10 @@ public sealed partial class PreviewImage : UserControl
     {
         mainImageCanvas.Children.Clear();
         mainImageCanvas.DragStarting -= ImagePreview_DragStarting;
+    }
+
+    private void UserControl_Loaded_1(object sender, RoutedEventArgs e)
+    {
+
     }
 }

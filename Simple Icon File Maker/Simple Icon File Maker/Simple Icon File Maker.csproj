@@ -22,6 +22,7 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="Checker4x.png" />
     <Content Remove="Image128.png" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +43,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.241112-preview1" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.241112-preview1" />
     <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.241112-preview1" />
+    <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.1.240916" />
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.2.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
@@ -84,6 +86,10 @@
 
   <ItemGroup>
     <Folder Include="Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Checker4x.png" />
   </ItemGroup>
 
   <ItemGroup>
