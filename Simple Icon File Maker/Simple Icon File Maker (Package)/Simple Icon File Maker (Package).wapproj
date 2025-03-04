@@ -120,13 +120,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WinUIEx" Version="2.5.0" />
+    <PackageReference Include="WinUIEx" Version="2.5.1" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>
