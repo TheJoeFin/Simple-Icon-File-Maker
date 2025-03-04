@@ -1,4 +1,5 @@
 using ImageMagick;
+using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -10,6 +11,7 @@ using Windows.Foundation;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using WinUIEx;
 
 namespace Simple_Icon_File_Maker.Controls;
 
@@ -77,7 +79,7 @@ public sealed partial class PreviewImage : UserControl
         savePicker.SuggestedFileName = $"{OriginalName}-{_sideLength}x{_sideLength}";
         savePicker.DefaultFileExtension = extension;
 
-        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.GetWindowHandle());
 
         StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -123,6 +125,7 @@ public sealed partial class PreviewImage : UserControl
         // create a visual
         SpriteVisual imageVisual = compositor.CreateSpriteVisual();
         imageVisual.Brush = brush;
+        imageVisual.BackfaceVisibility = CompositionBackfaceVisibility.Hidden;
 
         // load the image
         LoadedImageSurface image = LoadedImageSurface.StartLoadFromUri(new Uri(_imageFile.Path));
@@ -146,6 +149,7 @@ public sealed partial class PreviewImage : UserControl
 
         // add the visual as a child to canvas
         Grid tempGrid = new();
+        tempGrid.Background = new SolidColorBrush(Colors.Transparent);
         ElementCompositionPreview.SetElementChildVisual(tempGrid, imageVisual);
         mainImageCanvas.Children.Add(tempGrid);
     }
