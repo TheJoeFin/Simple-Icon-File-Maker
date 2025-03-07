@@ -39,7 +39,7 @@
     <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <AssetTargetFallback>net8.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
+    <AssetTargetFallback>net9.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <EntryPointProjectUniqueName>..\Simple Icon File Maker\Simple Icon File Maker.csproj</EntryPointProjectUniqueName>
@@ -51,6 +51,7 @@
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <PublishAot>true</PublishAot>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <AppxBundle>Always</AppxBundle>
@@ -119,13 +120,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002">
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.3233">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WinUIEx" Version="2.4.2" />
+    <PackageReference Include="WinUIEx" Version="2.5.1" />
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>

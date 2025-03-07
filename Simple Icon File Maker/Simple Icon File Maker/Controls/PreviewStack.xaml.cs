@@ -30,7 +30,7 @@ public sealed partial class PreviewStack : UserControl
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         iconRootString = sf.Path;
 
-        ChosenSizes = new(sizes);
+        ChosenSizes = [.. sizes];
         imagePath = path;
         mainImage = new(path);
 
@@ -52,11 +52,9 @@ public sealed partial class PreviewStack : UserControl
 
     public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
     {
-        List<IconSize> selectedSizes = sizes
-            .Where(x => x.IsSelected && x.IsEnabled && x.SideLength <= SmallerSourceSide)
-            .ToList();
+        List<IconSize> selectedSizes = [.. sizes.Where(x => x.IsSelected && x.IsEnabled && x.SideLength <= SmallerSourceSide)];
         ChosenSizes.Clear();
-        ChosenSizes = new(selectedSizes);
+        ChosenSizes = [.. selectedSizes];
 
         return CheckIfRefreshIsNeeded();
     }
@@ -85,16 +83,16 @@ public sealed partial class PreviewStack : UserControl
                 $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
         }
 
-            await Task.Run(async () =>
-        {
-            await collection.WriteAsync(outputPath);
+        await Task.Run(async () =>
+    {
+        await collection.WriteAsync(outputPath);
 
-            IcoOptimizer icoOpti = new()
-            {
-                OptimalCompression = true
-            };
-            icoOpti.Compress(outputPath);
-        });
+        IcoOptimizer icoOpti = new()
+        {
+            OptimalCompression = true
+        };
+        icoOpti.Compress(outputPath);
+    });
     }
 
     public async Task SaveAllImagesAsync(string outputPath = "")
@@ -205,16 +203,16 @@ public sealed partial class PreviewStack : UserControl
         size.IgnoreAspectRatio = false;
         size.FillArea = true;
 
-        firstPassImage.Extent(size, Gravity.Center, MagickColor.FromRgba(0, 0, 0, 0));
+        MagickColor transparent = new("#00000000");
+        firstPassImage.Extent(size, Gravity.Center, transparent);
 
-        await firstPassImage.WriteAsync(croppedImagePath);
+        await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
 
         MagickImageCollection collection = [];
 
-        List<int> selectedSizes = ChosenSizes
+        List<int> selectedSizes = [.. ChosenSizes
             .Where(s => s.IsSelected == true)
-            .Select(s => s.SideLength)
-            .ToList();
+            .Select(s => s.SideLength)];
 
         int baseAtThisPoint = 20;
         progress.Report(baseAtThisPoint);
@@ -364,15 +362,14 @@ public sealed partial class PreviewStack : UserControl
         if (imagePaths.Count < 1)
             return true;
 
-        List<int> selectedSideLengths = ChosenSizes
+        List<int> selectedSideLengths = [.. ChosenSizes
                                             .Where(i => i.IsSelected)
-                                            .Select(i => i.SideLength)
-                                            .ToList();
+                                            .Select(i => i.SideLength)];
 
         List<int> generatedSideLengths = [];
 
         foreach ((string sideLength, string path) pair in imagePaths)
-            if(int.TryParse(pair.sideLength, out int sideLength))
+            if (int.TryParse(pair.sideLength, out int sideLength))
                 generatedSideLengths.Add(sideLength);
 
         if (selectedSideLengths.Count != generatedSideLengths.Count)
