@@ -7,7 +7,7 @@ namespace Simple_Icon_File_Maker.Helpers;
 
 public class WcrHelper
 {
-    public async Task<SoftwareBitmap> ExtractImage(SoftwareBitmap softwareBitmap, PointInt32[] selectionPoints)
+    public static async Task<SoftwareBitmap> ExtractImage(SoftwareBitmap softwareBitmap, PointInt32[] selectionPoints)
     {
         if (!ImageObjectExtractor.IsAvailable())
         {

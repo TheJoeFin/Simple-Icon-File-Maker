@@ -215,6 +215,10 @@
                         FontSize="16"
                         Glyph="&#xE946;" />
                 </Button>
+                <Button
+                    Command="{x:Bind ViewModel.EditImageCommand}"
+                    CommandParameter="{x:Bind ViewModel.ImagePath}"
+                    Content="Edit" />
                 <DropDownButton
                     x:Name="EditImageColorDropDownButton"
                     Grid.Column="2"

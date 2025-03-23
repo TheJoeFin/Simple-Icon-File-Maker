@@ -30,6 +30,7 @@
     <None Remove="MainPage.xaml" />
     <None Remove="Views\BuyProDialog.xaml" />
     <None Remove="Views\EditSizesDialog.xaml" />
+    <None Remove="Views\ImageEditDialog.xaml" />
     <None Remove="Views\MultiPage.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
@@ -84,6 +85,12 @@
 
   <ItemGroup>
     <Folder Include="Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\ImageEditDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

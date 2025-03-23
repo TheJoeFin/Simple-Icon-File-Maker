@@ -73,6 +73,8 @@ public partial class App : Application
             services.AddTransient<AboutViewModel>();
             services.AddTransient<MultiPage>();
             services.AddTransient<MultiViewModel>();
+            services.AddTransient<ImageEditDialog>();
+            services.AddTransient<ImageEditViewModel>();
 
             // Configuration
             services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

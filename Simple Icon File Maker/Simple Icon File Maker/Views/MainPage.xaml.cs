@@ -342,6 +342,8 @@ public sealed partial class MainPage : Page
         ConfigUiThinking();
         ImagePath = file.Path;
 
+        ViewModel.ImagePath = ImagePath;
+
         await LoadFromImagePath();
     }
 

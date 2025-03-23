@@ -5,11 +5,15 @@ using Simple_Icon_File_Maker.Contracts.ViewModels;
 using Windows.Storage.Pickers;
 using Windows.Storage;
 using WinRT.Interop;
+using Simple_Icon_File_Maker.Views;
+using Microsoft.UI.Xaml.Media;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
 public partial class MainViewModel : ObservableRecipient, INavigationAware
 {
+    [ObservableProperty]
+    private string imagePath = string.Empty;
 
     [RelayCommand]
     public void NavigateToAbout()
@@ -44,6 +48,13 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             BuyProDialog buyProDialog = new();
             _ = await NavigationService.ShowModal(buyProDialog);
         }
+    }
+
+    [RelayCommand]
+    public async Task EditImage()
+    {
+        ImageEditDialog imageEditDialog = new(imagePath) { XamlRoot = App.MainWindow.Content.XamlRoot };
+        await imageEditDialog.ShowAsync();
     }
 
     INavigationService NavigationService
