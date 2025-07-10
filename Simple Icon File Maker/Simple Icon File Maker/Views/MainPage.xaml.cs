@@ -33,10 +33,11 @@ public sealed partial class MainPage : Page
     {
         InitializeComponent();
         ConfigBlankState();
+        ViewModel = App.GetService<MainViewModel>();
         DataContext = ViewModel;
         dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
         dispatcherTimer.Tick += DispatcherTimer_Tick;
-        ViewModel = App.GetService<MainViewModel>();
+        ViewModel.CountdownCompleted += OnCountdownCompleted;
 
         undoRedo.UndoButton = UndoButton;
         undoRedo.RedoButton = RedoButton;
@@ -108,11 +109,13 @@ public sealed partial class MainPage : Page
     private void CheckBox_Tapped(object sender, TappedRoutedEventArgs e)
     {
         CheckIfRefreshIsNeeded();
+        ViewModel.StartCountdown();
     }
 
     private void CheckIfRefreshIsNeeded()
     {
         // iterate through all preview stacks and see if any of them need CanRefresh
+        ViewModel.StopCountdown();
         UIElementCollection allElements = PreviewsGrid.Children;
 
         bool anyRefreshAvailable = false;
@@ -140,7 +143,10 @@ public sealed partial class MainPage : Page
         SizeDisabledWarning.IsOpen = IconSizes.Any(x => !x.IsEnabled);
 
         if (anyRefreshAvailable)
+        {
             RefreshButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
+            ViewModel.StartCountdown();
+        }
         else
             RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
     }
@@ -410,13 +416,14 @@ public sealed partial class MainPage : Page
 
     private async void RefreshButton_Click(object sender, RoutedEventArgs e)
     {
-        RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
-
         await RefreshPreviews();
     }
 
     private async Task RefreshPreviews()
     {
+        RefreshButton.Style = (Style)Application.Current.Resources["DefaultButtonStyle"];
+        ViewModel.StopCountdown();
+
         UIElementCollection uIElements = PreviewsGrid.Children;
 
         Progress<int> progress = new(percent =>
@@ -731,6 +738,11 @@ public sealed partial class MainPage : Page
             return;
 
         ImagePath = undoRedo.Redo();
+        await RefreshPreviews();
+    }
+
+    private async void OnCountdownCompleted(object? sender, EventArgs e)
+    {
         await RefreshPreviews();
     }
 }

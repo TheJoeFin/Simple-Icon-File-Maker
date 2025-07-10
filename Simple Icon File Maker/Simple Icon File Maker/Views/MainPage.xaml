@@ -8,10 +8,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
+    xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
     Loaded="Page_Loaded"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.Resources>
+        <toolkitConverters:BoolToVisibilityConverter x:Key="BoolVis" />
+
         <Style x:Key="CardStyle" TargetType="Grid">
             <Style.Setters>
                 <Setter Property="BorderThickness" Value="1" />
@@ -405,14 +408,17 @@
             <ListView
                 x:Name="IconSizesListView"
                 Grid.Row="2"
-                ItemsSource="{x:Bind IconSizes, Mode=OneWay}"
+                ItemsSource="{x:Bind IconSizes,
+                                     Mode=OneWay}"
                 SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="models:IconSize">
                         <CheckBox
                             Content="{x:Bind Tooltip}"
-                            IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                            IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+                            IsChecked="{x:Bind IsSelected,
+                                               Mode=TwoWay}"
+                            IsEnabled="{x:Bind IsEnabled,
+                                               Mode=OneWay}"
                             Tapped="CheckBox_Tapped" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -485,11 +491,35 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Click="RefreshButton_Click"
-                    Content="&#xE72C;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
                     Style="{StaticResource DefaultButtonStyle}"
-                    ToolTipService.ToolTip="Refresh icon previews" />
+                    ToolTipService.ToolTip="Refresh icon previews">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Viewbox Height="16">
+                            <SymbolIcon Symbol="Refresh" />
+                        </Viewbox>
+                        <TextBlock Text="Refresh" />
+                        <ProgressRing
+                            x:Name="CountdownRing"
+                            Width="16"
+                            Height="16"
+                            Foreground="{ThemeResource SystemColorButtonTextBrush}"
+                            IsActive="{x:Bind ViewModel.IsCountdownActive,
+                                              Mode=OneWay}"
+                            IsIndeterminate="False"
+                            Maximum="1"
+                            Minimum="0"
+                            Visibility="{x:Bind ViewModel.IsCountdownActive,
+                                                Converter={StaticResource BoolVis},
+                                                Mode=OneWay}"
+                            Value="{x:Bind ViewModel.CountdownProgress,
+                                          Mode=OneWay}" />
+                    </StackPanel>
+                    <Button.ContextFlyout>
+                        <MenuFlyout>
+                            <ToggleMenuFlyoutItem Text="Auto Refresh" />
+                        </MenuFlyout>
+                    </Button.ContextFlyout>
+                </Button>
                 <TextBlock
                     VerticalAlignment="Center"
                     Style="{StaticResource BodyStrongTextBlockStyle}"
