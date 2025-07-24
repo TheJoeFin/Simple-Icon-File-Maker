@@ -109,7 +109,6 @@ public sealed partial class MainPage : Page
     private void CheckBox_Tapped(object sender, TappedRoutedEventArgs e)
     {
         CheckIfRefreshIsNeeded();
-        ViewModel.StartCountdown();
     }
 
     private void CheckIfRefreshIsNeeded()

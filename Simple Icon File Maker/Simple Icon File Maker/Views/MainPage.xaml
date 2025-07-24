@@ -492,7 +492,7 @@
                     VerticalAlignment="Center"
                     Click="RefreshButton_Click"
                     Style="{StaticResource DefaultButtonStyle}"
-                    ToolTipService.ToolTip="Refresh icon previews">
+                    ToolTipService.ToolTip="Refresh icon previews, Right-click to change auto refresh option">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Viewbox Height="16">
                             <SymbolIcon Symbol="Refresh" />
@@ -512,11 +512,15 @@
                                                 Converter={StaticResource BoolVis},
                                                 Mode=OneWay}"
                             Value="{x:Bind ViewModel.CountdownProgress,
-                                          Mode=OneWay}" />
+                                           Mode=OneWay}" />
                     </StackPanel>
                     <Button.ContextFlyout>
                         <MenuFlyout>
-                            <ToggleMenuFlyoutItem Text="Auto Refresh" />
+                            <ToggleMenuFlyoutItem
+                                x:Name="IsAutoRefreshing"
+                                IsChecked="{x:Bind ViewModel.IsAutoRefreshEnabled,
+                                                   Mode=TwoWay}"
+                                Text="Auto Refresh" />
                         </MenuFlyout>
                     </Button.ContextFlyout>
                 </Button>

@@ -54,6 +54,7 @@ public class LocalSettingsService : ILocalSettingsService
             {
                 if (obj is not string str)
                     return default;
+
                 return JsonSerializer.Deserialize<T>(str);
             }
         }
@@ -76,13 +77,13 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX)
         {
-            ApplicationData.Current.LocalSettings.Values[key] = JsonSerializer.Serialize(value?.ToString());
+            ApplicationData.Current.LocalSettings.Values[key] = JsonSerializer.Serialize(value);
         }
         else
         {
             await InitializeAsync();
 
-            _settings[key] = JsonSerializer.Serialize(value?.ToString());
+            _settings[key] = JsonSerializer.Serialize(value);
 
             await Task.Run(() => _fileService.Save(_applicationDataFolder, _localSettingsFile, _settings));
         }
