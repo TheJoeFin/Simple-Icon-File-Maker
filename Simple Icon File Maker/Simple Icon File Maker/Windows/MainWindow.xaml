@@ -10,6 +10,4 @@
     <Window.SystemBackdrop>
         <MicaBackdrop />
     </Window.SystemBackdrop>
-
-
 </winuiex:WindowEx>

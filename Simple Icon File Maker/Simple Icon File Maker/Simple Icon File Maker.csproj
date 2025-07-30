@@ -39,15 +39,16 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.241112-preview1" />
-    <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.241112-preview1" />
-    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.241112-preview1" />
-    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.5.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
+    <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.250402" />
+    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.250402" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.7.0" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
-    <PackageReference Include="WinUIEx" Version="2.5.1" />
+    <PackageReference Include="WinUIEx" Version="2.6.0" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
