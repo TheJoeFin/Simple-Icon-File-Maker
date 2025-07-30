@@ -14,19 +14,11 @@
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Grid x:Name="titleBar">
-            <StackPanel
-                Margin="16,8,8,8"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
-                <Image Source="../SimpleIconMaker.ico" />
-                <TextBlock
-                    Margin="12,0,0,0"
-                    FontSize="12"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Simple Icon File Maker" />
-            </StackPanel>
-        </Grid>
+        <TitleBar x:Name="titleBar" Title="Simple Icon File Maker">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/SimpleIconMaker.ico" />
+            </TitleBar.IconSource>
+        </TitleBar>
         <Frame x:Name="NavigationFrame" Grid.Row="1" />
     </Grid>
 </Page>
