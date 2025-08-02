@@ -502,7 +502,7 @@
                             x:Name="CountdownRing"
                             Width="16"
                             Height="16"
-                            Foreground="{ThemeResource SystemColorButtonTextBrush}"
+                            Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"
                             IsActive="{x:Bind ViewModel.IsCountdownActive,
                                               Mode=OneWay}"
                             IsIndeterminate="False"
