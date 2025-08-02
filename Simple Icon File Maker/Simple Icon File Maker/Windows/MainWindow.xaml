@@ -6,6 +6,7 @@
     xmlns:local="using:Simple_Icon_File_Maker"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
+    Title="Simple Icon File Maker"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
