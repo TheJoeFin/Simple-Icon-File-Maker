@@ -278,7 +278,31 @@ public sealed partial class MainPage : Page
 
         try
         {
-            MagickImage image = new(ImagePath);
+            MagickImage image;
+            // For .ico files, load the largest frame instead of the first one
+            if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            {
+                MagickImageCollection collection = new(ImagePath);
+                // Find the largest frame by area (width * height)
+                MagickImage? largestFrame = collection.Cast<MagickImage>()
+                    .OrderByDescending(img => (int)img.Width * (int)img.Height)
+                    .FirstOrDefault();
+                
+                if (largestFrame != null)
+                {
+                    // Create a new image from the largest frame to avoid disposal issues
+                    image = (MagickImage)largestFrame.Clone();
+                }
+                else
+                {
+                    // Fallback to the first frame if something goes wrong
+                    image = new(ImagePath);
+                }
+            }
+            else
+            {
+                image = new(ImagePath);
+            }
             MainImage.Source = image.ToImageSource();
         }
         catch (Exception ex)
