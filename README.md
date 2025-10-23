@@ -21,7 +21,7 @@ A small lightweight Windows app which creates .ico files with different resoluti
 
 ## How to use
 
-1. Open an image or drag an image on to the app
+1. Open an image or drag an image on to the app, or paste from clipboard (Ctrl+V)
 2. Review the preview images at each size
 3. Save .ico to a folder
 
