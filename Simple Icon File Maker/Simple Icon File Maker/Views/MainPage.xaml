@@ -33,6 +33,9 @@
         DragOver="Border_DragOver"
         Drop="Grid_Drop"
         RowSpacing="12">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator Key="V" Modifiers="Control" Invoked="PasteFromClipboard_Invoked" />
+        </Grid.KeyboardAccelerators>
         <Grid.ColumnDefinitions>
             <ColumnDefinition
                 Width="*"
@@ -82,7 +85,7 @@
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Drag and drop an image here" />
+                        Text="Drag and drop an image here or paste from clipboard (Ctrl+V)" />
                     <TextBlock
                         x:Name="SupportedFilesTextBlock"
                         HorizontalAlignment="Center"
