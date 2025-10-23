@@ -25,7 +25,6 @@ public sealed partial class MainPage : Page
     private readonly DispatcherTimer dispatcherTimer = new();
     private string ImagePath = "";
     private string OutPutPath = "";
-    private string LastUsedOutputFolder = "";
     private readonly UndoRedo undoRedo = new();
 
     public MainViewModel ViewModel { get; }
@@ -155,7 +154,6 @@ public sealed partial class MainPage : Page
     {
         MainImage.Source = null;
         ImagePath = "-";
-        LastUsedOutputFolder = "";
 
         foreach (UIElement? item in PreviewsGrid.Children)
             if (item is PreviewStack stack)
@@ -274,6 +272,9 @@ public sealed partial class MainPage : Page
             ConfigUiWelcome();
             return;
         }
+
+        // Reset output path when loading a new image so the picker uses the source folder
+        OutPutPath = "";
 
         InitialLoadProgressBar.Value = 0;
         LoadIconSizes();
@@ -485,11 +486,6 @@ public sealed partial class MainPage : Page
             return;
 
         OutPutPath = file.Path;
-        
-        // Remember the output folder for future saves
-        string? outputFolder = Path.GetDirectoryName(file.Path);
-        if (!string.IsNullOrWhiteSpace(outputFolder))
-            LastUsedOutputFolder = outputFolder;
 
         try
         {
@@ -553,11 +549,6 @@ public sealed partial class MainPage : Page
             return;
 
         OutPutPath = Path.Combine(file.Path);
-
-        // Remember the output folder for future saves
-        string? outputFolder = Path.GetDirectoryName(file.Path);
-        if (!string.IsNullOrWhiteSpace(outputFolder))
-            LastUsedOutputFolder = outputFolder;
 
         try
         {
