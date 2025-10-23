@@ -303,6 +303,18 @@ public sealed partial class MainPage : Page
             {
                 image = new(ImagePath);
             }
+            
+            // If the image is smaller than 512px, scale it up using NearestNeighbor
+            // to maintain sharp pixels when displayed
+            int smallerDimension = (int)Math.Min(image.Width, image.Height);
+            if (smallerDimension < 512 && smallerDimension > 0)
+            {
+                // Scale up to 512px using NearestNeighbor (point sampling) to keep pixels sharp
+                int targetSize = 512;
+                image.FilterType = FilterType.Point; // Point filter = NearestNeighbor
+                image.Resize(targetSize, targetSize);
+            }
+            
             MainImage.Source = image.ToImageSource();
         }
         catch (Exception ex)
