@@ -282,7 +282,43 @@ public sealed partial class MainPage : Page
 
         try
         {
-            MagickImage image = new(ImagePath);
+            MagickImage image;
+            // For .ico files, load the largest frame instead of the first one
+            if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            {
+                MagickImageCollection collection = new(ImagePath);
+                // Find the largest frame by area (width * height)
+                MagickImage? largestFrame = collection.Cast<MagickImage>()
+                    .OrderByDescending(img => (int)img.Width * (int)img.Height)
+                    .FirstOrDefault();
+                
+                if (largestFrame != null)
+                {
+                    // Create a new image from the largest frame to avoid disposal issues
+                    image = (MagickImage)largestFrame.Clone();
+                }
+                else
+                {
+                    // Fallback to the first frame if something goes wrong
+                    image = new(ImagePath);
+                }
+            }
+            else
+            {
+                image = new(ImagePath);
+            }
+            
+            // If the image is smaller than 512px, scale it up using NearestNeighbor
+            // to maintain sharp pixels when displayed
+            int smallerDimension = (int)Math.Min(image.Width, image.Height);
+            if (smallerDimension < 512 && smallerDimension > 0)
+            {
+                // Scale up to 512px using NearestNeighbor (point sampling) to keep pixels sharp
+                int targetSize = 512;
+                image.FilterType = FilterType.Point; // Point filter = NearestNeighbor
+                image.Resize((uint)targetSize, (uint)targetSize);
+            }
+            
             MainImage.Source = image.ToImageSource();
         }
         catch (Exception ex)
