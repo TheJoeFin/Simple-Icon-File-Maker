@@ -27,7 +27,6 @@
   <ItemGroup>
     <None Remove="AboutPage.xaml" />
     <None Remove="Controls\PreviewStack.xaml" />
-    <None Remove="MainPage.xaml" />
     <None Remove="Views\BuyProDialog.xaml" />
     <None Remove="Views\EditSizesDialog.xaml" />
     <None Remove="Views\MultiPage.xaml" />
@@ -66,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="MainPage.xaml">
+    <Page Update="Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -88,7 +87,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Update="Views\MultiPage.xaml">
+  <Page Update="Views\MultiPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
@@ -96,6 +95,6 @@
   <ItemGroup>
     <Page Update="Views\ShellPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
+</Page>
   </ItemGroup>
 </Project>
