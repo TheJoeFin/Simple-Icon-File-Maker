@@ -274,6 +274,9 @@ public sealed partial class MainPage : Page
             return;
         }
 
+        // Reset output path when loading a new image so the picker uses the source folder
+        OutPutPath = "";
+
         InitialLoadProgressBar.Value = 0;
         LoadIconSizes();
 
@@ -455,6 +458,27 @@ public sealed partial class MainPage : Page
         savePicker.DefaultFileExtension = ".ico";
         savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
+        // If we have a last used output path, try to set it as the suggested save file
+        // This will make the picker open in that folder
+        if (!string.IsNullOrWhiteSpace(OutPutPath) && File.Exists(OutPutPath))
+        {
+            try
+            {
+                StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutPutPath);
+                savePicker.SuggestedSaveFile = previousFile;
+            }
+            catch
+            {
+                // If we can't access the previous file, try using the source image folder
+                await TrySetSuggestedFolderFromSourceImage(savePicker);
+            }
+        }
+        else
+        {
+            // No previous output, use the source image folder
+            await TrySetSuggestedFolderFromSourceImage(savePicker);
+        }
+
         InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
         StorageFile file = await savePicker.PickSaveFileAsync();
@@ -496,6 +520,27 @@ public sealed partial class MainPage : Page
         savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
         savePicker.DefaultFileExtension = ".ico";
         savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
+
+        // If we have a last used output path, try to set it as the suggested save file
+        // This will make the picker open in that folder
+        if (!string.IsNullOrWhiteSpace(OutPutPath) && File.Exists(OutPutPath))
+        {
+            try
+            {
+                StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutPutPath);
+                savePicker.SuggestedSaveFile = previousFile;
+            }
+            catch
+            {
+                // If we can't access the previous file, try using the source image folder
+                await TrySetSuggestedFolderFromSourceImage(savePicker);
+            }
+        }
+        else
+        {
+            // No previous output, use the source image folder
+            await TrySetSuggestedFolderFromSourceImage(savePicker);
+        }
 
         InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
@@ -813,6 +858,27 @@ public sealed partial class MainPage : Page
             Debug.WriteLine($"Error pasting from clipboard: {ex.Message}");
             ShowErrorOnItem($"Error pasting from clipboard: {ex.Message}");
             ConfigUiWelcome();
+        }
+    }
+
+    private async Task TrySetSuggestedFolderFromSourceImage(FileSavePicker savePicker)
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        try
+        {
+            // Use the source image file itself to suggest the folder
+            // This makes the picker open in the source image's folder
+            if (File.Exists(ImagePath))
+            {
+                StorageFile sourceFile = await StorageFile.GetFileFromPathAsync(ImagePath);
+                savePicker.SuggestedSaveFile = sourceFile;
+            }
+        }
+        catch
+        {
+            // If file access fails, fall back to default picker behavior
         }
     }
 }
