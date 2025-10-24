@@ -13,6 +13,7 @@ using System.Diagnostics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.System;
 using WinRT.Interop;
 
@@ -788,6 +789,76 @@ public sealed partial class MainPage : Page
     private async void OnCountdownCompleted(object? sender, EventArgs e)
     {
         await RefreshPreviews();
+    }
+
+    private async void PasteFromClipboard_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = true;
+        await PasteImageFromClipboard();
+    }
+
+    private async Task PasteImageFromClipboard()
+    {
+        try
+        {
+            DataPackageView dataPackageView = Clipboard.GetContent();
+
+            if (dataPackageView == null)
+                return;
+
+            ConfigUiThinking();
+            errorInfoBar.IsOpen = false;
+
+            // Try to get bitmap data from clipboard
+            if (dataPackageView.Contains(StandardDataFormats.Bitmap))
+            {
+                Debug.WriteLine("Clipboard contains Bitmap");
+                
+                IRandomAccessStreamReference bitmapStreamRef = await dataPackageView.GetBitmapAsync();
+                
+                if (bitmapStreamRef != null)
+                {
+                    using IRandomAccessStreamWithContentType bitmapStream = await bitmapStreamRef.OpenReadAsync();
+                    
+                    // Save the bitmap to a temporary file
+                    StorageFolder tempFolder = ApplicationData.Current.LocalCacheFolder;
+                    string tempFileName = $"clipboard_paste_{DateTime.Now:yyyyMMddHHmmss}.png";
+                    StorageFile tempFile = await tempFolder.CreateFileAsync(tempFileName, CreationCollisionOption.ReplaceExisting);
+                    
+                    using (IRandomAccessStream fileStream = await tempFile.OpenAsync(FileAccessMode.ReadWrite))
+                    {
+                        await RandomAccessStream.CopyAsync(bitmapStream, fileStream);
+                        await fileStream.FlushAsync();
+                    }
+
+                    ImagePath = tempFile.Path;
+                    await LoadFromImagePath();
+                    return;
+                }
+            }
+            // Try to get storage items (files) from clipboard
+            else if (dataPackageView.Contains(StandardDataFormats.StorageItems))
+            {
+                Debug.WriteLine("Clipboard contains StorageItems");
+                IReadOnlyList<IStorageItem> storageItems = await dataPackageView.GetStorageItemsAsync();
+                
+                if (storageItems != null && storageItems.Count > 0)
+                {
+                    await TryToOpenStorageItems(storageItems);
+                    return;
+                }
+            }
+
+            // If we get here, no supported data was found in clipboard
+            ShowErrorOnItem("No image found in clipboard. Copy an image and try again.");
+            ConfigUiWelcome();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error pasting from clipboard: {ex.Message}");
+            ShowErrorOnItem($"Error pasting from clipboard: {ex.Message}");
+            ConfigUiWelcome();
+        }
     }
 
     private async Task TrySetSuggestedFolderFromSourceImage(FileSavePicker savePicker)

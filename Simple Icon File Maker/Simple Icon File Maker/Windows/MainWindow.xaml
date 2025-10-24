@@ -7,6 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     Title="Simple Icon File Maker"
+    MinWidth="450"
+    MinHeight="300"
     mc:Ignorable="d">
     <Window.SystemBackdrop>
         <MicaBackdrop />
