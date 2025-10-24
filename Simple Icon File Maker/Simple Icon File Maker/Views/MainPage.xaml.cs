@@ -312,7 +312,7 @@ public sealed partial class MainPage : Page
                 // Scale up to 512px using NearestNeighbor (point sampling) to keep pixels sharp
                 int targetSize = 512;
                 image.FilterType = FilterType.Point; // Point filter = NearestNeighbor
-                image.Resize(targetSize, targetSize);
+                image.Resize((uint)targetSize, (uint)targetSize);
             }
             
             MainImage.Source = image.ToImageSource();
