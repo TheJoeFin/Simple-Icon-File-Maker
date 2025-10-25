@@ -10,11 +10,11 @@ public static class StorageItemHelper
       // Iterate through all the items to find an image, stop at first success
         foreach (IStorageItem item in storageItems)
         {
-    if (item is StorageFile file && file.IsSupportedImageFormat())
+            if (item is StorageFile file && file.IsSupportedImageFormat())
             {
-    return file.Path;
-  }
- }
+                return file.Path;
+            }
+        }
         return null;
     }
 
