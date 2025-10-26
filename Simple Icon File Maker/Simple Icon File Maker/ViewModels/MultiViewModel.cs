@@ -1,14 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
+using Simple_Icon_File_Maker.Constants;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
+using Simple_Icon_File_Maker.Controls;
+using Simple_Icon_File_Maker.Helpers;
+using Simple_Icon_File_Maker.Models;
 using System.Collections.ObjectModel;
 using Windows.Storage;
-using Simple_Icon_File_Maker.Constants;
-using Microsoft.UI.Xaml;
-using Simple_Icon_File_Maker.Controls;
-using Simple_Icon_File_Maker.Models;
-using Simple_Icon_File_Maker.Helpers;
 using Windows.System;
 
 namespace Simple_Icon_File_Maker.ViewModels;

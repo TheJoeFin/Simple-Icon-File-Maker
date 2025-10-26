@@ -9,10 +9,10 @@ namespace Simple_Icon_File_Maker.ViewModels;
 public partial class ShellViewModel : ObservableRecipient
 {
     [ObservableProperty]
-    private bool isBackEnabled;
+    public partial bool IsBackEnabled { get; set; }
 
     [ObservableProperty]
-    private object? selected;
+    public partial object? Selected { get; set; }
 
     [RelayCommand]
     private void Back()

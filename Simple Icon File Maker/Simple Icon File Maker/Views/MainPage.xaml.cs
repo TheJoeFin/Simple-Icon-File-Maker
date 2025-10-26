@@ -12,62 +12,62 @@ public sealed partial class MainPage : Page
     public MainPage()
     {
         InitializeComponent();
-     ViewModel = App.GetService<MainViewModel>();
+        ViewModel = App.GetService<MainViewModel>();
         DataContext = ViewModel;
-        
+
         // Set UI element references in ViewModel
         ViewModel.PreviewsGrid = PreviewsGrid;
-      ViewModel.MainImage = MainImage;
+        ViewModel.MainImage = MainImage;
         ViewModel.InitialLoadProgressBar = InitialLoadProgressBar;
 
         ViewModel.CountdownCompleted += OnCountdownCompleted;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        
+
         // Set initial state
-  UpdateVisualState();
+        UpdateVisualState();
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-  // Handle RefreshButton style change
+        // Handle RefreshButton style change
         if (e.PropertyName == nameof(ViewModel.RefreshButtonIsAccent))
         {
-            RefreshButton.Style = ViewModel.RefreshButtonIsAccent 
+            RefreshButton.Style = ViewModel.RefreshButtonIsAccent
            ? (Style)Application.Current.Resources["AccentButtonStyle"]
                 : (Style)Application.Current.Resources["DefaultButtonStyle"];
- }
-  
+        }
+
         // Handle Visual State changes
-        if (e.PropertyName == nameof(ViewModel.IsLoading) || 
+        if (e.PropertyName == nameof(ViewModel.IsLoading) ||
             e.PropertyName == nameof(ViewModel.IsImageSelected) ||
        e.PropertyName == nameof(ViewModel.ImagePath))
         {
-    UpdateVisualState();
-     }
+            UpdateVisualState();
+        }
     }
 
     private void UpdateVisualState()
     {
         // Determine which visual state to show based on ViewModel properties
         string stateName;
-        
+
         if (ViewModel.IsLoading)
-   {
-         stateName = UiStates.ThinkingState.ToString();
+        {
+            stateName = UiStates.ThinkingState.ToString();
         }
         else if (ViewModel.IsImageSelected)
- {
-    stateName = UiStates.ImageSelectedState.ToString();
+        {
+            stateName = UiStates.ImageSelectedState.ToString();
         }
         else if (string.IsNullOrWhiteSpace(ViewModel.ImagePath) || ViewModel.ImagePath == "-")
         {
-    stateName = UiStates.WelcomeState.ToString();
-  }
+            stateName = UiStates.WelcomeState.ToString();
+        }
         else
         {
-    stateName = UiStates.BlankState.ToString();
+            stateName = UiStates.BlankState.ToString();
         }
-        
+
         VisualStateManager.GoToState(this, stateName, true);
     }
 
@@ -88,16 +88,16 @@ public sealed partial class MainPage : Page
 
     private async void Grid_Drop(object sender, DragEventArgs e)
     {
-    DragOperationDeferral def = e.GetDeferral();
+        DragOperationDeferral def = e.GetDeferral();
         e.Handled = true;
         await ViewModel.HandleDrop(e);
- def.Complete();
+        def.Complete();
     }
 
     private async void PasteFromClipboard_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
     {
         args.Handled = true;
-   await ViewModel.PasteFromClipboard();
+        await ViewModel.PasteFromClipboard();
     }
 
     private void MenuFlyout_Opening(object sender, object e)

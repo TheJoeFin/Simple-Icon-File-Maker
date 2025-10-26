@@ -1,6 +1,6 @@
 ﻿using Simple_Icon_File_Maker.Contracts.Services;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace Simple_Icon_File_Maker.Services;
 

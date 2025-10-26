@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Simple_Icon_File_Maker.Models;
 
 [DebuggerDisplay("SideLength = {SideLength}, IsSelected = {IsSelected}")]
-public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
+public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
 {
     public int SideLength { get; set; }
     public bool IsSelected { get; set; } = true;
@@ -25,7 +25,7 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 
     public override bool Equals(object? obj)
     {
-        if (obj is not IconSize iconSize) 
+        if (obj is not IconSize iconSize)
             return false;
 
         return Equals(iconSize);
@@ -33,7 +33,7 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
 
     public bool Equals(IconSize? other)
     {
-        if (other?.SideLength == SideLength 
+        if (other?.SideLength == SideLength
             && other.IsSelected == IsSelected)
             return true;
 
@@ -77,7 +77,7 @@ public class IconSize: INotifyPropertyChanged, IEquatable<IconSize>
             new() { SideLength = 16 },
         };
     }
-    
+
     public static IconSize[] GetWindowsSizesFull()
     {
         return

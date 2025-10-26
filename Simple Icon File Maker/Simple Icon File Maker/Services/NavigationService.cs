@@ -1,11 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
 using Simple_Icon_File_Maker.Helpers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Simple_Icon_File_Maker.Services;
 
