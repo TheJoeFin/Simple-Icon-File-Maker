@@ -457,6 +457,18 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
+    public async Task CheckForProEditColor()
+    {
+        bool ownsPro = _storeService.OwnsPro;
+
+        if (ownsPro)
+            return;
+
+        BuyProDialog buyProDialog = new();
+        _ = await NavigationService.ShowModal(buyProDialog);
+    }
+
+    [RelayCommand]
     public async Task ApplyGrayscale()
     {
         if (string.IsNullOrWhiteSpace(ImagePath))

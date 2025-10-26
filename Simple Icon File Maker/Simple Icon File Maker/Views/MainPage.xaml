@@ -241,7 +241,7 @@
                     x:Name="EditImageColorDropDownButton"
                     Grid.Column="2"
                     Height="32"
-                    Command="{x:Bind ViewModel.UpgradeToProCommand}"
+                    Command="{x:Bind ViewModel.CheckForProEditColorCommand}"
                     IsEnabled="True"
                     ToolTipService.ToolTip="Change color of the image">
                     <DropDownButton.Content>
