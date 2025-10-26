@@ -52,9 +52,14 @@ public sealed partial class PreviewStack : UserControl
 
     public bool ChooseTheseSizes(IEnumerable<IconSize> sizes)
     {
-        List<IconSize> selectedSizes = [.. sizes.Where(x => x.IsSelected && x.IsEnabled && x.SideLength <= SmallerSourceSide)];
+        // Optimized: Avoid LINQ and multiple iterations
         ChosenSizes.Clear();
-        ChosenSizes = [.. selectedSizes];
+        
+     foreach (IconSize size in sizes)
+     {
+         if (size.IsSelected && size.IsEnabled && size.SideLength <= SmallerSourceSide)
+          ChosenSizes.Add(size);
+        }
 
         return CheckIfRefreshIsNeeded();
     }
@@ -72,97 +77,104 @@ public sealed partial class PreviewStack : UserControl
 
     public async Task SaveIconAsync(string outputPath = "")
     {
+        // Optimized: Use for loop instead of foreach with tuple deconstruction
         MagickImageCollection collection = [];
 
-        foreach ((_, string path) in imagePaths)
-            collection.Add(path);
+        for (int i = 0; i < imagePaths.Count; i++)
+    collection.Add(imagePaths[i].Item2);
 
         if (string.IsNullOrWhiteSpace(outputPath))
-        {
-            outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
-                $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
+     {
+            outputPath = Path.Combine(
+       Path.GetDirectoryName(imagePath) ?? string.Empty,
+       $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
         }
 
-        await Task.Run(async () =>
-    {
-        await collection.WriteAsync(outputPath);
-
-        IcoOptimizer icoOpti = new()
+        // Optimized: Remove unnecessary async wrapper
+        await Task.Run(() =>
         {
-            OptimalCompression = true
-        };
-        icoOpti.Compress(outputPath);
-    });
+  collection.Write(outputPath);
+
+            IcoOptimizer icoOpti = new()
+            {
+       OptimalCompression = true
+            };
+    icoOpti.Compress(outputPath);
+        });
     }
 
     public async Task SaveAllImagesAsync(string outputPath = "")
     {
         if (string.IsNullOrWhiteSpace(outputPath))
         {
-            outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
-                $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
-        }
+   outputPath = Path.Combine(
+     Path.GetDirectoryName(imagePath) ?? string.Empty,
+        $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
+   }
 
         await SaveIconAsync(outputPath);
 
-        string outputFolderPath = Path.GetDirectoryName(outputPath) ?? string.Empty;
+    string outputFolderPath = Path.GetDirectoryName(outputPath) ?? string.Empty;
 
-        if (!Directory.Exists(outputFolderPath) || string.IsNullOrWhiteSpace(outputFolderPath))
-            return;
+    if (!Directory.Exists(outputFolderPath) || string.IsNullOrWhiteSpace(outputFolderPath))
+ return;
 
-        string outputBaseFileName = Path.GetFileNameWithoutExtension(outputPath);
-        StorageFolder outputFolder = await StorageFolder.GetFolderFromPathAsync(outputFolderPath);
+ string outputBaseFileName = Path.GetFileNameWithoutExtension(outputPath);
+   StorageFolder outputFolder = await StorageFolder.GetFolderFromPathAsync(outputFolderPath);
 
-        foreach ((_, string path) in imagePaths)
+        for (int i = 0; i < imagePaths.Count; i++)
         {
-            StorageFile imageFile = await StorageFile.GetFileFromPathAsync(path);
+   string path = imagePaths[i].Item2;
+     StorageFile imageFile = await StorageFile.GetFileFromPathAsync(path);
 
-            if (imageFile is null)
-                continue;
+  if (imageFile is null)
+        continue;
 
             string justFileName = Path.GetFileNameWithoutExtension(path);
-            // get the numbers from the right side of the string which is the side length
-            // this is because random numbers are generated to do the composition stuff
-            // ex: we want to turn "904466899Image16.png" into "outputName-16.png"
-            string sideLength = justFileName.Split("Image")[1];
-            string newName = $"{outputBaseFileName}-{sideLength}.png";
+            // Get the numbers from the right side of the string which is the side length
+   // This is because random numbers are generated to do the composition stuff
+            // Ex: we want to turn "904466899Image16.png" into "outputName-16.png"
+    int imageIndex = justFileName.IndexOf("Image", StringComparison.Ordinal);
+            if (imageIndex < 0)
+                continue;
 
-            NameCollisionOption option = NameCollisionOption.ReplaceExisting;
+     string sideLength = justFileName.Substring(imageIndex + 5);
+     string newName = $"{outputBaseFileName}-{sideLength}.png";
 
-            await imageFile.CopyAsync(outputFolder, newName, option);
+            await imageFile.CopyAsync(outputFolder, newName, NameCollisionOption.ReplaceExisting);
         }
-    }
+  }
 
     public async Task<bool> GeneratePreviewImagesAsync(IProgress<int> progress, string path = "")
     {
-        if (!string.IsNullOrWhiteSpace(path))
+  if (!string.IsNullOrWhiteSpace(path))
             imagePath = path;
 
-        string? openedPath = Path.GetDirectoryName(imagePath);
+     string? openedPath = Path.GetDirectoryName(imagePath);
         string? name = Path.GetFileNameWithoutExtension(imagePath);
 
         if (openedPath is null || name is null)
-            return false;
+  return false;
 
         ImagesProgressBar.Value = 0;
-        progress.Report(0);
-        if (ChosenSizes.Count == 1)
-            LoadingText.Text = $"Generating {ChosenSizes.Count} preview for {name}...";
-        else
-            LoadingText.Text = $"Generating {ChosenSizes.Count} previews for {name}...";
+ progress.Report(0);
+  
+        LoadingText.Text = ChosenSizes.Count == 1 
+   ? $"Generating {ChosenSizes.Count} preview for {name}..." 
+     : $"Generating {ChosenSizes.Count} previews for {name}...";
 
         TextAndProgressBar.Visibility = Visibility.Visible;
 
         string croppedImagePath = Path.Combine(iconRootString, $"{name}Cropped.png");
-        string iconOutputString = Path.Combine(openedPath, $"{name}.ico");
-        if (Directory.Exists(iconRootString) == false)
-            Directory.CreateDirectory(iconRootString);
+        
+        if (!Directory.Exists(iconRootString))
+          Directory.CreateDirectory(iconRootString);
 
         MagickImageFactory imgFactory = new();
         MagickGeometryFactory geoFactory = new();
 
-        progress.Report(10);
-        ImagesProgressBar.Value = 10;
+   progress.Report(10);
+     ImagesProgressBar.Value = 10;
         SourceImageSize ??= new Size((int)mainImage.Width, (int)mainImage.Height);
 
         SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
@@ -172,34 +184,34 @@ public sealed partial class PreviewStack : UserControl
         imagePaths.Clear();
         PreviewStackPanel.Children.Clear();
 
-        foreach (IconSize iconSize in ChosenSizes)
+        // Optimized: Single-pass update with conditional assignment
+        for (int i = 0; i < ChosenSizes.Count; i++)
         {
-            iconSize.IsEnabled = true;
-            if (iconSize.SideLength > smallerSide)
-                iconSize.IsEnabled = false;
+   ChosenSizes[i].IsEnabled = ChosenSizes[i].SideLength <= smallerSide;
         }
 
-        if (string.IsNullOrWhiteSpace(imagePath) == true)
+        if (string.IsNullOrWhiteSpace(imagePath))
         {
-            ClearOutputImages();
-            return false;
+      ClearOutputImages();
+      return false;
         }
 
         try
         {
-            _ = await imgFactory.CreateAsync(imagePath);
-        }
+      _ = await imgFactory.CreateAsync(imagePath);
+  }
         catch (Exception)
         {
-            ClearOutputImages();
-            return false;
+      ClearOutputImages();
+      return false;
         }
 
         progress.Report(15);
         ImagesProgressBar.Value = 15;
+     
         using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
         IMagickGeometry size = geoFactory.Create(
-            (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+          (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
         size.IgnoreAspectRatio = false;
         size.FillArea = true;
 
@@ -208,69 +220,81 @@ public sealed partial class PreviewStack : UserControl
 
         await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
 
-        MagickImageCollection collection = [];
+        // Optimized: Use for loop instead of LINQ for filtering
+        List<int> selectedSizes = new(ChosenSizes.Count);
+      for (int i = 0; i < ChosenSizes.Count; i++)
+        {
+  if (ChosenSizes[i].IsSelected && ChosenSizes[i].SideLength <= smallerSide)
+                selectedSizes.Add(ChosenSizes[i].SideLength);
+   }
 
-        List<int> selectedSizes = [.. ChosenSizes
-            .Where(s => s.IsSelected == true)
-            .Select(s => s.SideLength)];
+    int baseAtThisPoint = 20;
+      progress.Report(baseAtThisPoint);
+   ImagesProgressBar.Value = baseAtThisPoint;
 
-        int baseAtThisPoint = 20;
-        progress.Report(baseAtThisPoint);
-        ImagesProgressBar.Value = baseAtThisPoint;
-        int currentLocation = 0;
+    int totalImages = selectedSizes.Count;
+ if (totalImages == 0)
+        {
+        TextAndProgressBar.Visibility = Visibility.Collapsed;
+ return true;
+        }
 
-        int totalImages = selectedSizes.Count;
         int halfChunkPerImage = (int)((100 - baseAtThisPoint) / (float)(totalImages * 2));
+
+        // Optimized: Pre-allocate collection capacity
+        if (imagePaths.Capacity < totalImages)
+          imagePaths.Capacity = totalImages;
+
+        int currentLocation = 0;
 
         foreach (int sideLength in selectedSizes)
         {
-            using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
-            if (smallerSide < sideLength)
-                continue;
+    using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
 
-            currentLocation++;
-            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
-            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
-            IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
+    currentLocation++;
+int progressValue = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+  progress.Report(progressValue);
+      ImagesProgressBar.Value = progressValue;
+
+  IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
             iconSize.IgnoreAspectRatio = false;
 
-            if (smallerSide > sideLength)
-            {
-                await Task.Run(() =>
-                {
-                    image.Scale(iconSize);
-                    image.Sharpen();
-                });
-            }
+            // Optimized: Remove unnecessary Task.Run wrapper for short CPU operations
+         if (smallerSide > sideLength)
+       {
+   image.Scale(iconSize);
+     image.Sharpen();
+  }
 
-            string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+    string iconPath = Path.Combine(iconRootString, $"{Random.Shared.Next()}Image{sideLength}.png");
 
             if (File.Exists(iconPath))
-                File.Delete(iconPath);
+     File.Delete(iconPath);
 
-            await image.WriteAsync(iconPath, MagickFormat.Png32);
+   await image.WriteAsync(iconPath, MagickFormat.Png32);
 
-            collection.Add(iconPath);
-            imagePaths.Add((sideLength.ToString(), iconPath));
+          imagePaths.Add((sideLength.ToString(), iconPath));
 
-            currentLocation++;
-            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
-            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+    currentLocation++;
+ progressValue = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+       progress.Report(progressValue);
+            ImagesProgressBar.Value = progressValue;
         }
 
         try
         {
             await UpdatePreviewsAsync();
-        }
+   }
         catch (Exception ex)
-        {
-            Debug.WriteLine("Generating Icons Exception " + ex.Message);
-            return false;
+{
+     Debug.WriteLine($"Generating Icons Exception: {ex.Message}");
+        return false;
         }
         finally
-        {
-            TextAndProgressBar.Visibility = Visibility.Collapsed;
+   {
+         TextAndProgressBar.Visibility = Visibility.Collapsed;
         }
+        
         return true;
     }
 
@@ -288,45 +312,53 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
 
         MagickImageCollection collection = new(imagePath);
-        List<(string, string)> iconImages = [];
 
-        int largestWidth = (int)collection.Select(x => x.Width).Max();
-        int largestHeight = (int)collection.Select(x => x.Height).Max();
+        // Optimized: Replace LINQ with manual loop for simple aggregation
+        int largestWidth = 0;
+     int largestHeight = 0;
+        
+  foreach (IMagickImage img in collection)
+        {
+     if (img.Width > largestWidth)
+        largestWidth = (int)img.Width;
+   if (img.Height > largestHeight)
+       largestHeight = (int)img.Height;
+        }
 
-        SmallerSourceSide = Math.Min(largestWidth, largestHeight);
+     SmallerSourceSide = Math.Min(largestWidth, largestHeight);
 
         int currentLocation = 0;
         int totalImages = collection.Count;
-        foreach (MagickImage image in collection.Cast<MagickImage>())
+        
+  foreach (MagickImage image in collection.Cast<MagickImage>())
         {
-            Debug.WriteLine($"Image: {image}");
-            string imageName = $"{image}.png";
+   Debug.WriteLine($"Image: {image}");
+         string imageName = $"{image}.png";
 
-            string pathForSingleImage = Path.Combine(iconRootString, imageName);
-            await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
+string pathForSingleImage = Path.Combine(iconRootString, imageName);
+          await image.WriteAsync(pathForSingleImage, MagickFormat.Png32);
 
             imagePaths.Add((((int)image.Width).ToString(), pathForSingleImage));
 
-            iconImages.Add((image.ToString(), imagePath));
             IconSize iconSizeOfIconFrame = new((int)image.Width)
-            {
+       {
                 IsSelected = true,
-            };
-            ChosenSizes.Add(iconSizeOfIconFrame);
+       };
+  ChosenSizes.Add(iconSizeOfIconFrame);
 
             int sideLength = (int)image.Width;
-            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(pathForSingleImage);
+         StorageFile imageSF = await StorageFile.GetFileFromPathAsync(pathForSingleImage);
 
-            PreviewImage previewImage = new(imageSF, sideLength, imageName);
+  PreviewImage previewImage = new(imageSF, sideLength, imageName);
             PreviewStackPanel.Children.Add(previewImage);
 
-            currentLocation++;
-            int percentageComplete = (int)((float)currentLocation / totalImages * 100);
-            progress.Report(percentageComplete);
-            ImagesProgressBar.Value = percentageComplete;
-        }
+         currentLocation++;
+int percentageComplete = (int)((float)currentLocation / totalImages * 100);
+      progress.Report(percentageComplete);
+       ImagesProgressBar.Value = percentageComplete;
+   }
 
-        TextAndProgressBar.Visibility = Visibility.Collapsed;
+TextAndProgressBar.Visibility = Visibility.Collapsed;
         return true;
     }
 
@@ -339,22 +371,23 @@ public sealed partial class PreviewStack : UserControl
     public async Task UpdatePreviewsAsync()
     {
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        foreach ((string sideLength, string path) pair in imagePaths)
+        
+        // Optimized: Use indexed for loop for better performance
+  for (int i = 0; i < imagePaths.Count; i++)
         {
-            if (pair.path is not string imagePath)
-                continue;
+            (string sideLength, string path) = imagePaths[i];
 
-            if (!int.TryParse(pair.sideLength, out int sideLength))
-                continue;
+            if (!int.TryParse(sideLength, out int sideLengthValue))
+   continue;
 
-            StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
+       StorageFile imageSF = await StorageFile.GetFileFromPathAsync(path);
 
-            PreviewImage image = new(imageSF, sideLength, originalName);
+    PreviewImage image = new(imageSF, sideLengthValue, originalName);
 
-            PreviewStackPanel.Children.Add(image);
+   PreviewStackPanel.Children.Add(image);
         }
+  
         UpdateSizeAndZoom();
-        await Task.CompletedTask;
     }
 
     private bool CheckIfRefreshIsNeeded()
@@ -362,33 +395,47 @@ public sealed partial class PreviewStack : UserControl
         if (imagePaths.Count < 1)
             return true;
 
-        List<int> selectedSideLengths = [.. ChosenSizes
-                                            .Where(i => i.IsSelected)
-                                            .Select(i => i.SideLength)];
+   // Optimized: Use for loops instead of LINQ for better performance
+        List<int> selectedSideLengths = new(ChosenSizes.Count);
+        for (int i = 0; i < ChosenSizes.Count; i++)
+        {
+   if (ChosenSizes[i].IsSelected)
+      selectedSideLengths.Add(ChosenSizes[i].SideLength);
+}
 
-        List<int> generatedSideLengths = [];
-
-        foreach ((string sideLength, string path) pair in imagePaths)
-            if (int.TryParse(pair.sideLength, out int sideLength))
-                generatedSideLengths.Add(sideLength);
+        List<int> generatedSideLengths = new(imagePaths.Count);
+ for (int i = 0; i < imagePaths.Count; i++)
+{
+            if (int.TryParse(imagePaths[i].Item1, out int sideLength))
+     generatedSideLengths.Add(sideLength);
+      }
 
         if (selectedSideLengths.Count != generatedSideLengths.Count)
-            return true;
+   return true;
 
-        return !generatedSideLengths.All(selectedSideLengths.Contains);
+        // Optimized: Use HashSet for O(1) lookups instead of O(n²) All().Contains()
+        HashSet<int> generatedSet = new(generatedSideLengths);
+        for (int i = 0; i < selectedSideLengths.Count; i++)
+   {
+      if (!generatedSet.Contains(selectedSideLengths[i]))
+           return true;
+   }
+
+   return false;
     }
 
     public void UpdateSizeAndZoom()
     {
         UIElementCollection previewBoxes = PreviewStackPanel.Children;
 
-        foreach (UIElement? child in previewBoxes)
-        {
-            if (child is PreviewImage img)
-            {
+     // Optimized: Use indexed for loop instead of foreach
+      for (int i = 0; i < previewBoxes.Count; i++)
+    {
+            if (previewBoxes[i] is PreviewImage img)
+          {
                 if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
-                    img.ZoomedWidthSpace = (int)ActualWidth - 40;
-                img.ZoomPreview = IsZoomingPreview;
+        img.ZoomedWidthSpace = (int)ActualWidth - 40;
+         img.ZoomPreview = IsZoomingPreview;
             }
         }
     }

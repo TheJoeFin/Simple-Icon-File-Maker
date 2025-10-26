@@ -640,12 +640,12 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    public void HandleDragOver(DragEventArgs e)
+    public static void HandleDragOver(DragEventArgs e)
     {
         DataPackageView dataView = e.DataView;
 
         if (dataView.Contains(StandardDataFormats.Bitmap) ||
-  dataView.Contains(StandardDataFormats.Uri) ||
+            dataView.Contains(StandardDataFormats.Uri) ||
             dataView.Contains(StandardDataFormats.StorageItems))
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
@@ -777,13 +777,10 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             return;
         }
 
-        List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
+        List<IconSize> selectedSizes = [.. IconSizes.Where(x => x.IsSelected)];
         Controls.PreviewStack previewStack = new(ImagePath, selectedSizes);
 
-        if (PreviewsGrid != null)
-        {
-            PreviewsGrid.Children.Add(previewStack);
-        }
+        PreviewsGrid?.Children.Add(previewStack);
 
         Progress<int> progress = new(percent =>
  {
@@ -827,7 +824,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
                 chosenSizes.AddRange(stack.ChosenSizes);
         }
 
-        chosenSizes = chosenSizes.Distinct().ToList();
+        chosenSizes = [.. chosenSizes.Distinct()];
 
         foreach (IconSize size in chosenSizes)
         {

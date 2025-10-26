@@ -83,7 +83,7 @@ public sealed partial class MainPage : Page
 
     private void Border_DragOver(object sender, DragEventArgs e)
     {
-        ViewModel.HandleDragOver(e);
+        MainViewModel.HandleDragOver(e);
     }
 
     private async void Grid_Drop(object sender, DragEventArgs e)
