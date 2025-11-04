@@ -144,141 +144,163 @@ public sealed partial class PreviewStack : UserControl
         if (openedPath is null || name is null)
             return false;
 
-        ImagesProgressBar.Value = 0;
+        // Show indeterminate progress immediately
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ImagesProgressBar.IsIndeterminate = true;
+            if (ChosenSizes.Count == 1)
+                LoadingText.Text = $"Generating {ChosenSizes.Count} preview for {name}...";
+            else
+                LoadingText.Text = $"Generating {ChosenSizes.Count} previews for {name}...";
+            TextAndProgressBar.Visibility = Visibility.Visible;
+        });
+
         progress.Report(0);
-        if (ChosenSizes.Count == 1)
-          LoadingText.Text = $"Generating {ChosenSizes.Count} preview for {name}...";
-   else
-       LoadingText.Text = $"Generating {ChosenSizes.Count} previews for {name}...";
 
-        TextAndProgressBar.Visibility = Visibility.Visible;
+        if (Directory.Exists(iconRootString) == false)
+            Directory.CreateDirectory(iconRootString);
 
-      if (Directory.Exists(iconRootString) == false)
-        Directory.CreateDirectory(iconRootString);
+        MagickGeometryFactory geoFactory = new();
 
- MagickGeometryFactory geoFactory = new();
-
-        progress.Report(10);
-   ImagesProgressBar.Value = 10;
         SourceImageSize ??= new Size((int)mainImage.Width, (int)mainImage.Height);
 
-      SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
+        SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
 
-    int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
+        int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
 
-     imagePaths.Clear();
+        imagePaths.Clear();
         PreviewStackPanel.Children.Clear();
 
- foreach (IconSize iconSize in ChosenSizes)
+        foreach (IconSize iconSize in ChosenSizes)
         {
-    iconSize.IsEnabled = true;
+            iconSize.IsEnabled = true;
             if (iconSize.SideLength > smallerSide)
-     iconSize.IsEnabled = false;
-  }
+                iconSize.IsEnabled = false;
+        }
 
         if (string.IsNullOrWhiteSpace(imagePath) == true)
         {
-  ClearOutputImages();
+            ClearOutputImages();
             return false;
- }
-
-        byte[]? croppedImageBytes = null;
-   
-        try
-    {
-            progress.Report(15);
-            ImagesProgressBar.Value = 15;
-            
-        // Prepare the base image in memory instead of writing to disk
-        using (var firstPassImage = mainImage.Clone())
-          {
-    IMagickGeometry size = geoFactory.Create(
-   (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
-              size.IgnoreAspectRatio = false;
-       size.FillArea = true;
-
-      MagickColor transparent = new("#00000000");
-       firstPassImage.Extent(size, Gravity.Center, transparent);
-         
-      // Keep the image in memory as byte array
-      croppedImageBytes = firstPassImage.ToByteArray(MagickFormat.Png32);
-  }
-
-       List<int> selectedSizes = [.. ChosenSizes
-     .Where(s => s.IsSelected == true)
-   .Select(s => s.SideLength)];
-
-    int baseAtThisPoint = 20;
- progress.Report(baseAtThisPoint);
-            ImagesProgressBar.Value = baseAtThisPoint;
-
-    int totalImages = selectedSizes.Count;
-  
-   // Use concurrent collection for thread-safe additions
-            var generatedPaths = new System.Collections.Concurrent.ConcurrentBag<(string, string)>();
-            int processedCount = 0;
-    
-     // Process images in parallel
-         await Parallel.ForEachAsync(selectedSizes, new ParallelOptions 
-   { 
-        MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, selectedSizes.Count)
- }, async (sideLength, ct) =>
-            {
-    if (smallerSide < sideLength)
- return;
-
-       // Create image from byte array (thread-safe)
-         using var image = new MagickImage(croppedImageBytes);
-  
-                IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
-  iconSize.IgnoreAspectRatio = false;
-
-                if (smallerSide > sideLength)
-              {
-         // Process synchronously - these are CPU-bound operations
-         image.Scale(iconSize);
-    image.Sharpen();
         }
 
-   string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+        byte[]? croppedImageBytes = null;
 
-                if (File.Exists(iconPath))
-              File.Delete(iconPath);
+        try
+        {
+            // Update status
+            DispatcherQueue.TryEnqueue(() =>
+          {
+              LoadingText.Text = $"Preparing image for {name}...";
+          });
 
-   await image.WriteAsync(iconPath, MagickFormat.Png32);
+            // Prepare the base image in memory instead of writing to disk
+            using (var firstPassImage = mainImage.Clone())
+            {
+                IMagickGeometry size = geoFactory.Create(
+                (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+                size.IgnoreAspectRatio = false;
+                size.FillArea = true;
 
- generatedPaths.Add((sideLength.ToString(), iconPath));
+                MagickColor transparent = new("#00000000");
+                firstPassImage.Extent(size, Gravity.Center, transparent);
 
-     // Update progress (thread-safe increment)
-      int current = Interlocked.Increment(ref processedCount);
-       int percentageComplete = baseAtThisPoint + (int)((float)current / totalImages * (100 - baseAtThisPoint));
-         
-     // UI updates must be on UI thread
-   await Task.Run(() =>
-         {
-        progress.Report(percentageComplete);
-  });
+                // Keep the image in memory as byte array
+                croppedImageBytes = firstPassImage.ToByteArray(MagickFormat.Png32);
+            }
+
+            List<int> selectedSizes = [.. ChosenSizes
+                .Where(s => s.IsSelected == true)
+                .Select(s => s.SideLength)];
+
+            int totalImages = selectedSizes.Count;
+
+            // Switch to determinate progress bar
+            DispatcherQueue.TryEnqueue(() =>
+              {
+                  ImagesProgressBar.IsIndeterminate = false;
+                  ImagesProgressBar.Value = 0;
+                  LoadingText.Text = $"Processing {totalImages} sizes for {name}...";
+              });
+
+            // Use concurrent collection for thread-safe additions
+            var generatedPaths = new System.Collections.Concurrent.ConcurrentBag<(string, string)>();
+
+            // Track completed images for progress reporting
+            int completedCount = 0;
+            object progressLock = new();
+
+            // Process images in parallel
+            await Parallel.ForEachAsync(selectedSizes, new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, selectedSizes.Count)
+            }, async (sideLength, ct) =>
+             {
+                 if (smallerSide < sideLength)
+                     return;
+
+                 // Create image from byte array (thread-safe)
+                 using var image = new MagickImage(croppedImageBytes);
+
+                 IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
+                 iconSize.IgnoreAspectRatio = false;
+
+                 if (smallerSide > sideLength)
+                 {
+                     // Process synchronously - these are CPU-bound operations
+                     image.Scale(iconSize);
+                     image.Sharpen();
+                 }
+
+                 string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+
+                 if (File.Exists(iconPath))
+                     File.Delete(iconPath);
+
+                 await image.WriteAsync(iconPath, MagickFormat.Png32, ct);
+
+                 generatedPaths.Add((sideLength.ToString(), iconPath));
+
+                 // Update progress
+                 lock (progressLock)
+                 {
+                     completedCount++;
+                     int percentComplete = (int)((double)completedCount / totalImages * 100);
+
+                     DispatcherQueue.TryEnqueue(() =>
+                   {
+                       ImagesProgressBar.Value = percentComplete;
+                       LoadingText.Text = $"Processing {completedCount}/{totalImages} sizes for {name}...";
+                   });
+
+                     progress.Report(percentComplete);
+                 }
+             });
+
+            // Update status for finalization
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                LoadingText.Text = $"Finalizing previews for {name}...";
             });
 
             // Add all generated paths to the list
-  imagePaths.AddRange(generatedPaths.OrderBy(p => int.Parse(p.Item1)));
-     
-            // Update progress bar on UI thread
-            ImagesProgressBar.Value = 100;
-      progress.Report(100);
+            imagePaths.AddRange(generatedPaths.OrderBy(p => int.Parse(p.Item1)));
 
             await UpdatePreviewsAsync();
-     return true;
-  }
+
+            progress.Report(100);
+
+            return true;
+        }
         catch (Exception ex)
         {
-      Debug.WriteLine("Generating Icons Exception " + ex.Message);
-        ClearOutputImages();
-       return false;
-     }
-     finally
-    {
-         TextAndProgressBar.Visibility = Visibility.Collapsed;
+            Debug.WriteLine("Generating Icons Exception " + ex.Message);
+            ClearOutputImages();
+            return false;
+        }
+        finally
+        {
+            TextAndProgressBar.Visibility = Visibility.Collapsed;
         }
     }
 
@@ -303,9 +325,15 @@ public sealed partial class PreviewStack : UserControl
 
         SmallerSourceSide = Math.Min(largestWidth, largestHeight);
 
+        // Sort collection by width in descending order (largest to smallest)
+        var sortedImages = collection.Cast<MagickImage>()
+            .OrderByDescending(img => img.Width)
+            .ToList();
+
         int currentLocation = 0;
-        int totalImages = collection.Count;
-        foreach (MagickImage image in collection.Cast<MagickImage>())
+        int totalImages = sortedImages.Count;
+
+        foreach (MagickImage image in sortedImages)
         {
             Debug.WriteLine($"Image: {image}");
             string imageName = $"{image}.png";
@@ -347,7 +375,16 @@ public sealed partial class PreviewStack : UserControl
     public async Task UpdatePreviewsAsync()
     {
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        foreach ((string sideLength, string path) pair in imagePaths)
+
+        // Sort by size in descending order (largest to smallest)
+        var orderedPairs = imagePaths.OrderByDescending(pair =>
+    {
+        if (int.TryParse(pair.Item1, out int size))
+            return size;
+        return 0;
+    });
+
+        foreach ((string sideLength, string path) pair in orderedPairs)
         {
             if (pair.path is not string imagePath)
                 continue;

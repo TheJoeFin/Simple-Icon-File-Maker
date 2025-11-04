@@ -303,6 +303,10 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (PreviewsGrid == null)
             return;
 
+        // Set loading state to show progress indicator
+        IsLoading = true;
+        LoadProgress = 0;
+
         UIElementCollection uIElements = PreviewsGrid.Children;
 
         Progress<int> progress = new(percent =>
@@ -310,14 +314,22 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             LoadProgress = percent;
         });
 
-        foreach (UIElement element in uIElements)
+        try
         {
-            if (element is Controls.PreviewStack stack)
-                await stack.GeneratePreviewImagesAsync(progress, ImagePath);
-        }
+            foreach (UIElement element in uIElements)
+            {
+                if (element is Controls.PreviewStack stack)
+                    await stack.GeneratePreviewImagesAsync(progress, ImagePath);
+            }
 
-        bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
-        CanSave = isAnySizeSelected;
+            bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
+            CanSave = isAnySizeSelected;
+        }
+        finally
+        {
+            IsLoading = false;
+            LoadProgress = 0;
+        }
     }
 
     [RelayCommand]
