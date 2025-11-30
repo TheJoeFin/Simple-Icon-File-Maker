@@ -1,8 +1,7 @@
 ﻿using ImageMagick;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using System.Drawing;
-using Microsoft.UI.Xaml;
 
 namespace Simple_Icon_File_Maker;
 

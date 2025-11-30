@@ -12,7 +12,7 @@ public partial class AboutViewModel : ObservableRecipient
         NavigationService.GoBack();
     }
 
-    INavigationService NavigationService
+    private INavigationService NavigationService
     {
         get;
     }

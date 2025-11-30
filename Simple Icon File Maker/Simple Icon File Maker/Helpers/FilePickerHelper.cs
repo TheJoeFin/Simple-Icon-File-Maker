@@ -8,21 +8,21 @@ public static class FilePickerHelper
     public static async Task TrySetSuggestedFolderFromSourceImage(FileSavePicker savePicker, string imagePath)
     {
         if (string.IsNullOrWhiteSpace(imagePath))
-  return;
+            return;
 
         try
         {
             // Use the source image file itself to suggest the folder
-       // This makes the picker open in the source image's folder
+            // This makes the picker open in the source image's folder
             if (File.Exists(imagePath))
             {
                 StorageFile sourceFile = await StorageFile.GetFileFromPathAsync(imagePath);
-    savePicker.SuggestedSaveFile = sourceFile;
-     }
+                savePicker.SuggestedSaveFile = sourceFile;
+            }
         }
-   catch
+        catch
         {
-   // If file access fails, fall back to default picker behavior
+            // If file access fails, fall back to default picker behavior
         }
     }
 }

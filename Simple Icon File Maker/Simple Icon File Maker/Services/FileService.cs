@@ -1,6 +1,6 @@
 ﻿using Simple_Icon_File_Maker.Contracts.Services;
-using System.Text.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace Simple_Icon_File_Maker.Services;
 
@@ -25,7 +25,7 @@ public class FileService : IFileService
             Directory.CreateDirectory(folderPath);
         }
 
-        var fileContent = JsonSerializer.Serialize(content);
+        string fileContent = JsonSerializer.Serialize(content);
         File.WriteAllText(Path.Combine(folderPath, fileName), fileContent, Encoding.UTF8);
     }
 

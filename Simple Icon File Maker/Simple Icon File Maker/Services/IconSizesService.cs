@@ -6,7 +6,7 @@ namespace Simple_Icon_File_Maker.Services;
 
 public class IconSizesService : IIconSizesService
 {
-    public List<IconSize> IconSizes { get; private set; } = new();
+    public List<IconSize> IconSizes { get; private set; } = [];
 
     public IconSizesService()
     {
