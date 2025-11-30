@@ -20,15 +20,19 @@ using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
-public partial class MainViewModel : ObservableRecipient, INavigationAware
+public partial class MainViewModel : ObservableRecipient, INavigationAware, IDisposable
 {
     private readonly System.Timers.Timer _countdownTimer;
     private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
     private const int CountdownDurationMs = 3000; // 3 seconds
     private const int CountdownIntervalMs = 50; // Update every 50ms for smooth progress
+    private const int SettingsSaveDelayMs = 300; // Delay before saving settings
+    private const int UiInitializationDelayMs = 200; // Delay to allow UI to initialize
     private int _countdownElapsedMs = 0;
     private System.Timers.Timer _settingsSaveTimer = new();
     private readonly UndoRedo _undoRedo = new();
+    private CancellationTokenSource? _loadImageCancellationTokenSource;
+    private bool _disposed;
 
     private readonly ILocalSettingsService _localSettingsService;
     private readonly IIconSizesService _iconSizesService;
@@ -118,7 +122,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         _countdownTimer.AutoReset = true;
 
         _settingsSaveTimer.AutoReset = false;
-        _settingsSaveTimer.Interval = TimeSpan.FromMilliseconds(300).TotalMilliseconds;
+        _settingsSaveTimer.Interval = TimeSpan.FromMilliseconds(SettingsSaveDelayMs).TotalMilliseconds;
         _settingsSaveTimer.Elapsed += SettingsSaveTimer_Elapsed;
 
         SupportedFilesText = $"({string.Join(", ", FileTypes.SupportedImageFormats)})";
@@ -158,7 +162,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         LoadIconSizes();
 
         // Delayed load to allow UI to initialize
-        await Task.Delay(200);
+        await Task.Delay(UiInitializationDelayMs);
         if (!string.IsNullOrWhiteSpace(ImagePath))
         {
             await LoadFromImagePathAsync();
@@ -167,8 +171,8 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
 
     public void OnNavigatedFrom()
     {
-        StopCountdown();
-        _countdownTimer.Dispose();
+        _loadImageCancellationTokenSource?.Cancel();
+        Dispose();
     }
 
     [RelayCommand]
@@ -209,6 +213,10 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task BrowseAndSelectImage()
     {
+        // Cancel any ongoing load operation
+        _loadImageCancellationTokenSource?.Cancel();
+        _loadImageCancellationTokenSource = new CancellationTokenSource();
+
         FileOpenPicker picker = new()
         {
             ViewMode = PickerViewMode.Thumbnail,
@@ -226,34 +234,45 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             return;
 
         ImagePath = file.Path;
-        await LoadFromImagePathAsync();
+        await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
     }
 
     [RelayCommand]
     public async Task ClearImage()
     {
-        MainImageSource = null;
-        ImagePath = "-";
-
-        if (PreviewsGrid != null)
+        try
         {
-            foreach (UIElement? item in PreviewsGrid.Children)
+            MainImageSource = null;
+            ImagePath = "-";
+
+            if (PreviewsGrid != null)
             {
-                if (item is Controls.PreviewStack stack)
-                    stack.ClearChildren();
+                foreach (UIElement? item in PreviewsGrid.Children)
+                {
+                    if (item is Controls.PreviewStack stack)
+                        stack.ClearChildren();
+                }
+                PreviewsGrid.Children.Clear();
             }
-            PreviewsGrid.Children.Clear();
+
+            IsImageSelected = false;
+            CanSave = false;
+            OpenFolderButtonVisible = false;
+
+            // Clear out all of the files in the cache folder
+            StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
+            IReadOnlyList<StorageFile> cacheFiles = await sf.GetFilesAsync();
+            foreach (StorageFile? file in cacheFiles)
+            {
+                if (file != null)
+                    await file.DeleteAsync();
+            }
         }
-
-        IsImageSelected = false;
-        CanSave = false;
-        OpenFolderButtonVisible = false;
-
-        // Clear out all of the files in the cache folder
-        StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        IReadOnlyList<StorageFile> cacheFiles = await sf.GetFilesAsync();
-        foreach (StorageFile? file in cacheFiles)
-            await file?.DeleteAsync();
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error clearing image: {ex.Message}");
+            // Don't show error to user as clearing partially succeeded
+        }
     }
 
     [RelayCommand]
@@ -323,7 +342,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public void ZoomPreviews(bool isZooming)
     {
-        if (PreviewsGrid == null)
+        if (PreviewsGrid is null)
             return;
 
         UIElementCollection uIElements = PreviewsGrid.Children;
@@ -341,19 +360,18 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task SaveIcon()
     {
-        FileSavePicker savePicker = CreateSavePicker();
-        await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
-        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
-
-        StorageFile file = await savePicker.PickSaveFileAsync();
-
-        if (file is null)
-            return;
-
-        OutputPath = file.Path;
-
         try
         {
+            FileSavePicker savePicker = CreateSavePicker();
+            await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
+            InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+
+            StorageFile file = await savePicker.PickSaveFileAsync();
+
+            if (file is null)
+                return;
+
+            OutputPath = file.Path;
             CanSave = false;
 
             if (PreviewsGrid != null)
@@ -364,37 +382,38 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
                         await stack.SaveIconAsync(OutputPath);
                 }
             }
+
+            OpenFolderButtonVisible = true;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
+            Debug.WriteLine($"Failed to save icon: {ex.Message}");
+            ShowError($"Failed to save icon: {ex.Message}");
         }
         finally
         {
             CanSave = true;
-            OpenFolderButtonVisible = true;
         }
     }
 
     [RelayCommand]
     public async Task SaveAllImages()
     {
-        FileSavePicker savePicker = CreateSavePicker();
-        await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
-        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
-
-        StorageFile file = await savePicker.PickSaveFileAsync();
-
-        if (file is null)
-            return;
-
-        OutputPath = file.Path;
-
         try
         {
+            FileSavePicker savePicker = CreateSavePicker();
+            await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
+            InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+
+            StorageFile file = await savePicker.PickSaveFileAsync();
+
+            if (file is null)
+                return;
+
+            OutputPath = file.Path;
             CanSave = false;
 
-            if (PreviewsGrid != null)
+            if (PreviewsGrid is not null)
             {
                 foreach (UIElement element in PreviewsGrid.Children)
                 {
@@ -402,33 +421,50 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
                         await stack.SaveAllImagesAsync(OutputPath);
                 }
             }
+
+            OpenFolderButtonVisible = true;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Failed to Generate Icons: {ex.Message}");
+            Debug.WriteLine($"Failed to save all images: {ex.Message}");
+            ShowError($"Failed to save all images: {ex.Message}");
         }
         finally
         {
             CanSave = true;
-            OpenFolderButtonVisible = true;
         }
     }
 
     [RelayCommand]
     public async Task OpenOutputFolder()
     {
-        string? outputDirectory = Path.GetDirectoryName(OutputPath);
-        if (outputDirectory is null)
-            return;
-
-        Uri uri = new(outputDirectory);
-        LauncherOptions options = new()
+        try
         {
-            TreatAsUntrusted = false,
-            DesiredRemainingView = Windows.UI.ViewManagement.ViewSizePreference.UseLess
-        };
+            string? outputDirectory = Path.GetDirectoryName(OutputPath);
+            if (string.IsNullOrWhiteSpace(outputDirectory))
+            {
+                ShowError("Output folder path is not valid.");
+                return;
+            }
 
-        _ = await Launcher.LaunchUriAsync(uri, options);
+            Uri uri = new(outputDirectory);
+            LauncherOptions options = new()
+            {
+                TreatAsUntrusted = false,
+                DesiredRemainingView = Windows.UI.ViewManagement.ViewSizePreference.UseLess
+            };
+
+            bool success = await Launcher.LaunchUriAsync(uri, options);
+            if (!success)
+            {
+                ShowError("Failed to open output folder. The folder may not exist.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to open output folder: {ex.Message}");
+            ShowError($"Failed to open output folder: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -474,14 +510,22 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (string.IsNullOrWhiteSpace(ImagePath))
             return;
 
-        string newPath = await ImageHelper.ApplyGrayscaleAsync(ImagePath, MainImage);
+        try
+        {
+            string newPath = await ImageHelper.ApplyGrayscaleAsync(ImagePath, MainImage);
 
-        MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
-        _undoRedo.AddUndo(undoRedoItem);
-        UpdateUndoRedoState();
+            MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
+            _undoRedo.AddUndo(undoRedoItem);
+            UpdateUndoRedoState();
 
-        ImagePath = newPath;
-        await RefreshPreviews();
+            ImagePath = newPath;
+            await RefreshPreviews();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to apply grayscale: {ex.Message}");
+            ShowError($"Failed to apply grayscale filter: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -490,14 +534,22 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (string.IsNullOrWhiteSpace(ImagePath))
             return;
 
-        string newPath = await ImageHelper.ApplyBlackWhiteOtsuAsync(ImagePath, MainImage);
+        try
+        {
+            string newPath = await ImageHelper.ApplyBlackWhiteOtsuAsync(ImagePath, MainImage);
 
-        MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
-        _undoRedo.AddUndo(undoRedoItem);
-        UpdateUndoRedoState();
+            MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
+            _undoRedo.AddUndo(undoRedoItem);
+            UpdateUndoRedoState();
 
-        ImagePath = newPath;
-        await RefreshPreviews();
+            ImagePath = newPath;
+            await RefreshPreviews();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to apply black & white (OTSU): {ex.Message}");
+            ShowError($"Failed to apply black & white filter: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -506,14 +558,22 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (string.IsNullOrWhiteSpace(ImagePath))
             return;
 
-        string newPath = await ImageHelper.ApplyBlackWhiteKapurAsync(ImagePath, MainImage);
+        try
+        {
+            string newPath = await ImageHelper.ApplyBlackWhiteKapurAsync(ImagePath, MainImage);
 
-        MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
-        _undoRedo.AddUndo(undoRedoItem);
-        UpdateUndoRedoState();
+            MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
+            _undoRedo.AddUndo(undoRedoItem);
+            UpdateUndoRedoState();
 
-        ImagePath = newPath;
-        await RefreshPreviews();
+            ImagePath = newPath;
+            await RefreshPreviews();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to apply black & white (Kapur): {ex.Message}");
+            ShowError($"Failed to apply black & white filter: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -522,14 +582,22 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (string.IsNullOrWhiteSpace(ImagePath))
             return;
 
-        string newPath = await ImageHelper.ApplyInvertAsync(ImagePath, MainImage);
+        try
+        {
+            string newPath = await ImageHelper.ApplyInvertAsync(ImagePath, MainImage);
 
-        MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
-        _undoRedo.AddUndo(undoRedoItem);
-        UpdateUndoRedoState();
+            MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, newPath);
+            _undoRedo.AddUndo(undoRedoItem);
+            UpdateUndoRedoState();
 
-        ImagePath = newPath;
-        await RefreshPreviews();
+            ImagePath = newPath;
+            await RefreshPreviews();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to apply invert: {ex.Message}");
+            ShowError($"Failed to invert image colors: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -538,9 +606,17 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (!_undoRedo.CanUndo)
             return;
 
-        ImagePath = _undoRedo.Undo();
-        UpdateUndoRedoState();
-        await RefreshPreviews();
+        try
+        {
+            ImagePath = _undoRedo.Undo();
+            UpdateUndoRedoState();
+            await RefreshPreviews();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to undo: {ex.Message}");
+            ShowError($"Failed to undo: {ex.Message}");
+        }
     }
 
     [RelayCommand]
@@ -549,14 +625,26 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         if (!_undoRedo.CanRedo)
             return;
 
-        ImagePath = _undoRedo.Redo();
-        UpdateUndoRedoState();
-        await RefreshPreviews();
+        try
+        {
+            ImagePath = _undoRedo.Redo();
+            UpdateUndoRedoState();
+            await RefreshPreviews();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to redo: {ex.Message}");
+            ShowError($"Failed to redo: {ex.Message}");
+        }
     }
 
     [RelayCommand]
     public async Task PasteFromClipboard()
     {
+        // Cancel any ongoing load operation
+        _loadImageCancellationTokenSource?.Cancel();
+        _loadImageCancellationTokenSource = new CancellationTokenSource();
+
         try
         {
             IsLoading = true;
@@ -567,13 +655,18 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             if (clipboardImagePath != null)
             {
                 ImagePath = clipboardImagePath;
-                await LoadFromImagePathAsync();
+                await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
             }
             else
             {
                 ShowError("No image found in clipboard. Copy an image and try again.");
                 IsLoading = false;
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Operation was cancelled, this is expected
+            IsLoading = false;
         }
         catch (Exception ex)
         {
@@ -586,57 +679,69 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task HandleDrop(DragEventArgs e)
     {
+        // Cancel any ongoing load operation
+        _loadImageCancellationTokenSource?.Cancel();
+        _loadImageCancellationTokenSource = new CancellationTokenSource();
+
         IsLoading = true;
         ErrorInfoBarIsOpen = false;
         ImagePath = string.Empty;
 
-        if (e.DataView.Contains(StandardDataFormats.Bitmap))
+        try
         {
-            Debug.WriteLine("dropped bitmap");
-            ImagePath = await e.DataView.GetTextAsync();
-
-            if (!ImagePath.IsSupportedImageFormat())
+            if (e.DataView.Contains(StandardDataFormats.Bitmap))
             {
-                Debug.WriteLine("bitmap, update not success");
-                IsLoading = false;
-                return;
-            }
+                Debug.WriteLine("dropped bitmap");
+                ImagePath = await e.DataView.GetTextAsync();
 
-            await LoadFromImagePathAsync();
+                if (!ImagePath.IsSupportedImageFormat())
+                {
+                    Debug.WriteLine("bitmap, update not success");
+                    IsLoading = false;
+                    return;
+                }
+
+                await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.Uri))
+            {
+                Debug.WriteLine("dropped URI");
+                Uri s = await e.DataView.GetUriAsync();
+
+                if (!s.AbsolutePath.IsSupportedImageFormat())
+                {
+                    Debug.WriteLine("dropped URI, not supported");
+                    IsLoading = false;
+                    return;
+                }
+
+                ImagePath = s.AbsolutePath;
+                await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
+            }
+            else if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                Debug.WriteLine("Dropped StorageItem");
+                IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
+
+                string? imagePath = await StorageItemHelper.TryGetImagePathFromStorageItems(storageItems);
+
+                if (imagePath != null)
+                {
+                    ImagePath = imagePath;
+                    await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
+                }
+                else
+                {
+                    List<string> failedItems = StorageItemHelper.GetFailedItemNames(storageItems);
+                    ShowError(string.Join($",{Environment.NewLine}", failedItems));
+                    IsLoading = false;
+                }
+            }
         }
-        else if (e.DataView.Contains(StandardDataFormats.Uri))
+        catch (OperationCanceledException)
         {
-            Debug.WriteLine("dropped URI");
-            Uri s = await e.DataView.GetUriAsync();
-
-            if (!s.AbsolutePath.IsSupportedImageFormat())
-            {
-                Debug.WriteLine("dropped URI, not supported");
-                IsLoading = false;
-                return;
-            }
-
-            ImagePath = s.AbsolutePath;
-            await LoadFromImagePathAsync();
-        }
-        else if (e.DataView.Contains(StandardDataFormats.StorageItems))
-        {
-            Debug.WriteLine("Dropped StorageItem");
-            IReadOnlyList<IStorageItem> storageItems = await e.DataView.GetStorageItemsAsync();
-
-            string? imagePath = await StorageItemHelper.TryGetImagePathFromStorageItems(storageItems);
-
-            if (imagePath != null)
-            {
-                ImagePath = imagePath;
-                await LoadFromImagePathAsync();
-            }
-            else
-            {
-                List<string> failedItems = StorageItemHelper.GetFailedItemNames(storageItems);
-                ShowError(string.Join($",{Environment.NewLine}", failedItems));
-                IsLoading = false;
-            }
+            // Operation was cancelled, this is expected
+            IsLoading = false;
         }
     }
 
@@ -645,7 +750,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         DataPackageView dataView = e.DataView;
 
         if (dataView.Contains(StandardDataFormats.Bitmap) ||
-  dataView.Contains(StandardDataFormats.Uri) ||
+            dataView.Contains(StandardDataFormats.Uri) ||
             dataView.Contains(StandardDataFormats.StorageItems))
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
@@ -700,7 +805,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
     {
         StopCountdown();
 
-        if (PreviewsGrid == null)
+        if (PreviewsGrid is null)
             return;
 
         UIElementCollection allElements = PreviewsGrid.Children;
@@ -741,7 +846,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
         }
     }
 
-    private async Task LoadFromImagePathAsync()
+    private async Task LoadFromImagePathAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(ImagePath))
         {
@@ -757,7 +862,11 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
 
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             MagickImage? image = await ImageHelper.LoadImageAsync(ImagePath);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (image == null)
             {
@@ -769,6 +878,13 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
 
             MainImageSource = image.ToImageSource();
         }
+        catch (OperationCanceledException)
+        {
+            // Operation was cancelled, clean up and return
+            IsLoading = false;
+            IsImageSelected = false;
+            return;
+        }
         catch (Exception ex)
         {
             ShowError(ex.Message);
@@ -777,38 +893,53 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
             return;
         }
 
-        List<IconSize> selectedSizes = IconSizes.Where(x => x.IsSelected).ToList();
-        Controls.PreviewStack previewStack = new(ImagePath, selectedSizes);
-
-        if (PreviewsGrid != null)
+        try
         {
-            PreviewsGrid.Children.Add(previewStack);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            List<IconSize> selectedSizes = [.. IconSizes.Where(x => x.IsSelected)];
+            Controls.PreviewStack previewStack = new(ImagePath, selectedSizes);
+
+            PreviewsGrid?.Children.Add(previewStack);
+
+            Progress<int> progress = new(percent =>
+            {
+                LoadProgress = percent;
+            });
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            bool generatedImages = await previewStack.InitializeAsync(progress);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            {
+                SelectIconSizesFromPreview();
+            }
+
+            if (generatedImages)
+            {
+                IsImageSelected = true;
+                CanSave = true;
+            }
+            else
+            {
+                CanSave = false;
+                IsImageSelected = false;
+            }
         }
-
-        Progress<int> progress = new(percent =>
- {
-     LoadProgress = percent;
- });
-
-        bool generatedImages = await previewStack.InitializeAsync(progress);
-
-        if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+        catch (OperationCanceledException)
         {
-            SelectIconSizesFromPreview();
-        }
-
-        if (generatedImages)
-        {
-            IsImageSelected = true;
-            CanSave = true;
-        }
-        else
-        {
-            CanSave = false;
+            // Operation was cancelled, clean up
+            IsLoading = false;
             IsImageSelected = false;
+            return;
         }
-
-        IsLoading = false;
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private void SelectIconSizesFromPreview()
@@ -827,7 +958,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
                 chosenSizes.AddRange(stack.ChosenSizes);
         }
 
-        chosenSizes = chosenSizes.Distinct().ToList();
+        chosenSizes = [.. chosenSizes.Distinct()];
 
         foreach (IconSize size in chosenSizes)
         {
@@ -936,5 +1067,27 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware
                 CountdownCompleted?.Invoke(this, EventArgs.Empty);
             }
         });
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed || !disposing)
+            return;
+
+        // Dispose managed resources
+        StopCountdown();
+        _countdownTimer?.Dispose();
+        _settingsSaveTimer?.Stop();
+        _settingsSaveTimer?.Dispose();
+        _loadImageCancellationTokenSource?.Cancel();
+        _loadImageCancellationTokenSource?.Dispose();
+
+        _disposed = true;
     }
 }

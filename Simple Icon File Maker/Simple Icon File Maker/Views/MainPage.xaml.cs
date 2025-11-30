@@ -29,20 +29,19 @@ public sealed partial class MainPage : Page
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // Handle RefreshButton style change
-        if (e.PropertyName == nameof(ViewModel.RefreshButtonIsAccent))
+        switch (e.PropertyName)
         {
-            RefreshButton.Style = ViewModel.RefreshButtonIsAccent
-           ? (Style)Application.Current.Resources["AccentButtonStyle"]
-                : (Style)Application.Current.Resources["DefaultButtonStyle"];
-        }
+            case nameof(ViewModel.RefreshButtonIsAccent):
+                RefreshButton.Style = ViewModel.RefreshButtonIsAccent
+                    ? (Style)Application.Current.Resources["AccentButtonStyle"]
+                    : (Style)Application.Current.Resources["DefaultButtonStyle"];
+                break;
 
-        // Handle Visual State changes
-        if (e.PropertyName is (nameof(ViewModel.IsLoading)) or
-            (nameof(ViewModel.IsImageSelected)) or
-       (nameof(ViewModel.ImagePath)))
-        {
-            UpdateVisualState();
+            case nameof(ViewModel.IsLoading):
+            case nameof(ViewModel.IsImageSelected):
+            case nameof(ViewModel.ImagePath):
+                UpdateVisualState();
+                break;
         }
     }
 
