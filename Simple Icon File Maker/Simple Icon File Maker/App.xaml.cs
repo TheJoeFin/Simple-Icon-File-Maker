@@ -1,13 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
-
-using Simple_Icon_File_Maker.Contracts.Services;
-using Simple_Icon_File_Maker.Services;
 using Simple_Icon_File_Maker.Activation;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Models;
-using Simple_Icon_File_Maker.Views;
+using Simple_Icon_File_Maker.Services;
 using Simple_Icon_File_Maker.ViewModels;
+using Simple_Icon_File_Maker.Views;
 
 namespace Simple_Icon_File_Maker;
 
@@ -90,7 +89,7 @@ public partial class App : Application
         e.Handled = true;
     }
 
-    protected async override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
         await App.GetService<IActivationService>().ActivateAsync(args);

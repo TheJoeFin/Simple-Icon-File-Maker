@@ -17,9 +17,9 @@ namespace Simple_Icon_File_Maker.Controls;
 
 public sealed partial class PreviewImage : UserControl
 {
-    readonly string OriginalName = string.Empty;
-    readonly StorageFile _imageFile;
-    readonly int _sideLength = 0;
+    private readonly string OriginalName = string.Empty;
+    private readonly StorageFile _imageFile;
+    private readonly int _sideLength = 0;
 
     public PreviewImage(StorageFile imageFile, int sideLength, string originalName)
     {
@@ -35,10 +35,7 @@ public sealed partial class PreviewImage : UserControl
 
     public bool ZoomPreview
     {
-        get
-        {
-            return isZooming;
-        }
+        get => isZooming;
         set
         {
             if (value != isZooming)
@@ -148,8 +145,10 @@ public sealed partial class PreviewImage : UserControl
         };
 
         // add the visual as a child to canvas
-        Grid tempGrid = new();
-        tempGrid.Background = new SolidColorBrush(Colors.Transparent);
+        Grid tempGrid = new()
+        {
+            Background = new SolidColorBrush(Colors.Transparent)
+        };
         ElementCompositionPreview.SetElementChildVisual(tempGrid, imageVisual);
         mainImageCanvas.Children.Add(tempGrid);
     }

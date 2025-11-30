@@ -10,7 +10,7 @@ namespace Simple_Icon_File_Maker;
 
 public sealed partial class EditSizesDialog : ContentDialog
 {
-    private ObservableCollection<IconSize> IconSizes { get; set; } = new();
+    private ObservableCollection<IconSize> IconSizes { get; set; } = [];
 
 
     public EditSizesDialog()
