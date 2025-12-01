@@ -62,13 +62,13 @@
                         <MenuFlyout>
                             <MenuFlyoutItem Command="{x:Bind ViewModel.ChangeSortOrderCommand}" CommandParameter="{x:Bind models:IconSortOrder.LargestFirst}">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE70E;" />
+                                    <FontIcon Glyph="&#xE70D;" />
                                 </MenuFlyoutItem.Icon>
                                 <MenuFlyoutItem.Text>Largest First</MenuFlyoutItem.Text>
                             </MenuFlyoutItem>
                             <MenuFlyoutItem Command="{x:Bind ViewModel.ChangeSortOrderCommand}" CommandParameter="{x:Bind models:IconSortOrder.SmallestFirst}">
                                 <MenuFlyoutItem.Icon>
-                                    <FontIcon Glyph="&#xE70D;" />
+                                    <FontIcon Glyph="&#xE70E;" />
                                 </MenuFlyoutItem.Icon>
                                 <MenuFlyoutItem.Text>Smallest First</MenuFlyoutItem.Text>
                             </MenuFlyoutItem>

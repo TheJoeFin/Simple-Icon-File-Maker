@@ -85,6 +85,18 @@
                     <SymbolIcon Symbol="List" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
+                    <controls:SettingsCard Header="v 1.14">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● Sort sizes<LineBreak />
+                                ● Auto refresh Cancel<LineBreak />
+                                ● Core refactors<LineBreak />
+                                ● Update packages<LineBreak />
+                                ● Bug fixes<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
                     <controls:SettingsCard Header="v 1.13">
                         <controls:SettingsCard.Description>
                             <TextBlock>
