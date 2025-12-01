@@ -66,9 +66,6 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     public partial bool IsImageSelected { get; set; } = false;
 
     [ObservableProperty]
-    public partial bool SizeDisabledWarningIsOpen { get; set; } = false;
-
-    [ObservableProperty]
     public partial bool CanSave { get; set; } = false;
 
     [ObservableProperty]
@@ -94,12 +91,14 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
     [ObservableProperty]
     public partial bool CanRedo { get; set; } = false;
+
     public ObservableCollection<IconSize> IconSizes { get; } = [];
 
     // Reference to UI elements that need to be accessed
     public Grid? PreviewsGrid { get; set; }
     public Image? MainImage { get; set; }
     public ProgressBar? InitialLoadProgressBar { get; set; }
+    public Controls.SizesControl? SizesControl { get; set; }
 
     public event EventHandler? CountdownCompleted;
 
@@ -276,41 +275,16 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     }
 
     [RelayCommand]
-    public void SelectAllSizes()
-    {
-        foreach (IconSize size in IconSizes)
-            size.IsSelected = true;
-
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
-    public void ClearSizeSelection()
-    {
-        foreach (IconSize size in IconSizes)
-            size.IsSelected = false;
-
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
-    public void SelectWindowsSizes()
-    {
-        SelectTheseIcons(IconSize.GetWindowsSizesFull());
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
-    public void SelectWebSizes()
-    {
-        SelectTheseIcons(IconSize.GetIdealWebSizesFull());
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
     public void SizeCheckboxTapped()
     {
         CheckIfRefreshIsNeeded();
+    }
+
+    [RelayCommand]
+    public void CancelCountdown()
+    {
+        StopCountdown();
+        RefreshButtonIsAccent = false;
     }
 
     [RelayCommand]
@@ -319,7 +293,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         RefreshButtonIsAccent = false;
         StopCountdown();
 
-        if (PreviewsGrid == null)
+        if (PreviewsGrid == null || SizesControl == null)
             return;
 
         UIElementCollection uIElements = PreviewsGrid.Children;
@@ -329,14 +303,41 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             LoadProgress = percent;
         });
 
+        // Get current sort order and update all preview stacks
+        IconSortOrder sortOrder = _iconSizesService.SortOrder;
+
         foreach (UIElement element in uIElements)
         {
             if (element is Controls.PreviewStack stack)
+            {
+                stack.SortOrder = sortOrder;
                 await stack.GeneratePreviewImagesAsync(progress, ImagePath);
+            }
         }
 
-        bool isAnySizeSelected = IconSizes.Any(x => x.IsSelected);
+        bool isAnySizeSelected = SizesControl.ViewModel.IconSizes.Any(x => x.IsSelected);
         CanSave = isAnySizeSelected;
+    }
+
+    public async Task UpdatePreviewsSortOrder()
+    {
+        if (PreviewsGrid == null)
+            return;
+
+        UIElementCollection uIElements = PreviewsGrid.Children;
+
+        // Get current sort order
+        IconSortOrder sortOrder = _iconSizesService.SortOrder;
+
+        // Update all preview stacks with new sort order and refresh displays
+        foreach (UIElement element in uIElements)
+        {
+            if (element is Controls.PreviewStack stack)
+            {
+                stack.SortOrder = sortOrder;
+                await stack.RefreshPreviewsWithSortOrder();
+            }
+        }
     }
 
     [RelayCommand]
@@ -374,12 +375,14 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             OutputPath = file.Path;
             CanSave = false;
 
+            IconSortOrder sortOrder = _iconSizesService.SortOrder;
+
             if (PreviewsGrid != null)
             {
                 foreach (UIElement element in PreviewsGrid.Children)
                 {
                     if (element is Controls.PreviewStack stack)
-                        await stack.SaveIconAsync(OutputPath);
+                        await stack.SaveIconAsync(OutputPath, sortOrder);
                 }
             }
 
@@ -413,12 +416,14 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             OutputPath = file.Path;
             CanSave = false;
 
+            IconSortOrder sortOrder = _iconSizesService.SortOrder;
+
             if (PreviewsGrid is not null)
             {
                 foreach (UIElement element in PreviewsGrid.Children)
                 {
                     if (element is Controls.PreviewStack stack)
-                        await stack.SaveAllImagesAsync(OutputPath);
+                        await stack.SaveAllImagesAsync(OutputPath, sortOrder);
                 }
             }
 
@@ -782,22 +787,17 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
     private void LoadIconSizes()
     {
-        IconSizes.Clear();
-        List<IconSize> loadedSizes = _iconSizesService.IconSizes;
-
-        foreach (IconSize size in loadedSizes)
-        {
-            if (!size.IsHidden)
-                IconSizes.Add(size);
-        }
-
+        // Delegate to SizesControl
+        SizesControl?.ReloadIconSizes();
         CheckIfRefreshIsNeeded();
     }
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
     {
+        if (SizesControl == null) return;
+
         IconSideComparer iconComparer = new();
-        foreach (IconSize iconSize in IconSizes)
+        foreach (IconSize iconSize in SizesControl.ViewModel.IconSizes)
             iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
     }
 
@@ -805,7 +805,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     {
         StopCountdown();
 
-        if (PreviewsGrid is null)
+        if (PreviewsGrid is null || SizesControl is null)
             return;
 
         UIElementCollection allElements = PreviewsGrid.Children;
@@ -815,7 +815,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             if (element is Controls.PreviewStack stack)
             {
-                _ = stack.ChooseTheseSizes(IconSizes);
+                _ = stack.ChooseTheseSizes(SizesControl.ViewModel.IconSizes);
 
                 if (stack.CanRefresh)
                 {
@@ -828,11 +828,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         if (!string.IsNullOrWhiteSpace(ImagePath) && ImagePath != "-")
         {
             int smallerSide = ImageHelper.GetSmallerImageSide(ImagePath);
-
-            foreach (IconSize size in IconSizes)
-                size.IsEnabled = size.SideLength <= smallerSide;
-
-            SizeDisabledWarningIsOpen = IconSizes.Any(x => !x.IsEnabled);
+            SizesControl.UpdateEnabledSizes(smallerSide);
         }
 
         if (anyRefreshAvailable)
@@ -897,8 +893,14 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            List<IconSize> selectedSizes = [.. IconSizes.Where(x => x.IsSelected)];
-            Controls.PreviewStack previewStack = new(ImagePath, selectedSizes);
+            if (SizesControl == null)
+                return;
+
+            List<IconSize> selectedSizes = [.. SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected)];
+            Controls.PreviewStack previewStack = new(ImagePath, selectedSizes)
+            {
+                SortOrder = _iconSizesService.SortOrder
+            };
 
             PreviewsGrid?.Children.Add(previewStack);
 
@@ -944,7 +946,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
     private void SelectIconSizesFromPreview()
     {
-        if (PreviewsGrid == null)
+        if (PreviewsGrid == null || SizesControl == null)
             return;
 
         List<IconSize> chosenSizes = [];
@@ -963,7 +965,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         foreach (IconSize size in chosenSizes)
         {
             bool isAlreadyInList = false;
-            foreach (IconSize setSize in IconSizes)
+            foreach (IconSize setSize in SizesControl.ViewModel.IconSizes)
             {
                 if (setSize.SideLength == size.SideLength)
                 {
@@ -974,24 +976,21 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             }
 
             if (!isAlreadyInList)
-                IconSizes.Add(size);
+                SizesControl.ViewModel.IconSizes.Add(size);
         }
 
-        List<IconSize> orderedIcons = [.. IconSizes.OrderByDescending(size => size.SideLength)];
-        IconSizes.Clear();
+        List<IconSize> orderedIcons = [.. SizesControl.ViewModel.IconSizes.OrderByDescending(size => size.SideLength)];
+        SizesControl.ViewModel.IconSizes.Clear();
 
         foreach (IconSize size in orderedIcons)
-            IconSizes.Add(size);
+            SizesControl.ViewModel.IconSizes.Add(size);
 
         int smallerSide = 0;
 
         if (Path.GetExtension(ImagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
-            smallerSide = IconSizes.First(x => x.IsSelected).SideLength;
+            smallerSide = SizesControl.ViewModel.IconSizes.First(x => x.IsSelected).SideLength;
 
-        foreach (IconSize size in IconSizes)
-            size.IsEnabled = size.SideLength <= smallerSide;
-
-        SizeDisabledWarningIsOpen = IconSizes.Any(x => !x.IsEnabled);
+        SizesControl.UpdateEnabledSizes(smallerSide);
     }
 
     private FileSavePicker CreateSavePicker()

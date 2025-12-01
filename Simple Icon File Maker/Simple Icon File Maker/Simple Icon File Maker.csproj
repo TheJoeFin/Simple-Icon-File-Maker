@@ -27,6 +27,7 @@
   <ItemGroup>
     <None Remove="AboutPage.xaml" />
     <None Remove="Controls\PreviewStack.xaml" />
+    <None Remove="Controls\SizesControl.xaml" />
     <None Remove="Views\BuyProDialog.xaml" />
     <None Remove="Views\EditSizesDialog.xaml" />
     <None Remove="Views\MultiPage.xaml" />
@@ -84,6 +85,12 @@
 
   <ItemGroup>
     <Folder Include="Windows\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Controls\SizesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
   <ItemGroup>

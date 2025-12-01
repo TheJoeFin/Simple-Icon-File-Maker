@@ -16,8 +16,6 @@ public sealed partial class EditSizesDialog : ContentDialog
     public EditSizesDialog()
     {
         InitializeComponent();
-
-        SelectTheseIcons(IconSize.GetWindowsSizesFull());
     }
 
     private void CheckBox_Tapped(object sender, TappedRoutedEventArgs e)
@@ -29,12 +27,14 @@ public sealed partial class EditSizesDialog : ContentDialog
     {
         IconSize newSize = new((int)NewSizeNumberBox.Value);
 
-        if (IconSizes.Contains(newSize))
+        // Check if a size with this SideLength already exists (ignore IsSelected state)
+        IconSideComparer comparer = new();
+        if (IconSizes.Any(size => comparer.Equals(size, newSize)))
             return;
 
         NewSizeNumberBox.Value = double.NaN;
 
-        // insert into IconSizes in the right size order
+        // insert into IconSizes in the right size order (largest first)
         for (int i = 0; i < IconSizes.Count; i++)
         {
             if (IconSizes[i].SideLength < newSize.SideLength)
@@ -43,6 +43,9 @@ public sealed partial class EditSizesDialog : ContentDialog
                 return;
             }
         }
+
+        // If we get here, the new size is the smallest, so add it at the end
+        IconSizes.Add(newSize);
     }
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
@@ -72,5 +75,7 @@ public sealed partial class EditSizesDialog : ContentDialog
 
         foreach (IconSize size in loadedSizes)
             IconSizes.Add(size);
+
+        SelectTheseIcons(IconSize.GetWindowsSizesFull());
     }
 }

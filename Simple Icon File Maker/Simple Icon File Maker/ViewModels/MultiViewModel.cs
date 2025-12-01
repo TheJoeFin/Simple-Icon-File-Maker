@@ -21,6 +21,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     public ObservableCollection<IconSize> IconSizes { get; set; } = [];
 
+    // Reference to SizesControl
+    public SizesControl? SizesControl { get; set; }
+
     private bool folderLoadCancelled = false;
 
     [ObservableProperty]
@@ -40,9 +43,6 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     public partial bool ArePreviewsZoomed { get; set; } = false;
-
-    [ObservableProperty]
-    public partial bool SizeDisabledWarningIsOpen { get; set; } = false;
 
     [ObservableProperty]
     public partial bool IsRefreshNeeded { get; set; } = false;
@@ -67,38 +67,6 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
-    public void SelectAllSizes()
-    {
-        foreach (IconSize size in IconSizes)
-            size.IsSelected = true;
-
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
-    public void DeselectAllSizes()
-    {
-        foreach (IconSize size in IconSizes)
-            size.IsSelected = false;
-
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
-    public void SelectWindowsSizes()
-    {
-        SelectTheseIcons(IconSize.GetWindowsSizesFull());
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
-    public void SelectWebSizes()
-    {
-        SelectTheseIcons(IconSize.GetIdealWebSizesFull());
-        CheckIfRefreshIsNeeded();
-    }
-
-    [RelayCommand]
     public async Task EditIconSizes()
     {
         bool ownsPro = App.GetService<IStoreService>().OwnsPro;
@@ -119,6 +87,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task RegenPreviews()
     {
+        if (SizesControl == null)
+            return;
+
         LoadingImages = true;
 
         Progress<int> progress = new();
@@ -127,16 +98,24 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         FileLoadProgress = 0;
         CurrentImageRendering = 0;
 
+        // Get current sort order and update all preview stacks
+        IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
+        IconSortOrder sortOrder = iconSizesService.SortOrder;
+
         foreach (PreviewStack stack in Previews)
         {
             CurrentImageRendering++;
             FileLoadProgress = (int)((double)CurrentImageRendering / NumberOfImageFiles * 100);
+            stack.SortOrder = sortOrder;
             await stack.GeneratePreviewImagesAsync(progress);
         }
 
-        SizesGenerating = IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
+        SizesGenerating = SizesControl.ViewModel.IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
 
         LoadingImages = false;
+
+        // Reset refresh needed state after regeneration is complete
+        IsRefreshNeeded = false;
     }
 
     [RelayCommand]
@@ -149,6 +128,20 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         }
     }
 
+    public async Task UpdatePreviewsSortOrder()
+    {
+        // Get current sort order
+        IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
+        IconSortOrder sortOrder = iconSizesService.SortOrder;
+
+        // Update all preview stacks with new sort order and refresh displays
+        foreach (PreviewStack stack in Previews)
+        {
+            stack.SortOrder = sortOrder;
+            await stack.RefreshPreviewsWithSortOrder();
+        }
+    }
+
     [RelayCommand]
     public void SizeCheckbox_Tapped()
     {
@@ -158,15 +151,18 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task SaveAllIcons()
     {
+        IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
+        IconSortOrder sortOrder = iconSizesService.SortOrder;
+
         if (SaveAllImagesAsPngs)
         {
             foreach (PreviewStack stack in Previews)
-                await stack.SaveAllImagesAsync();
+                await stack.SaveAllImagesAsync("", sortOrder);
         }
         else
         {
             foreach (PreviewStack stack in Previews)
-                await stack.SaveIconAsync();
+                await stack.SaveIconAsync("", sortOrder);
         }
     }
 
@@ -224,28 +220,28 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     private void SelectTheseIcons(IconSize[] iconSizesToSelect)
     {
+        if (SizesControl == null) return;
+
         IconSideComparer iconComparer = new();
-        foreach (IconSize iconSize in IconSizes)
+        foreach (IconSize iconSize in SizesControl.ViewModel.IconSizes)
             iconSize.IsSelected = iconSizesToSelect.Contains(iconSize, iconComparer);
     }
 
     private void LoadIconSizes()
     {
-        IconSizes.Clear();
-        List<IconSize> loadedSizes = App.GetService<IIconSizesService>().IconSizes;
-
-        foreach (IconSize size in loadedSizes)
-            if (!size.IsHidden)
-                IconSizes.Add(size);
-
+        // Delegate to SizesControl
+        SizesControl?.ReloadIconSizes();
         CheckIfRefreshIsNeeded();
     }
 
     private void CheckIfRefreshIsNeeded()
     {
+        if (SizesControl == null)
+            return;
+
         bool anyRefreshAvailable = false;
         foreach (PreviewStack stack in Previews)
-            _ = stack.ChooseTheseSizes(IconSizes);
+            _ = stack.ChooseTheseSizes(SizesControl.ViewModel.IconSizes);
 
         foreach (PreviewStack stack in Previews)
         {
@@ -258,27 +254,27 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         IsRefreshNeeded = anyRefreshAvailable;
 
-        foreach (IconSize size in IconSizes)
+        foreach (IconSize size in SizesControl.ViewModel.IconSizes)
             size.IsEnabled = true;
 
-        IEnumerable<IconSize> sizes = IconSizes.Where(x => !x.IsHidden && x.IsSelected);
+        IEnumerable<IconSize> sizes = SizesControl.ViewModel.IconSizes.Where(x => !x.IsHidden && x.IsSelected);
         int largestSize = sizes.Any() ? sizes.Max(x => x.SideLength) : 0;
         int smallestSource = 0;
 
         if (Previews.Count == 0)
         {
-            SizeDisabledWarningIsOpen = false;
+            SizesControl.ViewModel.SizeDisabledWarningIsOpen = false;
             return;
         }
 
         smallestSource = Previews.Min(x => x.SmallerSourceSide);
 
-        SizeDisabledWarningIsOpen = smallestSource < largestSize;
+        SizesControl.ViewModel.SizeDisabledWarningIsOpen = smallestSource < largestSize;
     }
 
     private async Task LoadFiles()
     {
-        if (_folder is null)
+        if (_folder is null || SizesControl == null)
             return;
 
         LoadingImages = true;
@@ -292,7 +288,11 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         FileLoadProgress = 0;
         CurrentImageRendering = 0;
 
-        List<IconSize> sizes = IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden).ToList();
+        List<IconSize> sizes = [.. SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden)];
+
+        // Get current sort order
+        IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
+        IconSortOrder sortOrder = iconSizesService.SortOrder;
 
         foreach (StorageFile file in tempFiles)
         {
@@ -308,7 +308,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             {
                 MaxWidth = 600,
                 MinWidth = 300,
-                Margin = new Thickness(6)
+                Margin = new Thickness(6),
+                SortOrder = sortOrder
             };
 
             Previews.Add(preview);
@@ -317,7 +318,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         }
 
         NumberOfImageFiles = Previews.Count;
-        SizesGenerating = IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
+        SizesGenerating = SizesControl.ViewModel.IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
 
         CheckIfRefreshIsNeeded();
 

@@ -19,9 +19,22 @@ public sealed partial class MainPage : Page
         ViewModel.PreviewsGrid = PreviewsGrid;
         ViewModel.MainImage = MainImage;
         ViewModel.InitialLoadProgressBar = InitialLoadProgressBar;
+        ViewModel.SizesControl = SizesControlInstance;
 
         ViewModel.CountdownCompleted += OnCountdownCompleted;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+        // Wire up SizesControl events
+        SizesControlInstance.ViewModel.SizeCheckboxTappedEvent += (s, e) => ViewModel.SizeCheckboxTapped();
+        SizesControlInstance.ViewModel.EditIconSizesRequested += async (s, e) =>
+        {
+            await ViewModel.EditIconSizes();
+            SizesControlInstance.ReloadIconSizes();
+        };
+        SizesControlInstance.ViewModel.SortOrderChanged += async (s, e) =>
+        {
+            await ViewModel.UpdatePreviewsSortOrder();
+        };
 
         // Set initial state
         UpdateVisualState();

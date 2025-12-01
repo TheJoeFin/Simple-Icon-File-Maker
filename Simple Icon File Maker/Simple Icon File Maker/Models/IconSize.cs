@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Simple_Icon_File_Maker.Models;
 
 [DebuggerDisplay("SideLength = {SideLength}, IsSelected = {IsSelected}")]
-public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
+public partial class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
 {
     public int SideLength { get; set; }
     public bool IsSelected { get; set; } = true;
@@ -13,6 +13,8 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
     public bool IsEnabled { get; set; } = true;
 
     public bool IsHidden { get; set; } = false;
+
+    public int Order { get; set; } = 0;
 
     public string Tooltip => $"{SideLength} x {SideLength}";
 
@@ -48,6 +50,7 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
         SideLength = iconSize.SideLength;
         IsSelected = iconSize.IsSelected;
         IsEnabled = iconSize.IsEnabled;
+        Order = iconSize.Order;
     }
 
 #pragma warning disable CS0067 // The event 'IconSize.PropertyChanged' is never used
@@ -57,7 +60,7 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
     public static IconSize[] GetAllSizes()
     {
         return
-        new IconSize[] {
+        [
             //new() { SideLength = 1024, IsSelected = false },
             //new() { SideLength = 512, IsSelected = false },
             new() { SideLength = 256 },
@@ -73,42 +76,42 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
             new() { SideLength = 24, IsSelected = false},
             new() { SideLength = 20, IsSelected = false},
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public static IconSize[] GetWindowsSizesFull()
     {
         return
-        new IconSize[] {
+        [
             new() { SideLength = 256 },
             new() { SideLength = 128 },
             new() { SideLength = 64 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public static IconSize[] GetIdealWebSizesFull()
     {
         return
-        new IconSize[] {
+        [
             new() { SideLength = 192 },
             new() { SideLength = 180 },
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 24 },
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public static IconSize[] GetIdealWebSizesShort()
     {
         return
-        new IconSize[] {
+        [
             new() { SideLength = 48 },
             new() { SideLength = 32 },
             new() { SideLength = 16 },
-        };
+        ];
     }
 
     public override int GetHashCode()
@@ -116,6 +119,34 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
         int hash = 17;
         hash += 23 + (IsSelected ? 1 : 0);
         return hash * 23 + SideLength;
+    }
+
+    public static List<IconSize> SortSizes(IEnumerable<IconSize> sizes, IconSortOrder sortOrder)
+    {
+        return sortOrder switch
+        {
+            IconSortOrder.LargestFirst => [.. sizes.OrderByDescending(s => s.SideLength)],
+            IconSortOrder.SmallestFirst => [.. sizes.OrderBy(s => s.SideLength)],
+            _ => [.. sizes.OrderByDescending(s => s.SideLength)]
+        };
+    }
+}
+
+public class IconOrderComparer : IComparer<IconSize>
+{
+    public int Compare(IconSize? x, IconSize? y)
+    {
+        if (x is null && y is null) return 0;
+        if (x is null) return -1;
+        if (y is null) return 1;
+
+        // First compare by Order property
+        int orderComparison = x.Order.CompareTo(y.Order);
+        if (orderComparison != 0)
+            return orderComparison;
+
+        // If Order is the same, fall back to size comparison
+        return y.SideLength.CompareTo(x.SideLength); // Descending by default
     }
 }
 
