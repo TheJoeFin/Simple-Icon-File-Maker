@@ -281,6 +281,13 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     }
 
     [RelayCommand]
+    public void CancelCountdown()
+    {
+        StopCountdown();
+        RefreshButtonIsAccent = false;
+    }
+
+    [RelayCommand]
     public async Task RefreshPreviews()
     {
         RefreshButtonIsAccent = false;

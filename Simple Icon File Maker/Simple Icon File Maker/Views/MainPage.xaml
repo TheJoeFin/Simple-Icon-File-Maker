@@ -431,6 +431,18 @@
                         </MenuFlyout>
                     </Button.ContextFlyout>
                 </Button>
+                <Button
+                    x:Name="CancelCountdownButton"
+                    Height="32"
+                    MinWidth="32"
+                    Padding="8,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Command="{x:Bind ViewModel.CancelCountdownCommand}"
+                    ToolTipService.ToolTip="Cancel auto-refresh"
+                    Visibility="{x:Bind ViewModel.IsCountdownActive, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                    <FontIcon FontSize="12" Glyph="&#xE711;" />
+                </Button>
                 <TextBlock
                     VerticalAlignment="Center"
                     Style="{StaticResource BodyStrongTextBlockStyle}"
