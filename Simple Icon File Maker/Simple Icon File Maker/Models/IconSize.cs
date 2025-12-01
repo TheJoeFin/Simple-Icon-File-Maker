@@ -14,6 +14,8 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
 
     public bool IsHidden { get; set; } = false;
 
+    public int Order { get; set; } = 0;
+
     public string Tooltip => $"{SideLength} x {SideLength}";
 
     public IconSize()
@@ -48,6 +50,7 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
         SideLength = iconSize.SideLength;
         IsSelected = iconSize.IsSelected;
         IsEnabled = iconSize.IsEnabled;
+        Order = iconSize.Order;
     }
 
 #pragma warning disable CS0067 // The event 'IconSize.PropertyChanged' is never used
@@ -116,6 +119,34 @@ public class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
         int hash = 17;
         hash += 23 + (IsSelected ? 1 : 0);
         return hash * 23 + SideLength;
+    }
+
+    public static List<IconSize> SortSizes(IEnumerable<IconSize> sizes, IconSortOrder sortOrder)
+    {
+        return sortOrder switch
+        {
+            IconSortOrder.LargestFirst => [.. sizes.OrderByDescending(s => s.SideLength)],
+            IconSortOrder.SmallestFirst => [.. sizes.OrderBy(s => s.SideLength)],
+            _ => [.. sizes.OrderByDescending(s => s.SideLength)]
+        };
+    }
+}
+
+public class IconOrderComparer : IComparer<IconSize>
+{
+    public int Compare(IconSize? x, IconSize? y)
+    {
+        if (x is null && y is null) return 0;
+        if (x is null) return -1;
+        if (y is null) return 1;
+
+        // First compare by Order property
+        int orderComparison = x.Order.CompareTo(y.Order);
+        if (orderComparison != 0)
+            return orderComparison;
+
+        // If Order is the same, fall back to size comparison
+        return y.SideLength.CompareTo(x.SideLength); // Descending by default
     }
 }
 
