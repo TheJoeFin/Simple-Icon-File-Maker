@@ -27,7 +27,7 @@ public partial class SizesControlViewModel : ObservableObject
     {
         _iconSizesService = iconSizesService;
         _storeService = storeService;
-        
+
         currentSortOrder = _iconSizesService.SortOrder;
         LoadIconSizes();
     }
@@ -51,7 +51,7 @@ public partial class SizesControlViewModel : ObservableObject
     private async Task EditIconSizes()
     {
         bool ownsPro = _storeService.OwnsPro;
-        
+
         if (ownsPro)
         {
             EditIconSizesRequested?.Invoke(this, EventArgs.Empty);

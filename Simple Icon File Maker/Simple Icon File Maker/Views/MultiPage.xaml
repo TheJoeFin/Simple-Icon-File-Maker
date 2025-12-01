@@ -3,8 +3,8 @@
     x:Class="Simple_Icon_File_Maker.Views.MultiPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="using:Simple_Icon_File_Maker.Converters"
     xmlns:controls="using:Simple_Icon_File_Maker.Controls"
+    xmlns:converters="using:Simple_Icon_File_Maker.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Simple_Icon_File_Maker.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -116,8 +116,8 @@
                 Grid.Row="1"
                 Style="{StaticResource CardStyle}"
                 Visibility="Visible">
-                
-                <!-- Use the new SizesControl -->
+
+                <!--  Use the new SizesControl  -->
                 <controls:SizesControl x:Name="SizesControlInstance" />
             </Grid>
 
@@ -129,9 +129,7 @@
                 <tk:SettingsExpander Description="Expand for more options" HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}">
                     <Button
                         Command="{x:Bind ViewModel.SaveAllIconsCommand}"
-                        IsEnabled="{x:Bind ViewModel.LoadingImages,
-                                           Mode=OneWay,
-                                           Converter={StaticResource BoolInv}}"
+                        IsEnabled="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolInv}}"
                         Style="{StaticResource AccentButtonStyle}">
                         <TextBlock>
                             <Run Text="Save" />
@@ -203,9 +201,7 @@
                 <Button
                     Height="32"
                     Command="{x:Bind ViewModel.RegenPreviewsCommand}"
-                    Style="{x:Bind ViewModel.IsRefreshNeeded,
-                                   Mode=OneWay,
-                                   Converter={StaticResource IsPrimary}}">
+                    Style="{x:Bind ViewModel.IsRefreshNeeded, Mode=OneWay, Converter={StaticResource IsPrimary}}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -221,8 +217,7 @@
                     Content="&#xE8A3;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                     FontSize="16"
-                    IsChecked="{x:Bind ViewModel.ArePreviewsZoomed,
-                                       Mode=TwoWay}"
+                    IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
                     Tapped="{x:Bind ViewModel.ZoomPreviews}" />
             </Grid>
 
@@ -233,8 +228,7 @@
                 <ItemsControl
                     Grid.Row="1"
                     Padding="6"
-                    ItemsSource="{x:Bind ViewModel.Previews,
-                                         Mode=OneWay}">
+                    ItemsSource="{x:Bind ViewModel.Previews, Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Horizontal" />
@@ -247,9 +241,7 @@
         <Grid
             Grid.Row="1"
             Grid.Column="1"
-            Visibility="{x:Bind ViewModel.LoadingImages,
-                                Mode=OneWay,
-                                Converter={StaticResource BoolVis}}">
+            Visibility="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolVis}}">
             <Viewbox
                 MaxWidth="200"
                 MaxHeight="200"
@@ -263,8 +255,7 @@
                     <ProgressRing
                         x:Name="LoadingImagesProgress"
                         IsIndeterminate="False"
-                        Value="{x:Bind ViewModel.FileLoadProgress,
-                                       Mode=OneWay}" />
+                        Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
                 </Grid>
             </Viewbox>
             <TextBlock

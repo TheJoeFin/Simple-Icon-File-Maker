@@ -20,7 +20,7 @@ public class IconSizesService : IIconSizesService
     public async Task InitializeAsync()
     {
         IconSizes = await IconSizeHelper.GetIconSizes();
-        
+
         try
         {
             SortOrder = await _localSettingsService.ReadSettingAsync<IconSortOrder>(SortOrderKey);

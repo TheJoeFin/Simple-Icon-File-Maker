@@ -113,7 +113,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         SizesGenerating = SizesControl.ViewModel.IconSizes.Count(x => x.IsSelected && x.IsEnabled && !x.IsHidden);
 
         LoadingImages = false;
-        
+
         // Reset refresh needed state after regeneration is complete
         IsRefreshNeeded = false;
     }
@@ -288,8 +288,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         FileLoadProgress = 0;
         CurrentImageRendering = 0;
 
-        List<IconSize> sizes = SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden).ToList();
-        
+        List<IconSize> sizes = [.. SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden)];
+
         // Get current sort order
         IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
         IconSortOrder sortOrder = iconSizesService.SortOrder;

@@ -325,7 +325,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             return;
 
         UIElementCollection uIElements = PreviewsGrid.Children;
-        
+
         // Get current sort order
         IconSortOrder sortOrder = _iconSizesService.SortOrder;
 

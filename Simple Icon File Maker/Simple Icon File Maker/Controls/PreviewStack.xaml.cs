@@ -349,9 +349,9 @@ public sealed partial class PreviewStack : UserControl
     public async Task UpdatePreviewsAsync()
     {
         PreviewStackPanel.Children.Clear();
-        
+
         string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        
+
         // Sort imagePaths based on the sort order
         List<(string sideLength, string path)> sortedPaths = SortOrder switch
         {
@@ -362,10 +362,8 @@ public sealed partial class PreviewStack : UserControl
 
         foreach ((string sideLength, string path) pair in sortedPaths)
         {
-            if (pair.path is not string imagePath)
-                continue;
-
-            if (!int.TryParse(pair.sideLength, out int sideLength))
+            if (pair.path is not string imagePath
+                || !int.TryParse(pair.sideLength, out int sideLength))
                 continue;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
@@ -410,12 +408,12 @@ public sealed partial class PreviewStack : UserControl
 
         foreach (UIElement? child in previewBoxes)
         {
-            if (child is PreviewImage img)
-            {
-                if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
-                    img.ZoomedWidthSpace = (int)ActualWidth - 40;
-                img.ZoomPreview = IsZoomingPreview;
-            }
+            if (child is not PreviewImage img)
+                continue;
+
+            if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
+                img.ZoomedWidthSpace = (int)ActualWidth - 40;
+            img.ZoomPreview = IsZoomingPreview;
         }
     }
 }
