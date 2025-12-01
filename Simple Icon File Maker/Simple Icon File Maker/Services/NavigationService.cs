@@ -1,11 +1,9 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
 using Simple_Icon_File_Maker.Helpers;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Simple_Icon_File_Maker.Services;
 
@@ -68,7 +66,7 @@ public class NavigationService : INavigationService
     {
         if (CanGoBack)
         {
-            var vmBeforeNavigation = _frame.GetPageViewModel();
+            object? vmBeforeNavigation = _frame.GetPageViewModel();
             _frame.GoBack();
             if (vmBeforeNavigation is INavigationAware navigationAware)
             {
@@ -88,8 +86,8 @@ public class NavigationService : INavigationService
         if (_frame != null && (_frame.Content?.GetType() != pageType || (parameter != null && !parameter.Equals(_lastParameterUsed))))
         {
             _frame.Tag = clearNavigation;
-            var vmBeforeNavigation = _frame.GetPageViewModel();
-            var navigated = _frame.Navigate(pageType, parameter);
+            object? vmBeforeNavigation = _frame.GetPageViewModel();
+            bool navigated = _frame.Navigate(pageType, parameter);
             if (navigated)
             {
                 _lastParameterUsed = parameter;
@@ -116,7 +114,7 @@ public class NavigationService : INavigationService
 
         try
         {
-            var result = await dialog.ShowAsync();
+            ContentDialogResult result = await dialog.ShowAsync();
         }
         catch
         {
@@ -130,11 +128,11 @@ public class NavigationService : INavigationService
         if (_frame is null)
             return false;
 
-        var pageType = _pageService.GetPageType(pageKey);
+        Type pageType = _pageService.GetPageType(pageKey);
         Frame tempFrame = new();
 
-        var vmBeforeNavigation = tempFrame.GetPageViewModel();
-        var navigated = tempFrame.Navigate(pageType, parameter);
+        object? vmBeforeNavigation = tempFrame.GetPageViewModel();
+        bool navigated = tempFrame.Navigate(pageType, parameter);
         if (navigated && vmBeforeNavigation is INavigationAware navigationAware)
             navigationAware.OnNavigatedFrom();
 
@@ -147,7 +145,7 @@ public class NavigationService : INavigationService
 
         try
         {
-            var result = await wrapper.ShowAsync();
+            ContentDialogResult result = await wrapper.ShowAsync();
         }
         catch
         {

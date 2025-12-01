@@ -25,6 +25,8 @@ public sealed partial class PreviewStack : UserControl
 
     public int SmallerSourceSide { get; private set; }
 
+    public IconSortOrder SortOrder { get; set; } = IconSortOrder.LargestFirst;
+
     public PreviewStack(string path, List<IconSize> sizes, bool showTitle = false)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
@@ -70,11 +72,19 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
     }
 
-    public async Task SaveIconAsync(string outputPath = "")
+    public async Task SaveIconAsync(string outputPath = "", IconSortOrder sortOrder = IconSortOrder.LargestFirst)
     {
         MagickImageCollection collection = [];
 
-        foreach ((_, string path) in imagePaths)
+        // Sort the imagePaths based on the sort order
+        List<(string sideLength, string path)> sortedPaths = sortOrder switch
+        {
+            IconSortOrder.LargestFirst => [.. imagePaths.OrderByDescending(p => int.TryParse(p.Item1, out int size) ? size : 0)],
+            IconSortOrder.SmallestFirst => [.. imagePaths.OrderBy(p => int.TryParse(p.Item1, out int size) ? size : 0)],
+            _ => [.. imagePaths.OrderByDescending(p => int.TryParse(p.Item1, out int size) ? size : 0)]
+        };
+
+        foreach ((_, string path) in sortedPaths)
             collection.Add(path);
 
         if (string.IsNullOrWhiteSpace(outputPath))
@@ -95,7 +105,7 @@ public sealed partial class PreviewStack : UserControl
     });
     }
 
-    public async Task SaveAllImagesAsync(string outputPath = "")
+    public async Task SaveAllImagesAsync(string outputPath = "", IconSortOrder sortOrder = IconSortOrder.LargestFirst)
     {
         if (string.IsNullOrWhiteSpace(outputPath))
         {
@@ -103,7 +113,7 @@ public sealed partial class PreviewStack : UserControl
                 $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
         }
 
-        await SaveIconAsync(outputPath);
+        await SaveIconAsync(outputPath, sortOrder);
 
         string outputFolderPath = Path.GetDirectoryName(outputPath) ?? string.Empty;
 
@@ -338,13 +348,22 @@ public sealed partial class PreviewStack : UserControl
 
     public async Task UpdatePreviewsAsync()
     {
-        string originalName = Path.GetFileNameWithoutExtension(imagePath);
-        foreach ((string sideLength, string path) pair in imagePaths)
-        {
-            if (pair.path is not string imagePath)
-                continue;
+        PreviewStackPanel.Children.Clear();
 
-            if (!int.TryParse(pair.sideLength, out int sideLength))
+        string originalName = Path.GetFileNameWithoutExtension(imagePath);
+
+        // Sort imagePaths based on the sort order
+        List<(string sideLength, string path)> sortedPaths = SortOrder switch
+        {
+            IconSortOrder.LargestFirst => [.. imagePaths.OrderByDescending(p => int.TryParse(p.Item1, out int size) ? size : 0)],
+            IconSortOrder.SmallestFirst => [.. imagePaths.OrderBy(p => int.TryParse(p.Item1, out int size) ? size : 0)],
+            _ => [.. imagePaths.OrderByDescending(p => int.TryParse(p.Item1, out int size) ? size : 0)]
+        };
+
+        foreach ((string sideLength, string path) pair in sortedPaths)
+        {
+            if (pair.path is not string imagePath
+                || !int.TryParse(pair.sideLength, out int sideLength))
                 continue;
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
@@ -355,6 +374,11 @@ public sealed partial class PreviewStack : UserControl
         }
         UpdateSizeAndZoom();
         await Task.CompletedTask;
+    }
+
+    public async Task RefreshPreviewsWithSortOrder()
+    {
+        await UpdatePreviewsAsync();
     }
 
     private bool CheckIfRefreshIsNeeded()
@@ -384,12 +408,12 @@ public sealed partial class PreviewStack : UserControl
 
         foreach (UIElement? child in previewBoxes)
         {
-            if (child is PreviewImage img)
-            {
-                if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
-                    img.ZoomedWidthSpace = (int)ActualWidth - 40;
-                img.ZoomPreview = IsZoomingPreview;
-            }
+            if (child is not PreviewImage img)
+                continue;
+
+            if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
+                img.ZoomedWidthSpace = (int)ActualWidth - 40;
+            img.ZoomPreview = IsZoomingPreview;
         }
     }
 }

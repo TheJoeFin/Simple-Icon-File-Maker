@@ -50,7 +50,7 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX)
         {
-            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
+            if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out object? obj))
             {
                 if (obj is not string str)
                     return default;
@@ -62,7 +62,7 @@ public class LocalSettingsService : ILocalSettingsService
         {
             await InitializeAsync();
 
-            if (_settings != null && _settings.TryGetValue(key, out var obj))
+            if (_settings != null && _settings.TryGetValue(key, out object? obj))
             {
                 if (obj is not string str)
                     return default;

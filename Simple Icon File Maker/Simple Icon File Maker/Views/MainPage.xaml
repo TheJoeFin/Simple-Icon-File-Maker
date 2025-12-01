@@ -5,11 +5,11 @@
     x:Class="Simple_Icon_File_Maker.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Simple_Icon_File_Maker.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
-    Loaded="Page_Loaded"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.Resources>
@@ -33,6 +33,12 @@
         DragOver="Border_DragOver"
         Drop="Grid_Drop"
         RowSpacing="12">
+        <Grid.KeyboardAccelerators>
+            <KeyboardAccelerator
+                Key="V"
+                Invoked="PasteFromClipboard_Invoked"
+                Modifiers="Control" />
+        </Grid.KeyboardAccelerators>
         <Grid.ColumnDefinitions>
             <ColumnDefinition
                 Width="*"
@@ -62,7 +68,8 @@
                 Name="dropHere"
                 MinWidth="320"
                 MinHeight="220"
-                Margin="24,24,24,0">
+                Margin="24,24,24,0"
+                Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, ConverterParameter=True, Mode=OneWay}">
                 <Rectangle
                     RadiusX="4"
                     RadiusY="4"
@@ -82,19 +89,22 @@
                     <TextBlock
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="Drag and drop an image here" />
+                        TextAlignment="Center">
+                        Drag and drop an image here<LineBreak />
+                        or paste from clipboard (Ctrl+V)</TextBlock>
                     <TextBlock
                         x:Name="SupportedFilesTextBlock"
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
-                        Text="Drag and drop an image here"
+                        Text="{x:Bind ViewModel.SupportedFilesText, Mode=OneWay}"
                         TextWrapping="Wrap" />
 
                     <StackPanel
                         x:Name="OpenBTN"
                         Grid.Row="1"
                         Margin="0,12,0,0"
+                        HorizontalAlignment="Center"
                         Orientation="Horizontal"
                         Spacing="8">
                         <Button
@@ -112,7 +122,7 @@
                             Padding="12,0"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Click="OpenBTN_Click"
+                            Command="{x:Bind ViewModel.BrowseAndSelectImageCommand}"
                             Style="{StaticResource AccentButtonStyle}"
                             ToolTipService.ToolTip="Select image to make .ico file from">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -150,37 +160,47 @@
                 Grid.Row="2"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
-                Click="UpgradeToProHyperlinkButton_Click"
-                Visibility="Collapsed">
+                Command="{x:Bind ViewModel.UpgradeToProCommand}"
+                Visibility="{x:Bind ViewModel.ShowUpgradeToProButton, Converter={StaticResource BoolVis}, Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="Shop" />
                     <TextBlock Text="Do more with Pro..." />
                 </StackPanel>
             </HyperlinkButton>
-            <StackPanel
+
+            <!--  Main Image Display (visible when image is loaded OR loading)  -->
+            <Viewbox
+                x:Name="MainImageViewbox"
+                MaxHeight="140"
+                Margin="24,24,24,24"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Spacing="12">
-                <Viewbox
-                    MaxHeight="140"
-                    Margin="24,24,24,24"
-                    VerticalAlignment="Center">
-                    <Image x:Name="MainImage" Stretch="Uniform" />
-                </Viewbox>
+                Visibility="Collapsed">
+                <Image
+                    x:Name="MainImage"
+                    Source="{x:Bind ViewModel.MainImageSource, Mode=OneWay}"
+                    Stretch="Uniform" />
+            </Viewbox>
+
+            <!--  Loading Indicators (only visible while loading)  -->
+            <StackPanel
+                x:Name="LoadingIndicators"
+                Grid.Row="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="12"
+                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolVis}, Mode=OneWay}">
                 <TextBlock
                     x:Name="LoadingText"
-                    Grid.Row="1"
                     HorizontalAlignment="Center"
                     Text="Loading image and generating previews..."
-                    TextWrapping="Wrap"
-                    Visibility="Collapsed" />
+                    TextWrapping="Wrap" />
                 <ProgressBar
                     x:Name="InitialLoadProgressBar"
-                    Grid.Row="2"
                     MaxWidth="200"
                     Maximum="100"
                     Minimum="0"
-                    Visibility="Collapsed" />
+                    Value="{x:Bind ViewModel.LoadProgress, Mode=OneWay}" />
             </StackPanel>
 
             <Grid
@@ -188,7 +208,7 @@
                 Grid.Row="1"
                 Margin="8,0,8,-4"
                 ColumnSpacing="8"
-                Visibility="Collapsed">
+                Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, Mode=OneWay}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
@@ -200,8 +220,8 @@
                     Grid.Row="2"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
-                    Click="UpgradeToProHyperlinkButton_Click"
-                    Visibility="Collapsed">
+                    Command="{x:Bind ViewModel.UpgradeToProCommand}"
+                    Visibility="{x:Bind ViewModel.ShowUpgradeToProButton, Converter={StaticResource BoolVis}, Mode=OneWay}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <SymbolIcon Symbol="Shop" />
                         <TextBlock Text="Get Pro" />
@@ -222,7 +242,7 @@
                     x:Name="EditImageColorDropDownButton"
                     Grid.Column="2"
                     Height="32"
-                    Click="EditImageColorDropDownButton_Click"
+                    Command="{x:Bind ViewModel.CheckForProEditColorCommand}"
                     IsEnabled="True"
                     ToolTipService.ToolTip="Change color of the image">
                     <DropDownButton.Content>
@@ -244,30 +264,30 @@
                         <MenuFlyout Opening="MenuFlyout_Opening">
                             <MenuFlyoutItem
                                 x:Name="UndoButton"
-                                Click="UndoButton_Click"
-                                IsEnabled="False"
+                                Command="{x:Bind ViewModel.UndoCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanUndo, Mode=OneWay}"
                                 Text="Undo" />
                             <MenuFlyoutItem
                                 x:Name="RedoButton"
-                                Click="RedoButton_Click"
-                                IsEnabled="False"
+                                Command="{x:Bind ViewModel.RedoCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanRedo, Mode=OneWay}"
                                 Text="Redo" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem
                                 x:Name="GrayScaleButton"
-                                Click="GrayScaleButton_Click"
+                                Command="{x:Bind ViewModel.ApplyGrayscaleCommand}"
                                 Text="Grayscale" />
                             <MenuFlyoutItem
                                 x:Name="BlackWhiteButton"
-                                Click="BlackWhiteButton_Click"
+                                Command="{x:Bind ViewModel.ApplyBlackWhiteOtsuCommand}"
                                 Text="Black &amp; White (OTSU)" />
                             <MenuFlyoutItem
                                 x:Name="BlackWhiteKapurButton"
-                                Click="BlackWhiteButton_Click2"
+                                Command="{x:Bind ViewModel.ApplyBlackWhiteKapurCommand}"
                                 Text="Black &amp; White (Kapur)" />
                             <MenuFlyoutItem
                                 x:Name="InvertButton"
-                                Click="InvertButton_Click"
+                                Command="{x:Bind ViewModel.ApplyInvertCommand}"
                                 Text="Invert" />
                         </MenuFlyout>
                     </DropDownButton.Flyout>
@@ -279,7 +299,7 @@
                     Padding="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Click="ClearAppBarButton_Click"
+                    Command="{x:Bind ViewModel.ClearImageCommand}"
                     ToolTipService.ToolTip="Clear image and reset the app">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE894;" />
@@ -296,18 +316,9 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
                 IsClosable="True"
-                Severity="Error">
-                <InfoBar.Resources>
-                    <Storyboard x:Name="closeInfoBarStoryboard">
-                        <ObjectAnimationUsingKeyFrames
-                            Storyboard.TargetName="errorInfoBar"
-                            Storyboard.TargetProperty="IsOpen"
-                            Duration="0:0:15">
-                            <DiscreteObjectKeyFrame KeyTime="0:0:15" Value="False" />
-                        </ObjectAnimationUsingKeyFrames>
-                    </Storyboard>
-                </InfoBar.Resources>
-            </InfoBar>
+                IsOpen="{x:Bind ViewModel.ErrorInfoBarIsOpen, Mode=TwoWay}"
+                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                Severity="Error" />
         </Grid>
 
         <!--  Settings card:  -->
@@ -316,120 +327,21 @@
             x:Name="SettingsCard"
             Grid.Row="2"
             Style="{StaticResource CardStyle}"
-            Visibility="Collapsed">
+            Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, Mode=OneWay}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="48" />
-                <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <TextBlock
-                Margin="16,0,0,0"
-                VerticalAlignment="Center"
-                Style="{StaticResource BodyStrongTextBlockStyle}"
-                Text="Icon sizes" />
-            <StackPanel
-                Margin="0,0,8,0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="8">
-                <Button
-                    x:Name="EditSizes"
-                    Height="32"
-                    Click="EditSizes_Click"
-                    ToolTipService.ToolTip="Edit icon sizes (Pro only)">
-                    <Grid>
-                        <FontIcon FontSize="16" Glyph="&#xE70F;" />
-                        <FontIcon
-                            FontSize="8"
-                            Foreground="Goldenrod"
-                            Glyph="&#xE785;">
-                            <FontIcon.RenderTransform>
-                                <TransformGroup>
-                                    <TranslateTransform X="12" Y="6" />
-                                </TransformGroup>
-                            </FontIcon.RenderTransform>
-                        </FontIcon>
-                    </Grid>
-                </Button>
-                <Button
-                    x:Name="SelectWebButton"
-                    Height="32"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Click="SelectWebButton_Click"
-                    Content="&#xE12B;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="Select Sizes Ideal For Web" />
-                <Button
-                    x:Name="SelectWindowsButton"
-                    Height="32"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Click="SelectWindowsButton_Click"
-                    Content="&#xE7F8;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="Select Sizes Ideal For Windows (Default)" />
-                <Button
-                    x:Name="SelectAllButton"
-                    Height="32"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Click="SelectAllButton_Click"
-                    Content="&#xE8B3;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="Select all" />
 
-                <Button
-                    x:Name="ClearSelectionButton"
-                    Height="32"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Click="ClearSelectionButton_Click"
-                    Content="&#xE8E6;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="Clear all" />
+            <!--  Use the new SizesControl  -->
+            <controls:SizesControl x:Name="SizesControlInstance" Grid.Row="0" />
 
-            </StackPanel>
-            <InfoBar
-                x:Name="SizeDisabledWarning"
-                Grid.Row="1"
-                IsOpen="True"
-                Severity="Informational">
-                <TextBlock TextWrapping="WrapWholeWords">
-                    Sizes larger than the source have been disabled.
-                </TextBlock>
-            </InfoBar>
-            <ListView
-                x:Name="IconSizesListView"
-                Grid.Row="2"
-                ItemsSource="{x:Bind IconSizes,
-                                     Mode=OneWay}"
-                SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="models:IconSize">
-                        <CheckBox
-                            Content="{x:Bind Tooltip}"
-                            IsChecked="{x:Bind IsSelected,
-                                               Mode=TwoWay}"
-                            IsEnabled="{x:Bind IsEnabled,
-                                               Mode=OneWay}"
-                            Tapped="CheckBox_Tapped" />
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
             <Grid
-                Grid.Row="3"
+                Grid.Row="1"
                 Padding="8"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0">
                 <StackPanel
-                    Grid.Row="2"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Orientation="Horizontal"
@@ -438,16 +350,16 @@
                     <Button
                         x:Name="OpenFolderBTN"
                         Height="32"
-                        Click="OpenFolderBTN_Click"
+                        Command="{x:Bind ViewModel.OpenOutputFolderCommand}"
                         Content="&#xE197;"
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         ToolTipService.ToolTip="Open Destination Folder..."
-                        Visibility="Collapsed" />
+                        Visibility="{x:Bind ViewModel.OpenFolderButtonVisible, Converter={StaticResource BoolVis}, Mode=OneWay}" />
                     <Button
                         x:Name="SaveBTN"
-                        Click="SaveBTN_Click"
-                        IsEnabled="False"
+                        Command="{x:Bind ViewModel.SaveIconCommand}"
+                        IsEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
                         Style="{StaticResource AccentButtonStyle}"
                         ToolTipService.ToolTip="Save all images as a combined .ico">
                         <StackPanel Orientation="Horizontal" Spacing="12">
@@ -460,8 +372,8 @@
                     </Button>
                     <Button
                         x:Name="SaveAllBTN"
-                        Click="SaveAllBTN_Click"
-                        IsEnabled="False"
+                        Command="{x:Bind ViewModel.SaveAllImagesCommand}"
+                        IsEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
                         ToolTipService.ToolTip="Save all images as a combined .ico and each size as a .png">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <FontIcon FontSize="16" Glyph="&#xE78C;" />
@@ -478,7 +390,7 @@
             Grid.RowSpan="2"
             Grid.Column="1"
             Style="{StaticResource CardStyle}"
-            Visibility="Collapsed">
+            Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
@@ -490,8 +402,8 @@
                     Margin="8,0,0,0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Click="RefreshButton_Click"
-                    Style="{StaticResource DefaultButtonStyle}"
+                    Command="{x:Bind ViewModel.RefreshPreviewsCommand}"
+                    Style="{ThemeResource DefaultButtonStyle}"
                     ToolTipService.ToolTip="Refresh icon previews, Right-click to change auto refresh option">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <Viewbox Height="16">
@@ -503,26 +415,33 @@
                             Width="16"
                             Height="16"
                             Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"
-                            IsActive="{x:Bind ViewModel.IsCountdownActive,
-                                              Mode=OneWay}"
+                            IsActive="{x:Bind ViewModel.IsCountdownActive, Mode=OneWay}"
                             IsIndeterminate="False"
                             Maximum="1"
                             Minimum="0"
-                            Visibility="{x:Bind ViewModel.IsCountdownActive,
-                                                Converter={StaticResource BoolVis},
-                                                Mode=OneWay}"
-                            Value="{x:Bind ViewModel.CountdownProgress,
-                                           Mode=OneWay}" />
+                            Visibility="{x:Bind ViewModel.IsCountdownActive, Converter={StaticResource BoolVis}, Mode=OneWay}"
+                            Value="{x:Bind ViewModel.CountdownProgress, Mode=OneWay}" />
                     </StackPanel>
                     <Button.ContextFlyout>
                         <MenuFlyout>
                             <ToggleMenuFlyoutItem
                                 x:Name="IsAutoRefreshing"
-                                IsChecked="{x:Bind ViewModel.IsAutoRefreshEnabled,
-                                                   Mode=TwoWay}"
+                                IsChecked="{x:Bind ViewModel.IsAutoRefreshEnabled, Mode=TwoWay}"
                                 Text="Auto Refresh" />
                         </MenuFlyout>
                     </Button.ContextFlyout>
+                </Button>
+                <Button
+                    x:Name="CancelCountdownButton"
+                    Height="32"
+                    MinWidth="32"
+                    Padding="8,0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Command="{x:Bind ViewModel.CancelCountdownCommand}"
+                    ToolTipService.ToolTip="Cancel auto-refresh"
+                    Visibility="{x:Bind ViewModel.IsCountdownActive, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                    <FontIcon FontSize="12" Glyph="&#xE711;" />
                 </Button>
                 <TextBlock
                     VerticalAlignment="Center"
@@ -537,7 +456,8 @@
                 <ToggleButton
                     x:Name="ZoomPreviewToggleButton"
                     Height="32"
-                    Click="ZoomPreviewToggleButton_Click"
+                    Command="{x:Bind ViewModel.ZoomPreviewsCommand}"
+                    CommandParameter="{x:Bind ZoomPreviewToggleButton.IsChecked, Mode=OneWay}"
                     Content="&#xE8A3;"
                     FontFamily="{StaticResource SymbolThemeFontFamily}"
                     FontSize="16"
@@ -556,9 +476,9 @@
                 Grid.Row="1"
                 Width="48"
                 Height="48"
-                IsActive="False"
+                IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
                 IsIndeterminate="True"
-                Visibility="Collapsed" />
+                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolVis}, Mode=OneWay}" />
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="InterfaceStates">
@@ -566,17 +486,20 @@
                     <VisualState.Setters>
                         <Setter Target="dropHere.Visibility" Value="Collapsed" />
                         <Setter Target="errorInfoBar.IsOpen" Value="False" />
-                        <Setter Target="LoadingText.Visibility" Value="Collapsed" />
-                        <Setter Target="InitialLoadProgressBar.Visibility" Value="Collapsed" />
+                        <Setter Target="MainImageViewbox.Visibility" Value="Collapsed" />
+                        <Setter Target="LoadingIndicators.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
-                <VisualState x:Name="WelcomeState" />
+                <VisualState x:Name="WelcomeState">
+                    <VisualState.Setters>
+                        <Setter Target="MainImageViewbox.Visibility" Value="Collapsed" />
+                    </VisualState.Setters>
+                </VisualState>
                 <VisualState x:Name="ThinkingState">
                     <VisualState.Setters>
                         <Setter Target="dropHere.Visibility" Value="Collapsed" />
                         <Setter Target="errorInfoBar.IsOpen" Value="False" />
-                        <Setter Target="LoadingText.Visibility" Value="Visible" />
-                        <Setter Target="InitialLoadProgressBar.Visibility" Value="Visible" />
+                        <Setter Target="MainImageViewbox.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="ImageSelectedState">
@@ -591,6 +514,7 @@
                         <Setter Target="ClearAppBarButton.Visibility" Value="Visible" />
                         <Setter Target="dropHere.Visibility" Value="Collapsed" />
                         <Setter Target="UpgradeProHypBtn.Visibility" Value="Collapsed" />
+                        <Setter Target="MainImageViewbox.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
