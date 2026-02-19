@@ -1,20 +1,26 @@
-﻿using System.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Simple_Icon_File_Maker.Models;
 
 [DebuggerDisplay("SideLength = {SideLength}, IsSelected = {IsSelected}")]
-public partial class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
+public partial class IconSize : ObservableObject, IEquatable<IconSize>
 {
-    public int SideLength { get; set; }
-    public bool IsSelected { get; set; } = true;
+    [ObservableProperty]
+    public partial int SideLength { get; set; }
 
-    public bool IsEnabled { get; set; } = true;
+    [ObservableProperty]
+    public partial bool IsSelected { get; set; } = true;
 
-    public bool IsHidden { get; set; } = false;
+    [ObservableProperty]
+    public partial bool IsEnabled { get; set; } = true;
 
-    public int Order { get; set; } = 0;
+    [ObservableProperty]
+    public partial bool IsHidden { get; set; } = false;
+
+    [ObservableProperty]
+    public partial int Order { get; set; } = 0;
 
     public string Tooltip => $"{SideLength} x {SideLength}";
 
@@ -52,10 +58,6 @@ public partial class IconSize : INotifyPropertyChanged, IEquatable<IconSize>
         IsEnabled = iconSize.IsEnabled;
         Order = iconSize.Order;
     }
-
-#pragma warning disable CS0067 // The event 'IconSize.PropertyChanged' is never used
-    public event PropertyChangedEventHandler? PropertyChanged;
-#pragma warning restore CS0067 // The event 'IconSize.PropertyChanged' is never used
 
     public static IconSize[] GetAllSizes()
     {
