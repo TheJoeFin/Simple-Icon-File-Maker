@@ -152,8 +152,14 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
         ShowUpgradeToProButton = !_storeService.OwnsPro;
 
+        // Load shared image path from share target activation
+        if (!string.IsNullOrEmpty(App.SharedImagePath))
+        {
+            ImagePath = App.SharedImagePath;
+            App.SharedImagePath = null;
+        }
         // Load CLI args if present
-        if (App.cliArgs?.Length > 1)
+        else if (App.cliArgs?.Length > 1)
         {
             ImagePath = App.cliArgs[1];
         }
