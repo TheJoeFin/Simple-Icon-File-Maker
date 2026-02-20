@@ -47,23 +47,11 @@ public static class BackgroundRemoverHelper
 
         using ImageObjectExtractor extractor = await ImageObjectExtractor.CreateWithSoftwareBitmapAsync(sourceBitmap);
 
-        // Use a rectangle covering the central ~90% of the image so the model
-        // identifies the dominant object rather than a single small element.
-        int marginX = sourceBitmap.PixelWidth / 20;
-        int marginY = sourceBitmap.PixelHeight / 20;
-
-        RectInt32 rect = new()
-        {
-            X = marginX,
-            Y = marginY,
-            Width = sourceBitmap.PixelWidth - 2 * marginX,
-            Height = sourceBitmap.PixelHeight - 2 * marginY
-        };
-
+        // Hint with the entire image rect as the region of interest
         ImageObjectExtractorHint hint = new(
-            includeRects: [rect],
-            includePoints: null,
-            excludePoints: null);
+            includeRects: [new RectInt32(0, 0, sourceBitmap.PixelWidth, sourceBitmap.PixelHeight)],
+            includePoints: [],
+            excludePoints: []);
 
         SoftwareBitmap mask = extractor.GetSoftwareBitmapObjectMask(hint);
 
@@ -102,7 +90,7 @@ public static class BackgroundRemoverHelper
         for (int i = 0; i < maskPixels.Length; i++)
         {
             int px = i * 4;
-            int m = maskPixels[i];
+            int m = 255 - maskPixels[i];
             resultPixels[px + 0] = (byte)(originalPixels[px + 0] * m / 255);
             resultPixels[px + 1] = (byte)(originalPixels[px + 1] * m / 255);
             resultPixels[px + 2] = (byte)(originalPixels[px + 2] * m / 255);
