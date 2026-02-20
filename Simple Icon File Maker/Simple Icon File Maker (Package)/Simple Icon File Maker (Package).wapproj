@@ -1,132 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
-    <VisualStudioVersion>15.0</VisualStudioVersion>
-  </PropertyGroup>
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|x86">
-      <Configuration>Debug</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x86">
-      <Configuration>Release</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|arm64">
-      <Configuration>Debug</Configuration>
-      <Platform>arm64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|arm64">
-      <Configuration>Release</Configuration>
-      <Platform>arm64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
-  <PropertyGroup>
-    <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
-    <PathToXAMLWinRTImplementations>Simple Icon File Maker\</PathToXAMLWinRTImplementations>
-  </PropertyGroup>
-  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
-  <PropertyGroup>
-    <ProjectGuid>7887a19f-b1cd-4106-a9aa-abaacfe770a9</ProjectGuid>
-    <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
-    <AssetTargetFallback>net9.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
-    <DefaultLanguage>en-US</DefaultLanguage>
-    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-    <EntryPointProjectUniqueName>..\Simple Icon File Maker\Simple Icon File Maker.csproj</EntryPointProjectUniqueName>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
-    <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
-    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <PublishAot>true</PublishAot>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <AppxBundle>Always</AppxBundle>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <AppxBundle>Always</AppxBundle>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
-    <AppxBundle>Always</AppxBundle>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
-    <AppxBundle>Always</AppxBundle>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <AppxBundle>Always</AppxBundle>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <AppxBundle>Always</AppxBundle>
-  </PropertyGroup>
-  <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest">
-      <SubType>Designer</SubType>
-    </AppxManifest>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Images\BadgeLogo.scale-100.png" />
-    <Content Include="Images\BadgeLogo.scale-200.png" />
-    <Content Include="Images\BadgeLogo.scale-400.png" />
-    <Content Include="Images\Image128.png" />
-    <Content Include="Images\LargeTile.scale-100.png" />
-    <Content Include="Images\LargeTile.scale-200.png" />
-    <Content Include="Images\LargeTile.scale-400.png" />
-    <Content Include="Images\SmallTile.scale-100.png" />
-    <Content Include="Images\SmallTile.scale-200.png" />
-    <Content Include="Images\SmallTile.scale-400.png" />
-    <Content Include="Images\SplashScreen.scale-100.png" />
-    <Content Include="Images\SplashScreen.scale-200.png" />
-    <Content Include="Images\SplashScreen.scale-400.png" />
-    <Content Include="Images\Square150x150Logo.scale-100.png" />
-    <Content Include="Images\Square150x150Logo.scale-200.png" />
-    <Content Include="Images\Square150x150Logo.scale-400.png" />
-    <Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
-    <Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
-    <Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
-    <Content Include="Images\Square44x44Logo.altform-unplated_targetsize-16.png" />
-    <Content Include="Images\Square44x44Logo.altform-unplated_targetsize-256.png" />
-    <Content Include="Images\Square44x44Logo.altform-unplated_targetsize-48.png" />
-    <Content Include="Images\Square44x44Logo.scale-100.png" />
-    <Content Include="Images\Square44x44Logo.scale-200.png" />
-    <Content Include="Images\Square44x44Logo.scale-400.png" />
-    <Content Include="Images\Square44x44Logo.targetsize-16.png" />
-    <Content Include="Images\Square44x44Logo.targetsize-256.png" />
-    <Content Include="Images\Square44x44Logo.targetsize-48.png" />
-    <Content Include="Images\StoreLogo.scale-100.png" />
-    <Content Include="Images\StoreLogo.scale-200.png" />
-    <Content Include="Images\StoreLogo.scale-400.png" />
-    <Content Include="Images\Wide310x150Logo.scale-100.png" />
-    <Content Include="Images\Wide310x150Logo.scale-200.png" />
-    <Content Include="Images\Wide310x150Logo.scale-400.png" />
-    <None Include="Package.StoreAssociation.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Simple Icon File Maker\Simple Icon File Maker.csproj">
-      <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
-      <PublishProfile>Properties\PublishProfiles\win-$(Platform).pubxml</PublishProfile>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005">
-      <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705">
-      <IncludeAssets>build</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="WinUIEx" Version="2.9.0" />
-  </ItemGroup>
-  <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
+    <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '15.0'">
+        <VisualStudioVersion>15.0</VisualStudioVersion>
+    </PropertyGroup>
+    <ItemGroup Label="ProjectConfigurations">
+        <ProjectConfiguration Include="Debug|x86">
+            <Configuration>Debug</Configuration>
+            <Platform>x86</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|x86">
+            <Configuration>Release</Configuration>
+            <Platform>x86</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Debug|x64">
+            <Configuration>Debug</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|x64">
+            <Configuration>Release</Configuration>
+            <Platform>x64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Debug|arm64">
+            <Configuration>Debug</Configuration>
+            <Platform>arm64</Platform>
+        </ProjectConfiguration>
+        <ProjectConfiguration Include="Release|arm64">
+            <Configuration>Release</Configuration>
+            <Platform>arm64</Platform>
+        </ProjectConfiguration>
+    </ItemGroup>
+    <PropertyGroup>
+        <WapProjPath Condition="'$(WapProjPath)'==''">$(MSBuildExtensionsPath)\Microsoft\DesktopBridge\</WapProjPath>
+        <PathToXAMLWinRTImplementations>Simple Icon File Maker\</PathToXAMLWinRTImplementations>
+    </PropertyGroup>
+    <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.props" />
+    <PropertyGroup>
+        <ProjectGuid>7887a19f-b1cd-4106-a9aa-abaacfe770a9</ProjectGuid>
+        <TargetPlatformVersion>10.0.26100.0</TargetPlatformVersion>
+        <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+        <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+        <AssetTargetFallback>net9.0-windows$(TargetPlatformVersion);$(AssetTargetFallback)</AssetTargetFallback>
+        <DefaultLanguage>en-US</DefaultLanguage>
+        <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+        <EntryPointProjectUniqueName>..\Simple Icon File Maker\Simple Icon File Maker.csproj</EntryPointProjectUniqueName>
+        <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+        <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+        <GenerateTestArtifacts>True</GenerateTestArtifacts>
+        <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+        <AppxBundlePlatforms>x86|x64|arm64</AppxBundlePlatforms>
+        <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+        <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+        <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+        <AppxOSMinVersionReplaceManifestVersion>false</AppxOSMinVersionReplaceManifestVersion>
+        <AppxOSMaxVersionTestedReplaceManifestVersion>false</AppxOSMaxVersionTestedReplaceManifestVersion>
+        <PublishAot>true</PublishAot>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+        <AppxBundle>Always</AppxBundle>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+        <AppxBundle>Always</AppxBundle>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">
+        <AppxBundle>Always</AppxBundle>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">
+        <AppxBundle>Always</AppxBundle>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+        <AppxBundle>Always</AppxBundle>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+        <AppxBundle>Always</AppxBundle>
+    </PropertyGroup>
+    <ItemGroup>
+        <AppxManifest Include="Package.appxmanifest">
+            <SubType>Designer</SubType>
+        </AppxManifest>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="Images\BadgeLogo.scale-100.png" />
+        <Content Include="Images\BadgeLogo.scale-200.png" />
+        <Content Include="Images\BadgeLogo.scale-400.png" />
+        <Content Include="Images\Image128.png" />
+        <Content Include="Images\LargeTile.scale-100.png" />
+        <Content Include="Images\LargeTile.scale-200.png" />
+        <Content Include="Images\LargeTile.scale-400.png" />
+        <Content Include="Images\SmallTile.scale-100.png" />
+        <Content Include="Images\SmallTile.scale-200.png" />
+        <Content Include="Images\SmallTile.scale-400.png" />
+        <Content Include="Images\SplashScreen.scale-100.png" />
+        <Content Include="Images\SplashScreen.scale-200.png" />
+        <Content Include="Images\SplashScreen.scale-400.png" />
+        <Content Include="Images\Square150x150Logo.scale-100.png" />
+        <Content Include="Images\Square150x150Logo.scale-200.png" />
+        <Content Include="Images\Square150x150Logo.scale-400.png" />
+        <Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+        <Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+        <Content Include="Images\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+        <Content Include="Images\Square44x44Logo.altform-unplated_targetsize-16.png" />
+        <Content Include="Images\Square44x44Logo.altform-unplated_targetsize-256.png" />
+        <Content Include="Images\Square44x44Logo.altform-unplated_targetsize-48.png" />
+        <Content Include="Images\Square44x44Logo.scale-100.png" />
+        <Content Include="Images\Square44x44Logo.scale-200.png" />
+        <Content Include="Images\Square44x44Logo.scale-400.png" />
+        <Content Include="Images\Square44x44Logo.targetsize-16.png" />
+        <Content Include="Images\Square44x44Logo.targetsize-256.png" />
+        <Content Include="Images\Square44x44Logo.targetsize-48.png" />
+        <Content Include="Images\StoreLogo.scale-100.png" />
+        <Content Include="Images\StoreLogo.scale-200.png" />
+        <Content Include="Images\StoreLogo.scale-400.png" />
+        <Content Include="Images\Wide310x150Logo.scale-100.png" />
+        <Content Include="Images\Wide310x150Logo.scale-200.png" />
+        <Content Include="Images\Wide310x150Logo.scale-400.png" />
+        <None Include="Package.StoreAssociation.xml" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Simple Icon File Maker\Simple Icon File Maker.csproj">
+            <SkipGetTargetFrameworkProperties>True</SkipGetTargetFrameworkProperties>
+            <PublishProfile>Properties\PublishProfiles\win-$(Platform).pubxml</PublishProfile>
+        </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005">
+            <IncludeAssets>build</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.7705">
+            <IncludeAssets>build</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="WinUIEx" Version="2.9.0" />
+    </ItemGroup>
+    <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>

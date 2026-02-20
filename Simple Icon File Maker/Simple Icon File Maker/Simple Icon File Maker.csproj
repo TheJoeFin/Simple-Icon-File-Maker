@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
-    <WindowsSdkPackageVersion>10.0.22621.38</WindowsSdkPackageVersion>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <WindowsSdkPackageVersion>10.0.26100.38</WindowsSdkPackageVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <RootNamespace>Simple_Icon_File_Maker</RootNamespace>
@@ -15,7 +15,7 @@
     <ApplicationIcon>SimpleIconMaker.ico</ApplicationIcon>
     <Copyright>Joseph Finney 2024</Copyright>
     <PackageIcon>Image128.png</PackageIcon>
-	<ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishAot>false</PublishAot>
@@ -31,6 +31,7 @@
     <None Remove="Views\BuyProDialog.xaml" />
     <None Remove="Views\EditSizesDialog.xaml" />
     <None Remove="Views\MultiPage.xaml" />
+    <None Remove="Views\RemoveBackgroundDialog.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +79,9 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\EditSizesDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="Views\RemoveBackgroundDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
   </ItemGroup>
