@@ -13,7 +13,7 @@
     <UseWindowsForms>False</UseWindowsForms>
     <UseWPF>False</UseWPF>
     <ApplicationIcon>SimpleIconMaker.ico</ApplicationIcon>
-    <Copyright>Joseph Finney 2024</Copyright>
+    <Copyright>Joseph Finney 2026</Copyright>
     <PackageIcon>Image128.png</PackageIcon>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

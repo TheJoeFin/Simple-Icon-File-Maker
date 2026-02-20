@@ -25,7 +25,7 @@
                 <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
             </StackPanel>
             <controls:SettingsExpander
-                Description="© 2024, All rights reserved"
+                Description="© 2026, All rights reserved"
                 Header="Simple Icon File Maker"
                 IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>

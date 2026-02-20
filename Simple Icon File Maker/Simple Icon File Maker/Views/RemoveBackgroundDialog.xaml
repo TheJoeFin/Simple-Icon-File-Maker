@@ -23,9 +23,7 @@
             Text="Extract the main object from the image using on-device AI"
             TextWrapping="Wrap" />
 
-        <Grid
-            Grid.Row="1"
-            ColumnSpacing="16">
+        <Grid Grid.Row="1" ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
