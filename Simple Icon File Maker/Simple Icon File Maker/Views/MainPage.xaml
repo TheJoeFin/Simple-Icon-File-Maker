@@ -1,4 +1,3 @@
-<!--  Copyright (c) Microsoft Corporation and Contributors.  -->
 <!--  Licensed under the MIT License.  -->
 
 <Page
@@ -289,6 +288,11 @@
                                 x:Name="InvertButton"
                                 Command="{x:Bind ViewModel.ApplyInvertCommand}"
                                 Text="Invert" />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem
+                                x:Name="RemoveBackgroundButton"
+                                Command="{x:Bind ViewModel.RemoveBackgroundCommand}"
+                                Text="Remove Background (AI)" />
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>

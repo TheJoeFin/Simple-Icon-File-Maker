@@ -1,12 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppLifecycle;
 using Simple_Icon_File_Maker.Activation;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Models;
 using Simple_Icon_File_Maker.Services;
 using Simple_Icon_File_Maker.ViewModels;
 using Simple_Icon_File_Maker.Views;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.ApplicationModel.DataTransfer.ShareTarget;
+using Windows.Storage;
+using Windows.Storage.Streams;
 
 namespace Simple_Icon_File_Maker;
 
@@ -36,6 +41,8 @@ public partial class App : Application
     public static MainWindow MainWindow { get; } = new MainWindow();
 
     public static UIElement? AppTitlebar { get; set; }
+
+    public static string? SharedImagePath { get; set; }
 
     public App()
     {
@@ -93,7 +100,62 @@ public partial class App : Application
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         base.OnLaunched(args);
+
+        var activatedEventArgs = AppInstance.GetCurrent().GetActivatedEventArgs();
+        if (activatedEventArgs.Kind == ExtendedActivationKind.ShareTarget)
+        {
+            await HandleShareTargetActivationAsync(activatedEventArgs);
+        }
+
         await App.GetService<IActivationService>().ActivateAsync(args);
+    }
+
+    private static async Task HandleShareTargetActivationAsync(AppActivationArguments activatedEventArgs)
+    {
+        if (activatedEventArgs.Data is Windows.ApplicationModel.Activation.IShareTargetActivatedEventArgs shareArgs)
+        {
+            ShareOperation shareOperation = shareArgs.ShareOperation;
+            shareOperation.ReportStarted();
+
+            try
+            {
+                if (shareOperation.Data.Contains(StandardDataFormats.StorageItems))
+                {
+                    IReadOnlyList<IStorageItem> items = await shareOperation.Data.GetStorageItemsAsync();
+                    foreach (IStorageItem item in items)
+                    {
+                        if (item is StorageFile file && Constants.FileTypes.SupportedImageFormats.Contains(file.FileType, StringComparer.OrdinalIgnoreCase))
+                        {
+                            StorageFolder tempFolder = ApplicationData.Current.TemporaryFolder;
+                            StorageFile copiedFile = await file.CopyAsync(tempFolder, file.Name, NameCollisionOption.GenerateUniqueName);
+                            SharedImagePath = copiedFile.Path;
+                            break;
+                        }
+                    }
+                }
+                else if (shareOperation.Data.Contains(StandardDataFormats.Bitmap))
+                {
+                    var bitmapRef = await shareOperation.Data.GetBitmapAsync();
+                    var stream = await bitmapRef.OpenReadAsync();
+
+                    StorageFolder tempFolder = ApplicationData.Current.TemporaryFolder;
+                    StorageFile tempFile = await tempFolder.CreateFileAsync("shared_image.png", CreationCollisionOption.GenerateUniqueName);
+
+                    using (var outputStream = await tempFile.OpenAsync(FileAccessMode.ReadWrite))
+                    {
+                        await RandomAccessStream.CopyAsync(stream, outputStream);
+                    }
+
+                    SharedImagePath = tempFile.Path;
+                }
+            }
+            catch (Exception)
+            {
+                // If share handling fails, continue with normal launch
+            }
+
+            shareOperation.ReportCompleted();
+        }
     }
 
     public static string[]? cliArgs { get; } = Environment.GetCommandLineArgs();

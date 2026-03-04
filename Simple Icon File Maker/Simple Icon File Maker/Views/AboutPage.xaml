@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="Simple_Icon_File_Maker.AboutPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -25,7 +25,7 @@
                 <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
             </StackPanel>
             <controls:SettingsExpander
-                Description="© 2024, All rights reserved"
+                Description="© 2026, All rights reserved"
                 Header="Simple Icon File Maker"
                 IsExpanded="True">
                 <controls:SettingsExpander.HeaderIcon>
@@ -165,7 +165,7 @@
                             <HyperlinkButton
                                 x:Name="WinUIBTN"
                                 Margin="-12,0,0,0"
-                                NavigateUri="https://github.com/Microsoft/microsoft-ui-xaml">
+                                NavigateUri="https://github.com/microsoft/microsoft-ui-xaml">
                                 WinUI 3
                             </HyperlinkButton>
                             <HyperlinkButton
