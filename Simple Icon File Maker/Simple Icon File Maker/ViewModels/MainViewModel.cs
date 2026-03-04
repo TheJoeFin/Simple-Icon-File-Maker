@@ -152,8 +152,14 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
         ShowUpgradeToProButton = !_storeService.OwnsPro;
 
+        // Load shared image path from share target activation
+        if (!string.IsNullOrEmpty(App.SharedImagePath))
+        {
+            ImagePath = App.SharedImagePath;
+            App.SharedImagePath = null;
+        }
         // Load CLI args if present
-        if (App.cliArgs?.Length > 1)
+        else if (App.cliArgs?.Length > 1)
         {
             ImagePath = App.cliArgs[1];
         }
@@ -602,6 +608,38 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             Debug.WriteLine($"Failed to apply invert: {ex.Message}");
             ShowError($"Failed to invert image colors: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    public async Task RemoveBackground()
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        try
+        {
+            RemoveBackgroundDialog dialog = new(ImagePath);
+            await NavigationService.ShowModal(dialog);
+
+            if (dialog.ResultImagePath is not null)
+            {
+                ImageMagick.MagickImage resultImage = new(dialog.ResultImagePath);
+                if (MainImage != null)
+                    MainImage.Source = resultImage.ToImageSource();
+
+                MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, dialog.ResultImagePath);
+                _undoRedo.AddUndo(undoRedoItem);
+                UpdateUndoRedoState();
+
+                ImagePath = dialog.ResultImagePath;
+                await RefreshPreviews();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to remove background: {ex.Message}");
+            ShowError($"Failed to remove background: {ex.Message}");
         }
     }
 
