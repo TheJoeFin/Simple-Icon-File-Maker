@@ -24,7 +24,7 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Restore dependencies
-      run: dotnet restore "Simple Icon File Maker.sln"
+      run: dotnet restore "Simple Icon File Maker/Simple Icon File Maker/Simple Icon File Maker.csproj"
 
-    - name: Build solution
-      run: dotnet build "Simple Icon File Maker.sln" --configuration Release --no-restore
+    - name: Build
+      run: dotnet build "Simple Icon File Maker/Simple Icon File Maker/Simple Icon File Maker.csproj" --configuration Release --no-restore -p:Platform=x64
