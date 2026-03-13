@@ -17,8 +17,6 @@ public static class FilePickerHelper
             if (File.Exists(imagePath))
             {
                 StorageFile sourceFile = await StorageFile.GetFileFromPathAsync(imagePath);
-                string name = Path.GetFileNameWithoutExtension(imagePath);
-                await sourceFile.RenameAsync(name);
                 savePicker.SuggestedSaveFile = sourceFile;
             }
         }
