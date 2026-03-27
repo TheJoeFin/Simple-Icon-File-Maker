@@ -24,6 +24,7 @@ public sealed partial class PreviewStack : UserControl
     public List<IconSize> ChosenSizes { get; private set; }
 
     public bool IsZoomingPreview { get; set; } = false;
+    public bool ShowCheckerBackground { get; set; } = true;
 
     public bool CanRefresh => CheckIfRefreshIsNeeded();
 
@@ -334,7 +335,7 @@ public sealed partial class PreviewStack : UserControl
             int sideLength = (int)image.Width;
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(pathForSingleImage);
 
-            PreviewImage previewImage = new(imageSF, sideLength, imageName);
+            PreviewImage previewImage = new(imageSF, sideLength, imageName, ShowCheckerBackground);
             PreviewStackPanel.Children.Add(previewImage);
 
             currentLocation++;
@@ -375,7 +376,7 @@ public sealed partial class PreviewStack : UserControl
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
 
-            PreviewImage image = new(imageSF, sideLength, originalName);
+            PreviewImage image = new(imageSF, sideLength, originalName, ShowCheckerBackground);
 
             PreviewStackPanel.Children.Add(image);
         }
@@ -421,6 +422,7 @@ public sealed partial class PreviewStack : UserControl
             if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
                 img.ZoomedWidthSpace = (int)ActualWidth - 40;
             img.ZoomPreview = IsZoomingPreview;
+            img.ShowCheckerBackground = ShowCheckerBackground;
         }
     }
 

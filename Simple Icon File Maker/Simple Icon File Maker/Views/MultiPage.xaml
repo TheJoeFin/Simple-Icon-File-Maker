@@ -64,9 +64,7 @@
                     Orientation="Vertical"
                     Spacing="12">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <SymbolIcon
-                            Symbol="Folder"
-                            Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}" />
+                        <SymbolIcon Symbol="Folder" Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}" />
                         <FontIcon
                             FontSize="16"
                             Glyph="&#xE8F4;"
@@ -92,9 +90,7 @@
                         HorizontalAlignment="Right"
                         Orientation="Horizontal"
                         Spacing="8">
-                        <DropDownButton
-                            Content="Options"
-                            Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                        <DropDownButton Content="Options" Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}">
                             <DropDownButton.Flyout>
                                 <MenuFlyout>
                                     <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
@@ -218,14 +214,41 @@
                     </StackPanel>
                 </Button>
 
-                <ToggleButton
+                <StackPanel
                     Grid.Column="2"
-                    Height="32"
-                    Content="&#xE8A3;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
-                    Tapped="{x:Bind ViewModel.ZoomPreviews}" />
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <ToggleButton
+                        x:Name="ZoomPreviewToggleButton"
+                        Height="32"
+                        IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
+                        Tapped="{x:Bind ViewModel.ZoomPreviews}"
+                        ToolTipService.ToolTip="Zoom in on icon previews">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                FontSize="16"
+                                Text="&#xE8A3;" />
+                            <TextBlock Text="Zoom" />
+                        </StackPanel>
+                    </ToggleButton>
+                    <DropDownButton Height="32" ToolTipService.ToolTip="Preview settings">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                FontSize="16"
+                                Text="&#xE713;" />
+                            <!--<TextBlock Text="Settings" />-->
+                        </StackPanel>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout>
+                                <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsCheckerBackgroundVisible, Mode=TwoWay}" Text="Show Checker Background" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
             </Grid>
 
             <ScrollViewer

@@ -5,7 +5,9 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using System.Diagnostics;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
@@ -21,17 +23,42 @@ public sealed partial class PreviewImage : UserControl
     private readonly StorageFile _imageFile;
     private readonly int _sideLength = 0;
 
-    public PreviewImage(StorageFile imageFile, int sideLength, string originalName)
+    public PreviewImage(StorageFile imageFile, int sideLength, string originalName, bool showCheckerBackground)
     {
         InitializeComponent();
         _imageFile = imageFile;
         _sideLength = sideLength;
+        ShowCheckerBackground = showCheckerBackground;
         ToolTipService.SetToolTip(this, $"{sideLength} x {sideLength}");
         OriginalName = originalName;
+        ActualThemeChanged += (_, _) =>
+        {
+            int size = isZooming ? ZoomedWidthSpace : _sideLength;
+            mainImageCanvas.Background = _showCheckerBackground
+                ? CreateCheckerBrush(size, ActualTheme)
+                : new SolidColorBrush(Colors.Transparent);
+        };
     }
 
     private bool isZooming = false;
+    private bool _showCheckerBackground = true;
     public int ZoomedWidthSpace = 100;
+
+    public bool ShowCheckerBackground
+    {
+        get => _showCheckerBackground;
+        set
+        {
+            if (value != _showCheckerBackground)
+            {
+                _showCheckerBackground = value;
+                int size = isZooming ? ZoomedWidthSpace : _sideLength;
+                mainImageCanvas.Background = _showCheckerBackground
+                    ? CreateCheckerBrush(size, ActualTheme)
+                    : new SolidColorBrush(Colors.Transparent);
+            }
+        }
+    }
 
     public bool ZoomPreview
     {
@@ -101,6 +128,12 @@ public sealed partial class PreviewImage : UserControl
     private void LoadImageOnToCanvas()
     {
         mainImageCanvas.Children.Clear();
+
+        int size = isZooming ? ZoomedWidthSpace : _sideLength;
+        mainImageCanvas.Background = ShowCheckerBackground
+            ? CreateCheckerBrush(size, ActualTheme)
+            : new SolidColorBrush(Colors.Transparent);
+
         // from StackOverflow
         // user:
         // https://stackoverflow.com/users/403671/simon-mourier
@@ -123,8 +156,6 @@ public sealed partial class PreviewImage : UserControl
         LoadedImageSurface image = LoadedImageSurface.StartLoadFromUri(new Uri(_imageFile.Path));
         brush.Surface = image;
 
-        int size = isZooming ? ZoomedWidthSpace : _sideLength;
-
         // set the visual size when the image has loaded
         image.LoadCompleted += (s, e) =>
         {
@@ -144,6 +175,37 @@ public sealed partial class PreviewImage : UserControl
         };
         ElementCompositionPreview.SetElementChildVisual(tempGrid, imageVisual);
         mainImageCanvas.Children.Add(tempGrid);
+    }
+
+    private static ImageBrush CreateCheckerBrush(int size, ElementTheme theme)
+    {
+        int tileSize = 8;
+        WriteableBitmap bitmap = new(size, size);
+
+        // Light mode: #F0F0F0 / #C4C4C4  —  Dark mode: #404040 / #2A2A2A
+        bool isDark = theme == ElementTheme.Dark;
+        byte tileLight = isDark ? (byte)0x40 : (byte)0xF0;
+        byte tileDark  = isDark ? (byte)0x2A : (byte)0xC4;
+
+        byte[] pixels = new byte[size * size * 4]; // BGRA format
+        for (int row = 0; row < size; row++)
+        {
+            for (int col = 0; col < size; col++)
+            {
+                bool isLightTile = ((row / tileSize) + (col / tileSize)) % 2 == 0;
+                byte val = isLightTile ? tileLight : tileDark;
+                int idx = (row * size + col) * 4;
+                pixels[idx]     = val; // B
+                pixels[idx + 1] = val; // G
+                pixels[idx + 2] = val; // R
+                pixels[idx + 3] = 255; // A
+            }
+        }
+
+        using Stream stream = bitmap.PixelBuffer.AsStream();
+        stream.Write(pixels, 0, pixels.Length);
+
+        return new ImageBrush { ImageSource = bitmap, Stretch = Stretch.Fill };
     }
 
     private async void ImagePreview_DragStarting(UIElement sender, DragStartingEventArgs args)

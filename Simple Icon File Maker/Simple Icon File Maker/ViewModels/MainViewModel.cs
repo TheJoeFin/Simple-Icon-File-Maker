@@ -42,6 +42,9 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     public partial bool IsAutoRefreshEnabled { get; set; } = true;
 
     [ObservableProperty]
+    public partial bool IsCheckerBackgroundVisible { get; set; } = false;
+
+    [ObservableProperty]
     public partial double CountdownProgress { get; set; } = 0;
 
     [ObservableProperty]
@@ -133,6 +136,23 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         _settingsSaveTimer.Start();
     }
 
+    partial void OnIsCheckerBackgroundVisibleChanged(bool value)
+    {
+        if (PreviewsGrid is null)
+            return;
+
+        foreach (UIElement element in PreviewsGrid.Children)
+        {
+            if (element is Controls.PreviewStack stack)
+            {
+                stack.ShowCheckerBackground = value;
+                stack.UpdateSizeAndZoom();
+            }
+        }
+
+        _localSettingsService.SaveSettingAsync(nameof(IsCheckerBackgroundVisible), value);
+    }
+
     private async void SettingsSaveTimer_Elapsed(object? sender, ElapsedEventArgs e)
     {
         _settingsSaveTimer.Stop();
@@ -148,6 +168,15 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         catch (Exception)
         {
             IsAutoRefreshEnabled = true;
+        }
+
+        try
+        {
+            IsCheckerBackgroundVisible = await _localSettingsService.ReadSettingAsync<bool>(nameof(IsCheckerBackgroundVisible));
+        }
+        catch (Exception)
+        {
+            IsCheckerBackgroundVisible = false;
         }
 
         ShowUpgradeToProButton = !_storeService.OwnsPro;
@@ -963,7 +992,8 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             List<IconSize> selectedSizes = [.. SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected)];
             Controls.PreviewStack previewStack = new(ImagePath, selectedSizes)
             {
-                SortOrder = _iconSizesService.SortOrder
+                SortOrder = _iconSizesService.SortOrder,
+                ShowCheckerBackground = IsCheckerBackgroundVisible
             };
 
             PreviewsGrid?.Children.Add(previewStack);

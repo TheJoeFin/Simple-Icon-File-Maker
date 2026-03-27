@@ -153,9 +153,7 @@
                             </Grid>
                             <Button.ContextFlyout>
                                 <MenuFlyout>
-                                    <MenuFlyoutItem
-                                        Command="{x:Bind ViewModel.BrowseAndSelectDllCommand}"
-                                        Text="Extract icons from DLL / EXE...">
+                                    <MenuFlyoutItem Command="{x:Bind ViewModel.BrowseAndSelectDllCommand}" Text="Extract icons from DLL / EXE...">
                                         <MenuFlyoutItem.Icon>
                                             <FontIcon Glyph="&#xE8F4;" />
                                         </MenuFlyoutItem.Icon>
@@ -474,10 +472,29 @@
                     Height="32"
                     Command="{x:Bind ViewModel.ZoomPreviewsCommand}"
                     CommandParameter="{x:Bind ZoomPreviewToggleButton.IsChecked, Mode=OneWay}"
-                    Content="&#xE8A3;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    ToolTipService.ToolTip="Zoom in on icon previews" />
+                    ToolTipService.ToolTip="Zoom in on icon previews">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="16"
+                            Text="&#xE8A3;" />
+                        <TextBlock Text="Zoom" />
+                    </StackPanel>
+                </ToggleButton>
+                <DropDownButton Height="32" ToolTipService.ToolTip="Preview settings">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock
+                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                            FontSize="16"
+                            Text="&#xE713;" />
+                        <!--<TextBlock Text="Settings" />-->
+                    </StackPanel>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout>
+                            <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsCheckerBackgroundVisible, Mode=TwoWay}" Text="Show Checker Background" />
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
             </StackPanel>
             <ScrollViewer
                 x:Name="PreviewsScrollViewer"

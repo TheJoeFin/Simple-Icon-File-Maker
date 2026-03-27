@@ -7,6 +7,7 @@ using Simple_Icon_File_Maker.Contracts.ViewModels;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
+using Simple_Icon_File_Maker.Services;
 using System.Collections.ObjectModel;
 using Windows.Storage;
 using Windows.System;
@@ -19,6 +20,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 {
     private StorageFolder? _folder;
     private string? _sourceFilePath;
+    private readonly ILocalSettingsService _localSettingsService;
+
 
     public ObservableCollection<PreviewStack> Previews { get; } = [];
 
@@ -31,6 +34,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     public partial int FileLoadProgress { get; set; } = 0;
+
+    [ObservableProperty]
+    public partial bool IsCheckerBackgroundVisible { get; set; } = false;
 
     [ObservableProperty]
     public partial bool LoadingImages { get; set; } = false;
@@ -76,6 +82,20 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     public partial string OpenSourceTooltip { get; set; } = "Open folder...";
+
+    partial void OnIsCheckerBackgroundVisibleChanged(bool value)
+    {
+        if (Previews is null || Previews.Count == 0)
+            return;
+
+        foreach (PreviewStack stack in Previews)
+        {
+            stack.ShowCheckerBackground = value;
+            stack.UpdateSizeAndZoom();
+        }
+
+        _localSettingsService.SaveSettingAsync(nameof(IsCheckerBackgroundVisible), value);
+    }
 
     [RelayCommand]
     public void GoBack()
@@ -215,9 +235,10 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         get;
     }
 
-    public MultiViewModel(INavigationService navigationService)
+    public MultiViewModel(INavigationService navigationService, ILocalSettingsService localSettingsService)
     {
         NavigationService = navigationService;
+        _localSettingsService = localSettingsService;
     }
 
     public void OnNavigatedFrom()
@@ -352,7 +373,8 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
                 MaxWidth = 600,
                 MinWidth = 300,
                 Margin = new Thickness(6),
-                SortOrder = sortOrder
+                SortOrder = sortOrder,
+                ShowCheckerBackground = IsCheckerBackgroundVisible
             };
 
             Previews.Add(preview);
