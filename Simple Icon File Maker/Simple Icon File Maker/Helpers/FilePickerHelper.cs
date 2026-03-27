@@ -28,7 +28,7 @@ public static class FilePickerHelper
         FileSavePicker savePicker = new()
         {
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-            
+
             DefaultFileExtension = ".ico",
             FileTypeChoices =
             {

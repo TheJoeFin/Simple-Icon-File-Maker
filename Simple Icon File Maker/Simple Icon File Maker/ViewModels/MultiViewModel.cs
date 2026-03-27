@@ -7,7 +7,6 @@ using Simple_Icon_File_Maker.Contracts.ViewModels;
 using Simple_Icon_File_Maker.Controls;
 using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
-using Simple_Icon_File_Maker.Services;
 using System.Collections.ObjectModel;
 using Windows.Storage;
 using Windows.System;

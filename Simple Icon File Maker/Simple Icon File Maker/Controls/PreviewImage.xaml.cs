@@ -185,7 +185,7 @@ public sealed partial class PreviewImage : UserControl
         // Light mode: #F0F0F0 / #C4C4C4  —  Dark mode: #404040 / #2A2A2A
         bool isDark = theme == ElementTheme.Dark;
         byte tileLight = isDark ? (byte)0x40 : (byte)0xF0;
-        byte tileDark  = isDark ? (byte)0x2A : (byte)0xC4;
+        byte tileDark = isDark ? (byte)0x2A : (byte)0xC4;
 
         byte[] pixels = new byte[size * size * 4]; // BGRA format
         for (int row = 0; row < size; row++)
@@ -195,7 +195,7 @@ public sealed partial class PreviewImage : UserControl
                 bool isLightTile = ((row / tileSize) + (col / tileSize)) % 2 == 0;
                 byte val = isLightTile ? tileLight : tileDark;
                 int idx = (row * size + col) * 4;
-                pixels[idx]     = val; // B
+                pixels[idx] = val; // B
                 pixels[idx + 1] = val; // G
                 pixels[idx + 2] = val; // R
                 pixels[idx + 3] = 255; // A
