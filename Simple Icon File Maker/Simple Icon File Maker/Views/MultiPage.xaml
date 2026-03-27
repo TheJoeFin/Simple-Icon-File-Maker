@@ -64,11 +64,17 @@
                     Orientation="Vertical"
                     Spacing="12">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <SymbolIcon Symbol="Folder" />
+                        <SymbolIcon
+                            Symbol="Folder"
+                            Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}" />
+                        <FontIcon
+                            FontSize="16"
+                            Glyph="&#xE8F4;"
+                            Visibility="{x:Bind ViewModel.IsFromDllExtraction, Converter={StaticResource BoolVis}, Mode=OneWay}" />
                         <HyperlinkButton
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.OpenFolderCommand}"
-                            ToolTipService.ToolTip="Open folder...">
+                            ToolTipService.ToolTip="{x:Bind ViewModel.OpenSourceTooltip, Mode=OneWay}">
                             <TextBlock
                                 Text="{x:Bind ViewModel.FolderName}"
                                 TextTrimming="WordEllipsis"
@@ -79,14 +85,16 @@
                         <SymbolIcon Symbol="BrowsePhotos" />
                         <TextBlock TextWrapping="WrapWholeWords">
                             <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
-                            <Run Text="&#160;image files in the folder." />
+                            <Run Text="{x:Bind ViewModel.FilesDescriptionSuffix, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
                     <StackPanel
                         HorizontalAlignment="Right"
                         Orientation="Horizontal"
                         Spacing="8">
-                        <DropDownButton Content="Options">
+                        <DropDownButton
+                            Content="Options"
+                            Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}">
                             <DropDownButton.Flyout>
                                 <MenuFlyout>
                                     <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
@@ -95,15 +103,14 @@
                             </DropDownButton.Flyout>
                         </DropDownButton>
                         <Button
-                            Width="138"
                             Height="32"
-                            Padding="0"
+                            Padding="12,0"
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.GoBackCommand}"
-                            ToolTipService.ToolTip="Close folder and return to start page">
+                            ToolTipService.ToolTip="Return to start page">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon FontSize="16" Glyph="&#xE894;" />
-                                <TextBlock Text="Close Folder" TextAlignment="Center" />
+                                <TextBlock Text="{x:Bind ViewModel.CloseButtonText, Mode=OneWay}" TextAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </StackPanel>

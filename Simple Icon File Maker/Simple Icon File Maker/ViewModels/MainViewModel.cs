@@ -29,7 +29,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     private const int SettingsSaveDelayMs = 300; // Delay before saving settings
     private const int UiInitializationDelayMs = 200; // Delay to allow UI to initialize
     private int _countdownElapsedMs = 0;
-    private System.Timers.Timer _settingsSaveTimer = new();
+    private readonly System.Timers.Timer _settingsSaveTimer = new();
     private readonly UndoRedo _undoRedo = new();
     private CancellationTokenSource? _loadImageCancellationTokenSource;
     private bool _disposed;
@@ -206,7 +206,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             StorageFolder folder = await picker.PickSingleFolderAsync();
 
             if (folder is not null)
-                NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, folder);
+                NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, new MultiPageParameter(folder));
         }
         else
         {
@@ -240,6 +240,35 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
         ImagePath = file.Path;
         await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
+    }
+
+    [RelayCommand]
+    public async Task BrowseAndSelectDll()
+    {
+        FileOpenPicker picker = FilePickerHelper.CreateDllPicker();
+
+        StorageFile file = await picker.PickSingleFileAsync();
+        if (file is null)
+            return;
+
+        string tempFolderPath = Path.Combine(
+            ApplicationData.Current.LocalCacheFolder.Path,
+            "dll_extract");
+
+        if (Directory.Exists(tempFolderPath))
+            Directory.Delete(tempFolderPath, recursive: true);
+
+        IReadOnlyList<string> extractedPaths =
+            await DllIconExtractorHelper.ExtractIconsToFolderAsync(file.Path, tempFolderPath);
+
+        if (extractedPaths.Count == 0)
+        {
+            ShowError($"No icons found in {file.Name}.");
+            return;
+        }
+
+        StorageFolder extractFolder = await StorageFolder.GetFolderFromPathAsync(tempFolderPath);
+        NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, new MultiPageParameter(extractFolder, IsFromDllExtraction: true, SourceFilePath: file.Path));
     }
 
     [RelayCommand]
@@ -369,9 +398,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     {
         try
         {
-            FileSavePicker savePicker = CreateSavePicker();
-            await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
-            InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+            FileSavePicker savePicker = await FilePickerHelper.CreateSavePicker(OutputPath, ImagePath);
 
             StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -410,9 +437,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     {
         try
         {
-            FileSavePicker savePicker = CreateSavePicker();
-            await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
-            InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+            FileSavePicker savePicker = await FilePickerHelper.CreateSavePicker(OutputPath, ImagePath);
 
             StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -624,9 +649,8 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
             if (dialog.ResultImagePath is not null)
             {
-                ImageMagick.MagickImage resultImage = new(dialog.ResultImagePath);
-                if (MainImage != null)
-                    MainImage.Source = resultImage.ToImageSource();
+                MagickImage resultImage = new(dialog.ResultImagePath);
+                MainImage?.Source = resultImage.ToImageSource();
 
                 MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, dialog.ResultImagePath);
                 _undoRedo.AddUndo(undoRedoItem);
@@ -788,7 +812,9 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         }
     }
 
+#pragma warning disable CA1822 // Mark members as static
     public void HandleDragOver(DragEventArgs e)
+#pragma warning restore CA1822 // Mark members as static
     {
         DataPackageView dataView = e.DataView;
 
@@ -1029,32 +1055,6 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             smallerSide = SizesControl.ViewModel.IconSizes.First(x => x.IsSelected).SideLength;
 
         SizesControl.UpdateEnabledSizes(smallerSide);
-    }
-
-    private FileSavePicker CreateSavePicker()
-    {
-        FileSavePicker savePicker = new()
-        {
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-        };
-        savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
-        savePicker.DefaultFileExtension = ".ico";
-        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
-
-        if (!string.IsNullOrWhiteSpace(OutputPath) && File.Exists(OutputPath))
-        {
-            try
-            {
-                Task.Run(async () =>
-                {
-                    StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutputPath);
-                    savePicker.SuggestedSaveFile = previousFile;
-                }).Wait();
-            }
-            catch { }
-        }
-
-        return savePicker;
     }
 
     private void ShowError(string message)

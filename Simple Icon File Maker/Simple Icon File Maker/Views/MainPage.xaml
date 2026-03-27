@@ -137,7 +137,7 @@
                             Height="32"
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.NavigateToMultiCommand}"
-                            ToolTipService.ToolTip="(Pro) Open a folder of images">
+                            ToolTipService.ToolTip="(Pro) Open a folder of images&#x0a;Right-click for more options">
                             <Grid>
                                 <FontIcon FontSize="16" Glyph="&#xE8DE;" />
                                 <FontIcon
@@ -151,6 +151,17 @@
                                     </FontIcon.RenderTransform>
                                 </FontIcon>
                             </Grid>
+                            <Button.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem
+                                        Command="{x:Bind ViewModel.BrowseAndSelectDllCommand}"
+                                        Text="Extract icons from DLL / EXE...">
+                                        <MenuFlyoutItem.Icon>
+                                            <FontIcon Glyph="&#xE8F4;" />
+                                        </MenuFlyoutItem.Icon>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Button.ContextFlyout>
                         </Button>
                     </StackPanel>
                 </StackPanel>

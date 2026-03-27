@@ -13,9 +13,12 @@ using Windows.System;
 
 namespace Simple_Icon_File_Maker.ViewModels;
 
+public record MultiPageParameter(StorageFolder Folder, bool IsFromDllExtraction = false, string? SourceFilePath = null);
+
 public partial class MultiViewModel : ObservableRecipient, INavigationAware
 {
     private StorageFolder? _folder;
+    private string? _sourceFilePath;
 
     public ObservableCollection<PreviewStack> Previews { get; } = [];
 
@@ -58,6 +61,21 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     public partial int SizesGenerating { get; set; } = 0;
+
+    [ObservableProperty]
+    public partial bool IsFromDllExtraction { get; set; } = false;
+
+    [ObservableProperty]
+    public partial bool IsFolderMode { get; set; } = true;
+
+    [ObservableProperty]
+    public partial string FilesDescriptionSuffix { get; set; } = "\u00A0image files in the folder.";
+
+    [ObservableProperty]
+    public partial string CloseButtonText { get; set; } = "Close Folder";
+
+    [ObservableProperty]
+    public partial string OpenSourceTooltip { get; set; } = "Open folder...";
 
     [RelayCommand]
     public void GoBack()
@@ -175,12 +193,14 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     [RelayCommand]
     public async Task OpenFolder()
     {
-        if (_folder is null)
+        string? targetPath = IsFromDllExtraction && _sourceFilePath is not null
+            ? Path.GetDirectoryName(_sourceFilePath)
+            : _folder?.Path;
+
+        if (string.IsNullOrEmpty(targetPath))
             return;
 
-        string outputDirectory = _folder.Path;
-
-        Uri uri = new(outputDirectory);
+        Uri uri = new(targetPath);
         LauncherOptions options = new()
         {
             TreatAsUntrusted = false,
@@ -207,12 +227,35 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     public async void OnNavigatedTo(object parameter)
     {
-        if (parameter is StorageFolder folder)
+        if (parameter is MultiPageParameter navParam)
+        {
+            _folder = navParam.Folder;
+            IsFromDllExtraction = navParam.IsFromDllExtraction;
+            IsFolderMode = !IsFromDllExtraction;
+            _sourceFilePath = navParam.SourceFilePath;
+        }
+        else if (parameter is StorageFolder folder)
+        {
             _folder = folder;
+        }
 
-        FolderName = _folder?.Path ?? "Folder path";
-        if (FolderName.Length > 50) // truncate the text from the middle
-            FolderName = string.Concat(FolderName.AsSpan(0, 20), "...", FolderName.AsSpan(FolderName.Length - 20));
+        if (IsFromDllExtraction && _sourceFilePath is not null)
+        {
+            FolderName = Path.GetFileName(_sourceFilePath);
+            FilesDescriptionSuffix = "\u00A0icons extracted.";
+            CloseButtonText = "Close";
+            OpenSourceTooltip = "Open containing folder...";
+        }
+        else
+        {
+            string path = _folder?.Path ?? "Folder path";
+            FolderName = path.Length > 50
+                ? string.Concat(path.AsSpan(0, 20), "...", path.AsSpan(path.Length - 20))
+                : path;
+            FilesDescriptionSuffix = "\u00A0image files in the folder.";
+            CloseButtonText = "Close Folder";
+            OpenSourceTooltip = "Open folder...";
+        }
 
         LoadIconSizes();
         await LoadFiles();

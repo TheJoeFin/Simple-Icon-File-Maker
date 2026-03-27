@@ -41,9 +41,8 @@ public sealed partial class PreviewImage : UserControl
             if (value != isZooming)
             {
                 isZooming = value;
-                mainImageCanvas.Children.Clear();
+                LoadImageOnToCanvas();
                 InvalidateMeasure();
-                InvalidateArrange();
             }
         }
     }
@@ -52,17 +51,13 @@ public sealed partial class PreviewImage : UserControl
     {
         double dim = Math.Min(finalSize.Width, finalSize.Height);
         mainImageCanvas.Arrange(new Rect(new Point((finalSize.Width - dim) / 2, (finalSize.Height - dim) / 2), new Size(dim, dim)));
-        LoadImageOnToCanvas();
         return finalSize;
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        double dim = Math.Min(availableSize.Width, availableSize.Height);
-        // smallerAvailableSize = (int)dim;
-        if (double.IsPositiveInfinity(dim))
-            dim = 3000;
-        return new Size(dim, dim);
+        int size = isZooming ? ZoomedWidthSpace : _sideLength;
+        return new Size(size, size);
     }
 
     private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
@@ -129,8 +124,6 @@ public sealed partial class PreviewImage : UserControl
         brush.Surface = image;
 
         int size = isZooming ? ZoomedWidthSpace : _sideLength;
-        Width = size;
-        Height = size;
 
         // set the visual size when the image has loaded
         image.LoadCompleted += (s, e) =>

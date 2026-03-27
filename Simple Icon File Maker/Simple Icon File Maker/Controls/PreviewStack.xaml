@@ -13,11 +13,42 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBlock
-            Name="FileNameText"
-            HorizontalAlignment="Center"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            TextWrapping="WrapWholeWords" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Name="FileNameText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                TextWrapping="WrapWholeWords" />
+            <DropDownButton
+                Name="SaveColumnButton"
+                Grid.Column="1"
+                Height="28"
+                Padding="6,0"
+                VerticalAlignment="Center"
+                ToolTipService.ToolTip="Save this icon"
+                Visibility="Collapsed">
+                <FontIcon FontSize="12" Glyph="&#xE74E;" />
+                <DropDownButton.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Click="SaveIconMenuItem_Click" Text="Save icon (.ico)">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE74E;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem Click="SaveAllImagesMenuItem_Click" Text="Save all images...">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon Glyph="&#xE78C;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
+        </Grid>
         <StackPanel
             Name="PreviewStackPanel"
             Grid.Row="1"

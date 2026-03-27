@@ -3,10 +3,14 @@ using ImageMagick.Factories;
 using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Models;
 using System.Diagnostics;
 using System.Drawing;
 using Windows.Storage;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
+using WinUIEx;
 
 namespace Simple_Icon_File_Maker.Controls;
 
@@ -39,7 +43,10 @@ public sealed partial class PreviewStack : UserControl
         InitializeComponent();
 
         if (showTitle)
+        {
             FileNameText.Text = Path.GetFileName(imagePath);
+            SaveColumnButton.Visibility = Visibility.Visible;
+        }
     }
 
     public async Task<bool> InitializeAsync(IProgress<int> progress)
@@ -415,5 +422,39 @@ public sealed partial class PreviewStack : UserControl
                 img.ZoomedWidthSpace = (int)ActualWidth - 40;
             img.ZoomPreview = IsZoomingPreview;
         }
+    }
+
+    private async void SaveIconMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        await SaveColumnWithPickerAsync(saveAllImages: false);
+    }
+
+    private async void SaveAllImagesMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        await SaveColumnWithPickerAsync(saveAllImages: true);
+    }
+
+    private async Task SaveColumnWithPickerAsync(bool saveAllImages)
+    {
+        FileSavePicker savePicker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+            SuggestedFileName = Path.GetFileNameWithoutExtension(imagePath),
+            DefaultFileExtension = ".ico",
+        };
+        savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.GetWindowHandle());
+
+        StorageFile? file = await savePicker.PickSaveFileAsync();
+        if (file is null)
+            return;
+
+        IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
+        IconSortOrder sortOrder = iconSizesService.SortOrder;
+
+        if (saveAllImages)
+            await SaveAllImagesAsync(file.Path, sortOrder);
+        else
+            await SaveIconAsync(file.Path, sortOrder);
     }
 }
