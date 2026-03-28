@@ -25,4 +25,9 @@ public sealed partial class ShellPage : Page
         if (App.GetService<IStoreService>().OwnsPro)
             titleBar.Subtitle += " Pro";
     }
+
+    private void TitleBar_BackRequested(TitleBar sender, object args)
+    {
+        ViewModel.BackCommand.Execute(null);
+    }
 }

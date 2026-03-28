@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(grep -E \"\\\\.\\(cs|xaml\\)$\")"
     ]
   }
 }

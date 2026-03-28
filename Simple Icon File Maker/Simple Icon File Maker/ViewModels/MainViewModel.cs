@@ -32,6 +32,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     private readonly System.Timers.Timer _settingsSaveTimer = new();
     private readonly UndoRedo _undoRedo = new();
     private CancellationTokenSource? _loadImageCancellationTokenSource;
+    private bool _hasNavigatedOnce;
     private bool _disposed;
 
     private readonly ILocalSettingsService _localSettingsService;
@@ -187,11 +188,17 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             ImagePath = App.SharedImagePath;
             App.SharedImagePath = null;
         }
-        // Load CLI args if present
-        else if (App.cliArgs?.Length > 1)
+        // Load CLI args if present on first navigation only
+        else if (!_hasNavigatedOnce && App.cliArgs?.Length > 1)
         {
             ImagePath = App.cliArgs[1];
         }
+
+        _hasNavigatedOnce = true;
+
+        // Skip reloading if an image is already loaded (returning from About page)
+        if (IsImageSelected)
+            return;
 
         LoadIconSizes();
 
@@ -206,7 +213,6 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     public void OnNavigatedFrom()
     {
         _loadImageCancellationTokenSource?.Cancel();
-        Dispose();
     }
 
     [RelayCommand]

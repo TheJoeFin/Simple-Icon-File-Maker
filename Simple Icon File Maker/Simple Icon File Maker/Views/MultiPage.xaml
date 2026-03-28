@@ -45,11 +45,6 @@
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
         <Grid Grid.Row="1" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
@@ -58,7 +53,7 @@
             </Grid.RowDefinitions>
 
             <!--  Folder name and details  -->
-            <Grid Padding="16,8,8,8" Style="{StaticResource CardStyle}">
+            <Grid Padding="16,0,8,8" Style="{StaticResource CardStyle}">
                 <StackPanel
                     Grid.Row="0"
                     Orientation="Vertical"

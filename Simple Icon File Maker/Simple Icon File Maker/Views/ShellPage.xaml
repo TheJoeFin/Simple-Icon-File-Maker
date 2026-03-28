@@ -14,7 +14,11 @@
             <RowDefinition Height="32" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TitleBar x:Name="titleBar" Title="Simple Icon File Maker">
+        <TitleBar
+            x:Name="titleBar"
+            Title="Simple Icon File Maker"
+            BackRequested="TitleBar_BackRequested"
+            IsBackButtonVisible="{x:Bind ViewModel.IsBackEnabled, Mode=OneWay}">
             <TitleBar.IconSource>
                 <ImageIconSource ImageSource="/SimpleIconMaker.ico" />
             </TitleBar.IconSource>

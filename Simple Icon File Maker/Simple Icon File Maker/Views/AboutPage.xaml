@@ -12,18 +12,7 @@
             Padding="80,20,80,20"
             HorizontalAlignment="Stretch"
             Spacing="12">
-            <StackPanel Orientation="Horizontal" Spacing="20">
-                <Button Command="{x:Bind ViewModel.GoBackCommand}">
-                    <StackPanel
-                        Margin="6,4"
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <SymbolIcon Symbol="Home" />
-                        <TextBlock Text="Start Page" />
-                    </StackPanel>
-                </Button>
-                <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
-            </StackPanel>
+            <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
             <controls:SettingsExpander
                 Description="© 2026, All rights reserved"
                 Header="Simple Icon File Maker"

@@ -10,6 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Simple_Icon_File_Maker.Models"
     xmlns:toolkitConverters="using:CommunityToolkit.WinUI.Converters"
+    NavigationCacheMode="Required"
     SizeChanged="Page_SizeChanged"
     mc:Ignorable="d">
     <Page.Resources>
