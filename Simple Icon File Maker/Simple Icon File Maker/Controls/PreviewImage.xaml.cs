@@ -35,7 +35,7 @@ public sealed partial class PreviewImage : UserControl
         {
             int size = isZooming ? ZoomedWidthSpace : _sideLength;
             mainImageCanvas.Background = _showCheckerBackground
-                ? CreateCheckerBrush(size, ActualTheme)
+                ? CreateCheckerBrush(size, _sideLength, ActualTheme)
                 : new SolidColorBrush(Colors.Transparent);
         };
     }
@@ -54,7 +54,7 @@ public sealed partial class PreviewImage : UserControl
                 _showCheckerBackground = value;
                 int size = isZooming ? ZoomedWidthSpace : _sideLength;
                 mainImageCanvas.Background = _showCheckerBackground
-                    ? CreateCheckerBrush(size, ActualTheme)
+                    ? CreateCheckerBrush(size, _sideLength, ActualTheme)
                     : new SolidColorBrush(Colors.Transparent);
             }
         }
@@ -131,7 +131,7 @@ public sealed partial class PreviewImage : UserControl
 
         int size = isZooming ? ZoomedWidthSpace : _sideLength;
         mainImageCanvas.Background = ShowCheckerBackground
-            ? CreateCheckerBrush(size, ActualTheme)
+            ? CreateCheckerBrush(size, _sideLength, ActualTheme)
             : new SolidColorBrush(Colors.Transparent);
 
         // from StackOverflow
@@ -177,9 +177,25 @@ public sealed partial class PreviewImage : UserControl
         mainImageCanvas.Children.Add(tempGrid);
     }
 
-    private static ImageBrush CreateCheckerBrush(int size, ElementTheme theme)
+    private static ImageBrush CreateCheckerBrush(int size, int baseSideLength, ElementTheme theme)
     {
-        int tileSize = 8;
+        // Find the divisor of 'size' closest to the ideal zoom-scaled tile size,
+        // so there are never partial tiles at the edges.
+        double ideal = 8.0 * size / baseSideLength;
+        int tileSize = 1;
+        double bestDiff = double.MaxValue;
+        for (int t = 1; t <= size; t++)
+        {
+            if (size % t == 0)
+            {
+                double diff = Math.Abs(t - ideal);
+                if (diff < bestDiff)
+                {
+                    bestDiff = diff;
+                    tileSize = t;
+                }
+            }
+        }
         WriteableBitmap bitmap = new(size, size);
 
         // Light mode: #F0F0F0 / #C4C4C4  —  Dark mode: #404040 / #2A2A2A
