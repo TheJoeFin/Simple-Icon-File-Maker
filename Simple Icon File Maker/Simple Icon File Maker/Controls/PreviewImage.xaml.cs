@@ -179,23 +179,12 @@ public sealed partial class PreviewImage : UserControl
 
     private static ImageBrush CreateCheckerBrush(int size, int baseSideLength, ElementTheme theme)
     {
-        // Find the divisor of 'size' closest to the ideal zoom-scaled tile size,
-        // so there are never partial tiles at the edges.
-        double ideal = 8.0 * size / baseSideLength;
-        int tileSize = 1;
-        double bestDiff = double.MaxValue;
-        for (int t = 1; t <= size; t++)
-        {
-            if (size % t == 0)
-            {
-                double diff = Math.Abs(t - ideal);
-                if (diff < bestDiff)
-                {
-                    bestDiff = diff;
-                    tileSize = t;
-                }
-            }
-        }
+        // Bitmap is created at the actual canvas size (size × size) so Stretch.Fill renders
+        // it at exactly 1:1 — no scaling, no interpolation, always crisp edges.
+        // Tile count per side = baseSideLength / 8, driven purely by the icon size.
+        // Math.Round replaces the old exact-divisor loop that failed on prime canvas widths.
+        int tileSize = Math.Max(1, (int)Math.Round(8.0 * size / baseSideLength));
+
         WriteableBitmap bitmap = new(size, size);
 
         // Light mode: #F0F0F0 / #C4C4C4  —  Dark mode: #404040 / #2A2A2A
