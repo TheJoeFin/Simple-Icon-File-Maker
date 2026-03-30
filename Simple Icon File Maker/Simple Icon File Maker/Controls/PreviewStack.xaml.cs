@@ -177,27 +177,6 @@ public sealed partial class PreviewStack : UserControl
 
         progress.Report(10);
         ImagesProgressBar.Value = 10;
-        SourceImageSize ??= new Size((int)mainImage.Width, (int)mainImage.Height);
-
-        SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
-
-        int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
-
-        imagePaths.Clear();
-        PreviewStackPanel.Children.Clear();
-
-        foreach (IconSize iconSize in ChosenSizes)
-        {
-            iconSize.IsEnabled = true;
-            if (iconSize.SideLength > smallerSide)
-                iconSize.IsEnabled = false;
-        }
-
-        int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
-        if (enabledCount == 1)
-            LoadingText.Text = $"Generating {enabledCount} size for {name}...";
-        else
-            LoadingText.Text = $"Generating {enabledCount} sizes for {name}...";
 
         if (string.IsNullOrWhiteSpace(imagePath) == true)
         {
@@ -205,9 +184,11 @@ public sealed partial class PreviewStack : UserControl
             return false;
         }
 
+        int smallerSide = 0;
+        IMagickImage<ushort>? firstPassImage;
         try
         {
-            _ = await imgFactory.CreateAsync(imagePath);
+            firstPassImage = await imgFactory.CreateAsync(imagePath);
         }
         catch (Exception)
         {
@@ -215,18 +196,40 @@ public sealed partial class PreviewStack : UserControl
             return false;
         }
 
-        progress.Report(15);
-        ImagesProgressBar.Value = 15;
-        using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
-        IMagickGeometry size = geoFactory.Create(
-            (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
-        size.IgnoreAspectRatio = false;
-        size.FillArea = true;
+        using (firstPassImage)
+        {
+            SourceImageSize = new Size((int)firstPassImage.Width, (int)firstPassImage.Height);
+            SmallerSourceSide = Math.Min((int)firstPassImage.Width, (int)firstPassImage.Height);
+            smallerSide = SmallerSourceSide;
 
-        MagickColor transparent = new("#00000000");
-        firstPassImage.Extent(size, Gravity.Center, transparent);
+            imagePaths.Clear();
+            PreviewStackPanel.Children.Clear();
 
-        await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
+            foreach (IconSize iconSize in ChosenSizes)
+            {
+                iconSize.IsEnabled = true;
+                if (iconSize.SideLength > smallerSide)
+                    iconSize.IsEnabled = false;
+            }
+
+            int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
+            if (enabledCount == 1)
+                LoadingText.Text = $"Generating {enabledCount} size for {name}...";
+            else
+                LoadingText.Text = $"Generating {enabledCount} sizes for {name}...";
+
+            progress.Report(15);
+            ImagesProgressBar.Value = 15;
+            IMagickGeometry size = geoFactory.Create(
+                (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+            size.IgnoreAspectRatio = false;
+            size.FillArea = true;
+
+            MagickColor transparent = new("#00000000");
+            firstPassImage.Extent(size, Gravity.Center, transparent);
+
+            await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
+        }
 
         MagickImageCollection collection = [];
 
