@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dotnet build:*)",
       "Bash(grep -E \"\\\\.\\(cs|xaml\\)$\")",
-      "Bash(gh issue view:*)"
+      "Bash(gh issue view:*)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
