@@ -164,10 +164,6 @@ public sealed partial class PreviewStack : UserControl
 
         ImagesProgressBar.Value = 0;
         progress.Report(0);
-        if (ChosenSizes.Count == 1)
-            LoadingText.Text = $"Generating {ChosenSizes.Count} preview for {name}...";
-        else
-            LoadingText.Text = $"Generating {ChosenSizes.Count} previews for {name}...";
 
         TextAndProgressBar.Visibility = Visibility.Visible;
 
@@ -196,6 +192,12 @@ public sealed partial class PreviewStack : UserControl
             if (iconSize.SideLength > smallerSide)
                 iconSize.IsEnabled = false;
         }
+
+        int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
+        if (enabledCount == 1)
+            LoadingText.Text = $"Generating {enabledCount} size for {name}...";
+        else
+            LoadingText.Text = $"Generating {enabledCount} sizes for {name}...";
 
         if (string.IsNullOrWhiteSpace(imagePath) == true)
         {
