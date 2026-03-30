@@ -13,6 +13,49 @@
             HorizontalAlignment="Stretch"
             Spacing="12">
             <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
+            <controls:SettingsCard Description="4–5 stars? Leave a review on the Store. Something wrong? Send feedback directly." Header="Rate this app">
+                <controls:SettingsCard.HeaderIcon>
+                    <FontIcon Glyph="&#xE735;" />
+                </controls:SettingsCard.HeaderIcon>
+                <RatingControl
+                    x:Name="AppRatingControl"
+                    PlaceholderValue="4"
+                    ValueChanged="AppRatingControl_ValueChanged" />
+            </controls:SettingsCard>
+
+            <controls:SettingsExpander Header="Appearance" IsExpanded="True">
+                <controls:SettingsExpander.HeaderIcon>
+                    <FontIcon Glyph="&#xE790;" />
+                </controls:SettingsExpander.HeaderIcon>
+                <controls:SettingsExpander.Items>
+                    <controls:SettingsCard
+                        ContentAlignment="Left"
+                        Description="Choose which app theme to display"
+                        Header="App theme">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <RadioButton
+                                x:Name="DefaultThemeButton"
+                                Click="ThemeButton_Click"
+                                Content="System default"
+                                GroupName="AppTheme"
+                                Tag="Default" />
+                            <RadioButton
+                                x:Name="LightThemeButton"
+                                Click="ThemeButton_Click"
+                                Content="Light"
+                                GroupName="AppTheme"
+                                Tag="Light" />
+                            <RadioButton
+                                x:Name="DarkThemeButton"
+                                Click="ThemeButton_Click"
+                                Content="Dark"
+                                GroupName="AppTheme"
+                                Tag="Dark" />
+                        </StackPanel>
+                    </controls:SettingsCard>
+                </controls:SettingsExpander.Items>
+            </controls:SettingsExpander>
+
             <controls:SettingsExpander
                 Description="© 2026, All rights reserved"
                 Header="Simple Icon File Maker"
@@ -74,6 +117,29 @@
                     <SymbolIcon Symbol="List" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
+                    <controls:SettingsCard Header="v 1.16">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● Extract icons from EXE and DLL files<LineBreak />
+                                ● Checker background behind image previews<LineBreak />
+                                ● Improved navigation with TitleBar back button<LineBreak />
+                                ● Bug fixes<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
+                    <controls:SettingsCard Header="v 1.15">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● AI-powered background removal<LineBreak />
+                                ● Windows Share Target support<LineBreak />
+                                ● Improved save file picker naming<LineBreak />
+                                ● Update packages<LineBreak />
+                                ● Bug fixes<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
                     <controls:SettingsCard Header="v 1.14">
                         <controls:SettingsCard.Description>
                             <TextBlock>
