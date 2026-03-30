@@ -39,7 +39,10 @@ public sealed partial class PreviewStack : UserControl
 
         ChosenSizes = [.. sizes];
         imagePath = path;
-        mainImage = new(path);
+        bool isSvgSource = Path.GetExtension(path).Equals(".svg", StringComparison.OrdinalIgnoreCase);
+        mainImage = isSvgSource
+            ? new(path, new MagickReadSettings { BackgroundColor = MagickColors.Transparent })
+            : new(path);
 
         InitializeComponent();
 
@@ -184,33 +187,21 @@ public sealed partial class PreviewStack : UserControl
             return false;
         }
 
+        bool isSvg = Path.GetExtension(imagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase);
         int smallerSide = 0;
-        IMagickImage<ushort>? firstPassImage;
-        try
-        {
-            firstPassImage = await imgFactory.CreateAsync(imagePath);
-        }
-        catch (Exception)
-        {
-            ClearOutputImages();
-            return false;
-        }
 
-        using (firstPassImage)
+        if (isSvg)
         {
-            SourceImageSize = new Size((int)firstPassImage.Width, (int)firstPassImage.Height);
-            SmallerSourceSide = Math.Min((int)firstPassImage.Width, (int)firstPassImage.Height);
-            smallerSide = SmallerSourceSide;
+            // SVG is vector — it can render at any size, so enable all sizes
+            SmallerSourceSide = int.MaxValue;
+            smallerSide = int.MaxValue;
+            SourceImageSize = null;
 
             imagePaths.Clear();
             PreviewStackPanel.Children.Clear();
 
             foreach (IconSize iconSize in ChosenSizes)
-            {
                 iconSize.IsEnabled = true;
-                if (iconSize.SideLength > smallerSide)
-                    iconSize.IsEnabled = false;
-            }
 
             int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
             if (enabledCount == 1)
@@ -220,15 +211,54 @@ public sealed partial class PreviewStack : UserControl
 
             progress.Report(15);
             ImagesProgressBar.Value = 15;
-            IMagickGeometry size = geoFactory.Create(
-                (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
-            size.IgnoreAspectRatio = false;
-            size.FillArea = true;
+        }
+        else
+        {
+            IMagickImage<ushort>? firstPassImage;
+            try
+            {
+                firstPassImage = await imgFactory.CreateAsync(imagePath);
+            }
+            catch (Exception)
+            {
+                ClearOutputImages();
+                return false;
+            }
 
-            MagickColor transparent = new("#00000000");
-            firstPassImage.Extent(size, Gravity.Center, transparent);
+            using (firstPassImage)
+            {
+                SourceImageSize = new Size((int)firstPassImage.Width, (int)firstPassImage.Height);
+                SmallerSourceSide = Math.Min((int)firstPassImage.Width, (int)firstPassImage.Height);
+                smallerSide = SmallerSourceSide;
 
-            await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
+                imagePaths.Clear();
+                PreviewStackPanel.Children.Clear();
+
+                foreach (IconSize iconSize in ChosenSizes)
+                {
+                    iconSize.IsEnabled = true;
+                    if (iconSize.SideLength > smallerSide)
+                        iconSize.IsEnabled = false;
+                }
+
+                int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
+                if (enabledCount == 1)
+                    LoadingText.Text = $"Generating {enabledCount} size for {name}...";
+                else
+                    LoadingText.Text = $"Generating {enabledCount} sizes for {name}...";
+
+                progress.Report(15);
+                ImagesProgressBar.Value = 15;
+                IMagickGeometry size = geoFactory.Create(
+                    (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+                size.IgnoreAspectRatio = false;
+                size.FillArea = true;
+
+                MagickColor transparent = new("#00000000");
+                firstPassImage.Extent(size, Gravity.Center, transparent);
+
+                await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
+            }
         }
 
         MagickImageCollection collection = [];
@@ -247,38 +277,76 @@ public sealed partial class PreviewStack : UserControl
 
         foreach (int sideLength in selectedSizes)
         {
-            using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
-            if (smallerSide < sideLength)
-                continue;
-
-            currentLocation++;
-            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
-            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
-            IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
-            iconSize.IgnoreAspectRatio = false;
-
-            if (smallerSide > sideLength)
+            if (isSvg)
             {
-                await Task.Run(() =>
+                // Render the SVG fresh at each target size for lossless quality
+                MagickReadSettings svgSettings = new()
                 {
-                    image.Scale(iconSize);
-                    image.Sharpen();
-                });
+                    BackgroundColor = MagickColors.Transparent,
+                    Width = (uint)sideLength,
+                    Height = (uint)sideLength
+                };
+                using IMagickImage<ushort> image = await imgFactory.CreateAsync(imagePath, svgSettings);
+
+                // Ensure exact square dimensions with transparent fill
+                IMagickGeometry squareGeo = geoFactory.Create((uint)sideLength);
+                MagickColor transparent = new("#00000000");
+                image.Extent(squareGeo, Gravity.Center, transparent);
+
+                // Final scale to exact size in case the SVG rendered at different dimensions
+                IMagickGeometry exactSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
+                exactSize.IgnoreAspectRatio = true;
+                await Task.Run(() => image.Scale(exactSize));
+
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+
+                string iconPathSvg = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+                if (File.Exists(iconPathSvg))
+                    File.Delete(iconPathSvg);
+
+                await image.WriteAsync(iconPathSvg, MagickFormat.Png32);
+                collection.Add(iconPathSvg);
+                imagePaths.Add((sideLength.ToString(), iconPathSvg));
+
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
             }
+            else
+            {
+                using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
+                if (smallerSide < sideLength)
+                    continue;
 
-            string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+                IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
+                iconSize.IgnoreAspectRatio = false;
 
-            if (File.Exists(iconPath))
-                File.Delete(iconPath);
+                if (smallerSide > sideLength)
+                {
+                    await Task.Run(() =>
+                    {
+                        image.Scale(iconSize);
+                        image.Sharpen();
+                    });
+                }
 
-            await image.WriteAsync(iconPath, MagickFormat.Png32);
+                string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+                if (File.Exists(iconPath))
+                    File.Delete(iconPath);
 
-            collection.Add(iconPath);
-            imagePaths.Add((sideLength.ToString(), iconPath));
+                await image.WriteAsync(iconPath, MagickFormat.Png32);
+                collection.Add(iconPath);
+                imagePaths.Add((sideLength.ToString(), iconPath));
 
-            currentLocation++;
-            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
-            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+            }
         }
 
         try

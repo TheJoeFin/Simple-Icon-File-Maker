@@ -4,7 +4,7 @@ namespace Simple_Icon_File_Maker.Constants;
 
 public static class FileTypes
 {
-    public static readonly HashSet<string> SupportedImageFormats = [".png", ".bmp", ".jpeg", ".jpg", ".ico"];
+    public static readonly HashSet<string> SupportedImageFormats = [".png", ".bmp", ".jpeg", ".jpg", ".ico", ".svg"];
 
     public static readonly HashSet<string> SupportedDllFormats = [".dll", ".exe", ".mun"];
 

@@ -4,6 +4,7 @@ using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Simple_Icon_File_Maker.Constants;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
@@ -15,6 +16,7 @@ using System.Timers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.System;
 using WinRT.Interop;
 
@@ -990,19 +992,42 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            MagickImage? image = await ImageHelper.LoadImageAsync(ImagePath);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (image == null)
+            if (Path.GetExtension(ImagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase))
             {
-                ShowError("Failed to load image");
-                IsLoading = false;
-                IsImageSelected = false;
-                return;
-            }
+                // Use WinUI 3 native SvgImageSource for lossless vector preview
+                StorageFile svgFile = await StorageFile.GetFileFromPathAsync(ImagePath);
+                using IRandomAccessStream stream = await svgFile.OpenReadAsync();
+                SvgImageSource svgSource = new();
+                SvgImageSourceLoadStatus loadStatus = await svgSource.SetSourceAsync(stream);
 
-            MainImageSource = image.ToImageSource();
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (loadStatus != SvgImageSourceLoadStatus.Success)
+                {
+                    ShowError("Failed to load SVG image");
+                    IsLoading = false;
+                    IsImageSelected = false;
+                    return;
+                }
+
+                MainImageSource = svgSource;
+            }
+            else
+            {
+                MagickImage? image = await ImageHelper.LoadImageAsync(ImagePath);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (image == null)
+                {
+                    ShowError("Failed to load image");
+                    IsLoading = false;
+                    IsImageSelected = false;
+                    return;
+                }
+
+                MainImageSource = image.ToImageSource();
+            }
         }
         catch (OperationCanceledException)
         {
