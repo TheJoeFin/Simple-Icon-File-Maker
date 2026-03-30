@@ -70,7 +70,10 @@
                 MinWidth="320"
                 MinHeight="220"
                 Margin="24,24,24,0"
-                Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, ConverterParameter=True, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.IsImageSelected,
+                                    Converter={StaticResource BoolVis},
+                                    ConverterParameter=True,
+                                    Mode=OneWay}">
                 <Rectangle
                     RadiusX="4"
                     RadiusY="4"
@@ -98,7 +101,8 @@
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         IsTextSelectionEnabled="True"
-                        Text="{x:Bind ViewModel.SupportedFilesText, Mode=OneWay}"
+                        Text="{x:Bind ViewModel.SupportedFilesText,
+                                      Mode=OneWay}"
                         TextWrapping="Wrap" />
 
                     <StackPanel
@@ -171,7 +175,9 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Command="{x:Bind ViewModel.UpgradeToProCommand}"
-                Visibility="{x:Bind ViewModel.ShowUpgradeToProButton, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.ShowUpgradeToProButton,
+                                    Converter={StaticResource BoolVis},
+                                    Mode=OneWay}">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <SymbolIcon Symbol="Shop" />
                     <TextBlock Text="Do more with Pro..." />
@@ -188,7 +194,8 @@
                 Visibility="Collapsed">
                 <Image
                     x:Name="MainImage"
-                    Source="{x:Bind ViewModel.MainImageSource, Mode=OneWay}"
+                    Source="{x:Bind ViewModel.MainImageSource,
+                                    Mode=OneWay}"
                     Stretch="Uniform" />
             </Viewbox>
 
@@ -199,7 +206,9 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Spacing="12"
-                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.IsLoading,
+                                    Converter={StaticResource BoolVis},
+                                    Mode=OneWay}">
                 <TextBlock
                     x:Name="LoadingText"
                     HorizontalAlignment="Center"
@@ -210,7 +219,8 @@
                     MaxWidth="200"
                     Maximum="100"
                     Minimum="0"
-                    Value="{x:Bind ViewModel.LoadProgress, Mode=OneWay}" />
+                    Value="{x:Bind ViewModel.LoadProgress,
+                                   Mode=OneWay}" />
             </StackPanel>
 
             <Grid
@@ -218,7 +228,9 @@
                 Grid.Row="1"
                 Margin="8,0,8,-4"
                 ColumnSpacing="8"
-                Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                Visibility="{x:Bind ViewModel.IsImageSelected,
+                                    Converter={StaticResource BoolVis},
+                                    Mode=OneWay}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="auto" />
@@ -231,7 +243,9 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Command="{x:Bind ViewModel.UpgradeToProCommand}"
-                    Visibility="{x:Bind ViewModel.ShowUpgradeToProButton, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                    Visibility="{x:Bind ViewModel.ShowUpgradeToProButton,
+                                        Converter={StaticResource BoolVis},
+                                        Mode=OneWay}">
                     <StackPanel Orientation="Horizontal" Spacing="12">
                         <SymbolIcon Symbol="Shop" />
                         <TextBlock Text="Get Pro" />
@@ -254,10 +268,10 @@
                     Height="32"
                     Command="{x:Bind ViewModel.CheckForProEditColorCommand}"
                     IsEnabled="True"
-                    ToolTipService.ToolTip="Change color of the image">
+                    ToolTipService.ToolTip="Edit the source image">
                     <DropDownButton.Content>
                         <Grid>
-                            <FontIcon FontSize="16" Glyph="&#xE790;" />
+                            <FontIcon FontSize="16" Glyph="&#xE91B;" />
                             <FontIcon
                                 FontSize="8"
                                 Foreground="Goldenrod"
@@ -275,12 +289,14 @@
                             <MenuFlyoutItem
                                 x:Name="UndoButton"
                                 Command="{x:Bind ViewModel.UndoCommand}"
-                                IsEnabled="{x:Bind ViewModel.CanUndo, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.CanUndo,
+                                                   Mode=OneWay}"
                                 Text="Undo" />
                             <MenuFlyoutItem
                                 x:Name="RedoButton"
                                 Command="{x:Bind ViewModel.RedoCommand}"
-                                IsEnabled="{x:Bind ViewModel.CanRedo, Mode=OneWay}"
+                                IsEnabled="{x:Bind ViewModel.CanRedo,
+                                                   Mode=OneWay}"
                                 Text="Redo" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem
@@ -299,6 +315,10 @@
                                 x:Name="InvertButton"
                                 Command="{x:Bind ViewModel.ApplyInvertCommand}"
                                 Text="Invert" />
+                            <MenuFlyoutItem
+                                x:Name="CropButton"
+                                Command="{x:Bind ViewModel.CropImageCommand}"
+                                Text="Crop" />
                             <MenuFlyoutSeparator />
                             <MenuFlyoutItem
                                 x:Name="RemoveBackgroundButton"
@@ -331,8 +351,10 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Bottom"
                 IsClosable="True"
-                IsOpen="{x:Bind ViewModel.ErrorInfoBarIsOpen, Mode=TwoWay}"
-                Message="{x:Bind ViewModel.ErrorMessage, Mode=OneWay}"
+                IsOpen="{x:Bind ViewModel.ErrorInfoBarIsOpen,
+                                Mode=TwoWay}"
+                Message="{x:Bind ViewModel.ErrorMessage,
+                                 Mode=OneWay}"
                 Severity="Error" />
         </Grid>
 
@@ -342,7 +364,9 @@
             x:Name="SettingsCard"
             Grid.Row="2"
             Style="{StaticResource CardStyle}"
-            Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.IsImageSelected,
+                                Converter={StaticResource BoolVis},
+                                Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
@@ -370,11 +394,14 @@
                         FontFamily="{StaticResource SymbolThemeFontFamily}"
                         FontSize="16"
                         ToolTipService.ToolTip="Open Destination Folder..."
-                        Visibility="{x:Bind ViewModel.OpenFolderButtonVisible, Converter={StaticResource BoolVis}, Mode=OneWay}" />
+                        Visibility="{x:Bind ViewModel.OpenFolderButtonVisible,
+                                            Converter={StaticResource BoolVis},
+                                            Mode=OneWay}" />
                     <Button
                         x:Name="SaveBTN"
                         Command="{x:Bind ViewModel.SaveIconCommand}"
-                        IsEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanSave,
+                                           Mode=OneWay}"
                         Style="{StaticResource AccentButtonStyle}"
                         ToolTipService.ToolTip="Save all images as a combined .ico">
                         <StackPanel Orientation="Horizontal" Spacing="12">
@@ -388,7 +415,8 @@
                     <Button
                         x:Name="SaveAllBTN"
                         Command="{x:Bind ViewModel.SaveAllImagesCommand}"
-                        IsEnabled="{x:Bind ViewModel.CanSave, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanSave,
+                                           Mode=OneWay}"
                         ToolTipService.ToolTip="Save all images as a combined .ico and each size as a .png">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <FontIcon FontSize="16" Glyph="&#xE78C;" />
@@ -405,7 +433,9 @@
             Grid.RowSpan="2"
             Grid.Column="1"
             Style="{StaticResource CardStyle}"
-            Visibility="{x:Bind ViewModel.IsImageSelected, Converter={StaticResource BoolVis}, Mode=OneWay}">
+            Visibility="{x:Bind ViewModel.IsImageSelected,
+                                Converter={StaticResource BoolVis},
+                                Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
@@ -430,18 +460,23 @@
                             Width="16"
                             Height="16"
                             Foreground="{ThemeResource SystemControlForegroundAltHighBrush}"
-                            IsActive="{x:Bind ViewModel.IsCountdownActive, Mode=OneWay}"
+                            IsActive="{x:Bind ViewModel.IsCountdownActive,
+                                              Mode=OneWay}"
                             IsIndeterminate="False"
                             Maximum="1"
                             Minimum="0"
-                            Visibility="{x:Bind ViewModel.IsCountdownActive, Converter={StaticResource BoolVis}, Mode=OneWay}"
-                            Value="{x:Bind ViewModel.CountdownProgress, Mode=OneWay}" />
+                            Visibility="{x:Bind ViewModel.IsCountdownActive,
+                                                Converter={StaticResource BoolVis},
+                                                Mode=OneWay}"
+                            Value="{x:Bind ViewModel.CountdownProgress,
+                                           Mode=OneWay}" />
                     </StackPanel>
                     <Button.ContextFlyout>
                         <MenuFlyout>
                             <ToggleMenuFlyoutItem
                                 x:Name="IsAutoRefreshing"
-                                IsChecked="{x:Bind ViewModel.IsAutoRefreshEnabled, Mode=TwoWay}"
+                                IsChecked="{x:Bind ViewModel.IsAutoRefreshEnabled,
+                                                   Mode=TwoWay}"
                                 Text="Auto Refresh" />
                         </MenuFlyout>
                     </Button.ContextFlyout>
@@ -455,7 +490,9 @@
                     VerticalAlignment="Center"
                     Command="{x:Bind ViewModel.CancelCountdownCommand}"
                     ToolTipService.ToolTip="Cancel auto-refresh"
-                    Visibility="{x:Bind ViewModel.IsCountdownActive, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                    Visibility="{x:Bind ViewModel.IsCountdownActive,
+                                        Converter={StaticResource BoolVis},
+                                        Mode=OneWay}">
                     <FontIcon FontSize="12" Glyph="&#xE711;" />
                 </Button>
                 <TextBlock
@@ -472,7 +509,8 @@
                     x:Name="ZoomPreviewToggleButton"
                     Height="32"
                     Command="{x:Bind ViewModel.ZoomPreviewsCommand}"
-                    CommandParameter="{x:Bind ZoomPreviewToggleButton.IsChecked, Mode=OneWay}"
+                    CommandParameter="{x:Bind ZoomPreviewToggleButton.IsChecked,
+                                              Mode=OneWay}"
                     ToolTipService.ToolTip="Zoom in on icon previews">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock
@@ -510,9 +548,12 @@
                 Grid.Row="1"
                 Width="48"
                 Height="48"
-                IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
+                IsActive="{x:Bind ViewModel.IsLoading,
+                                  Mode=OneWay}"
                 IsIndeterminate="True"
-                Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolVis}, Mode=OneWay}" />
+                Visibility="{x:Bind ViewModel.IsLoading,
+                                    Converter={StaticResource BoolVis},
+                                    Mode=OneWay}" />
         </Grid>
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="InterfaceStates">

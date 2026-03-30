@@ -703,6 +703,37 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     }
 
     [RelayCommand]
+    public async Task CropImage()
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        try
+        {
+            CropImageDialog dialog = new(ImagePath);
+            await NavigationService.ShowModal(dialog);
+
+            if (dialog.ResultImagePath is not null)
+            {
+                MagickImage resultImage = new(dialog.ResultImagePath);
+                MainImage?.Source = resultImage.ToImageSource();
+
+                MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, dialog.ResultImagePath);
+                _undoRedo.AddUndo(undoRedoItem);
+                UpdateUndoRedoState();
+
+                ImagePath = dialog.ResultImagePath;
+                await RefreshPreviews();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to crop image: {ex.Message}");
+            ShowError($"Failed to crop image: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
     public async Task Undo()
     {
         if (!_undoRedo.CanUndo)

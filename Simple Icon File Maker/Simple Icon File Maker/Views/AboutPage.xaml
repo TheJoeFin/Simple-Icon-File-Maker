@@ -13,7 +13,7 @@
             HorizontalAlignment="Stretch"
             Spacing="12">
             <TextBlock Style="{StaticResource SubheaderTextBlockStyle}" Text="About Simple Icon File Maker" />
-            <controls:SettingsCard Description="4–5 stars? Leave a review on the Store. Something wrong? Send feedback directly." Header="Rate this app">
+            <controls:SettingsCard Description="Leave a review on the Store. Something wrong? Send feedback directly." Header="Rate this app">
                 <controls:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE735;" />
                 </controls:SettingsCard.HeaderIcon>
