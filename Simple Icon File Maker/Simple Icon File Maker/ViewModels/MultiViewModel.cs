@@ -30,6 +30,12 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     public SizesControl? SizesControl { get; set; }
 
     private bool folderLoadCancelled = false;
+    private bool _skipPreCheck = false;
+    private HashSet<string> _excludedExtensions = [];
+
+    private const int PreCheckFileCountThreshold = 100;
+    private const int PreCheckLargeFileCountThreshold = 5;
+    private const ulong PreCheckLargeFileSizeBytes = 5 * 1024 * 1024; // 5 MB
 
     [ObservableProperty]
     public partial int FileLoadProgress { get; set; } = 0;
@@ -48,6 +54,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
     [ObservableProperty]
     public partial int CurrentImageRendering { get; set; } = 0;
+
+    [ObservableProperty]
+    public partial bool IsAssessingFolder { get; set; } = false;
 
     [ObservableProperty]
     public partial bool ArePreviewsZoomed { get; set; } = false;
@@ -277,6 +286,9 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             OpenSourceTooltip = "Open folder...";
         }
 
+        _skipPreCheck = await _localSettingsService
+            .ReadSettingAsync<bool>(PreCheckDialog.SkipPreCheckSettingKey);
+
         LoadIconSizes();
         await LoadFiles();
     }
@@ -335,12 +347,42 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
         SizesControl.ViewModel.SizeDisabledWarningIsOpen = smallestSource < largestSize;
     }
 
+    private static async Task<List<FileGroupItem>> BuildFileGroupsAsync(
+        IReadOnlyList<StorageFile> files)
+    {
+        StorageFile[] imageFiles = [.. files.Where(f => f.IsSupportedImageFormat())];
+        Task<Windows.Storage.FileProperties.BasicProperties>[] propTasks =
+            imageFiles.Select(f => f.GetBasicPropertiesAsync().AsTask()).ToArray();
+        Windows.Storage.FileProperties.BasicProperties[] allProps =
+            await Task.WhenAll(propTasks);
+
+        Dictionary<string, FileGroupItem> groups = [];
+        for (int i = 0; i < imageFiles.Length; i++)
+        {
+            string ext = imageFiles[i].FileType.ToLowerInvariant();
+            if (!groups.TryGetValue(ext, out FileGroupItem? group))
+            {
+                group = new FileGroupItem { Extension = ext };
+                groups[ext] = group;
+            }
+            group.TotalCount++;
+            if (allProps[i].Size > PreCheckLargeFileSizeBytes)
+                group.LargeFileCount++;
+        }
+        return [.. groups.Values.OrderBy(g => g.Extension)];
+    }
+
+    private static bool ShouldShowPreCheck(List<FileGroupItem> groups)
+        => groups.Sum(g => g.TotalCount) > PreCheckFileCountThreshold
+        || groups.Sum(g => g.LargeFileCount) > PreCheckLargeFileCountThreshold;
+
     private async Task LoadFiles()
     {
         if (_folder is null || SizesControl == null)
             return;
 
         LoadingImages = true;
+        IsAssessingFolder = true;
         Previews.Clear();
 
         Progress<int> progress = new();
@@ -350,6 +392,50 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         FileLoadProgress = 0;
         CurrentImageRendering = 0;
+        IsAssessingFolder = false;
+        _excludedExtensions = [];
+        bool dialogWasShown = false;
+
+        if (!_skipPreCheck)
+        {
+            List<FileGroupItem> groups = await BuildFileGroupsAsync(tempFiles);
+
+            if (ShouldShowPreCheck(groups))
+            {
+                // Seed .ico default from the current SkipIcoFiles preference
+                FileGroupItem? icoGroup = groups.FirstOrDefault(g =>
+                    g.Extension.Equals(".ico", StringComparison.OrdinalIgnoreCase));
+                if (icoGroup is not null)
+                    icoGroup.IsIncluded = !SkipIcoFiles;
+
+                PreCheckDialog dialog = new() { TotalImageCount = NumberOfImageFiles };
+                foreach (FileGroupItem group in groups)
+                    dialog.FileGroups.Add(group);
+
+                _ = await NavigationService.ShowModal(dialog);
+                dialogWasShown = true;
+
+                if (!dialog.IsConfirmed)
+                {
+                    LoadingImages = false;
+                    GoBack();
+                    return;
+                }
+
+                _excludedExtensions = [.. dialog.FileGroups
+                    .Where(g => !g.IsIncluded)
+                    .Select(g => g.Extension)];
+            }
+        }
+
+        // If the dialog was not shown, honour SkipIcoFiles via the exclusion set
+        if (!dialogWasShown && SkipIcoFiles)
+            _excludedExtensions = [.. _excludedExtensions.Append(".ico")];
+
+        // Recalculate total to match what will actually be processed
+        NumberOfImageFiles = tempFiles.Count(f =>
+            f.IsSupportedImageFormat() &&
+            !_excludedExtensions.Contains(f.FileType.ToLowerInvariant()));
 
         List<IconSize> sizes = [.. SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected && x.IsEnabled && !x.IsHidden)];
 
@@ -362,10 +448,10 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
             if (!file.IsSupportedImageFormat() || folderLoadCancelled)
                 continue;
 
-            CurrentImageRendering++;
-
-            if (SkipIcoFiles && file.FileType == ".ico")
+            if (_excludedExtensions.Contains(file.FileType.ToLowerInvariant()))
                 continue;
+
+            CurrentImageRendering++;
 
             PreviewStack preview = new(file.Path, sizes, true)
             {

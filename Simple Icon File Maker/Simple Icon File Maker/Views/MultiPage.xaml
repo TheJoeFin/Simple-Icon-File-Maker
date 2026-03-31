@@ -279,19 +279,27 @@
                         Fill="{StaticResource CardStrokeColorDefaultSolid}" />
                     <ProgressRing
                         x:Name="LoadingImagesProgress"
-                        IsIndeterminate="False"
+                        IsIndeterminate="{x:Bind ViewModel.IsAssessingFolder, Mode=OneWay}"
                         Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
                 </Grid>
             </Viewbox>
-            <TextBlock
+            <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
-                Style="{StaticResource TitleLargeTextBlockStyle}">
-                <Run Text="{x:Bind ViewModel.CurrentImageRendering, Mode=OneWay}" />
-                <Run Text="/" />
-                <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
-            </TextBlock>
+                Spacing="4">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
+                    Style="{StaticResource TitleLargeTextBlockStyle}">
+                    <Run Text="{x:Bind ViewModel.CurrentImageRendering, Mode=OneWay}" />
+                    <Run Text="/" />
+                    <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+                </TextBlock>
+                <HyperlinkButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind ViewModel.GoBackCommand}"
+                    Content="Cancel" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>

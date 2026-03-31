@@ -35,7 +35,7 @@ public sealed partial class PreviewStack : UserControl
     public PreviewStack(string path, List<IconSize> sizes, bool showTitle = false)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        iconRootString = sf.Path;
+        iconRootString = Path.Combine(sf.Path, Guid.NewGuid().ToString("N"));
 
         ChosenSizes = [.. sizes];
         imagePath = path;
@@ -377,6 +377,8 @@ public sealed partial class PreviewStack : UserControl
         ChosenSizes.Clear();
         imagePaths.Clear();
         PreviewStackPanel.Children.Clear();
+
+        Directory.CreateDirectory(iconRootString);
 
         MagickImageCollection collection = new(imagePath);
         List<(string, string)> iconImages = [];

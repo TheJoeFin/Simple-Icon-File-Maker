@@ -32,6 +32,7 @@
     <None Remove="Views\EditSizesDialog.xaml" />
     <None Remove="Views\MultiPage.xaml" />
     <None Remove="Views\CropImageDialog.xaml" />
+    <None Remove="Views\PreCheckDialog.xaml" />
     <None Remove="Views\RemoveBackgroundDialog.xaml" />
     <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
@@ -84,6 +85,9 @@
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\CropImageDialog.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+    </Page>
+    <Page Update="Views\PreCheckDialog.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
     </Page>
     <Page Update="Views\RemoveBackgroundDialog.xaml">
