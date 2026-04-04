@@ -179,11 +179,11 @@ public sealed partial class PreviewImage : UserControl
 
     private static ImageBrush CreateCheckerBrush(int size, int baseSideLength, ElementTheme theme)
     {
-        // Bitmap is created at the actual canvas size (size × size) so Stretch.Fill renders
-        // it at exactly 1:1 — no scaling, no interpolation, always crisp edges.
-        // Tile count per side = baseSideLength / 8, driven purely by the icon size.
-        // Math.Round replaces the old exact-divisor loop that failed on prime canvas widths.
-        int tileSize = Math.Max(1, (int)Math.Round(8.0 * size / baseSideLength));
+        // idealTileSize targets ~8 px at the baseSideLength and scales proportionally for
+        // zoomed views.  NearestDivisor then rounds it to the closest exact divisor of
+        // 'size', guaranteeing size % tileSize == 0 — no partial tile, no sliver at the
+        // edge regardless of the canvas size or DPI scale.
+        int idealTileSize = Math.Max(1, (int)Math.Round(8.0 * size / baseSideLength));
 
         WriteableBitmap bitmap = new(size, size);
 
@@ -197,10 +197,10 @@ public sealed partial class PreviewImage : UserControl
         {
             for (int col = 0; col < size; col++)
             {
-                bool isLightTile = ((row / tileSize) + (col / tileSize)) % 2 == 0;
+                bool isLightTile = ((row / idealTileSize) + (col / idealTileSize)) % 2 == 0;
                 byte val = isLightTile ? tileLight : tileDark;
                 int idx = (row * size + col) * 4;
-                pixels[idx] = val; // B
+                pixels[idx] = val;     // B
                 pixels[idx + 1] = val; // G
                 pixels[idx + 2] = val; // R
                 pixels[idx + 3] = 255; // A
