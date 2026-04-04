@@ -54,6 +54,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     public partial bool IsCountdownActive { get; set; } = false;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CropImageCommand))]
     public partial string ImagePath { get; set; } = "";
 
     [ObservableProperty]
@@ -704,7 +705,11 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         }
     }
 
-    [RelayCommand]
+    private bool CanCropImage() =>
+        !string.IsNullOrWhiteSpace(ImagePath) &&
+        !Path.GetExtension(ImagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase);
+
+    [RelayCommand(CanExecute = nameof(CanCropImage))]
     public async Task CropImage()
     {
         if (string.IsNullOrWhiteSpace(ImagePath))
