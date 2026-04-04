@@ -44,6 +44,8 @@ public class StoreService : IStoreService
         }
     }
 
+    private static readonly string[] productKinds = ["Durable", "Consumable"];
+
     public StoreService()
     {
     }
@@ -226,8 +228,8 @@ public class StoreService : IStoreService
 
     private static async Task<StoreProduct?> GetAddOn(string id)
     {
-        if (_productsCache.ContainsKey(id))
-            return _productsCache[id];
+        if (_productsCache.TryGetValue(id, out StoreProduct? value))
+            return value;
 
         if (!NetworkHelper.Instance.ConnectionInformation.IsInternetAvailable)
             return null;
@@ -235,7 +237,7 @@ public class StoreService : IStoreService
         _context ??= StoreContext.GetDefault();
 
         /// Get all add-ons for this app.
-        StoreProductQueryResult result = await _context.GetAssociatedStoreProductsAsync(new string[] { "Durable", "Consumable" });
+        StoreProductQueryResult result = await _context.GetAssociatedStoreProductsAsync(productKinds);
         if (result.ExtendedError is not null)
             return null;
 
