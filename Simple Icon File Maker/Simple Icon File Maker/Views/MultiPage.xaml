@@ -63,11 +63,14 @@
                         <FontIcon
                             FontSize="16"
                             Glyph="&#xE8F4;"
-                            Visibility="{x:Bind ViewModel.IsFromDllExtraction, Converter={StaticResource BoolVis}, Mode=OneWay}" />
+                            Visibility="{x:Bind ViewModel.IsFromDllExtraction,
+                                                Converter={StaticResource BoolVis},
+                                                Mode=OneWay}" />
                         <HyperlinkButton
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.OpenFolderCommand}"
-                            ToolTipService.ToolTip="{x:Bind ViewModel.OpenSourceTooltip, Mode=OneWay}">
+                            ToolTipService.ToolTip="{x:Bind ViewModel.OpenSourceTooltip,
+                                                            Mode=OneWay}">
                             <TextBlock
                                 Text="{x:Bind ViewModel.FolderName}"
                                 TextTrimming="WordEllipsis"
@@ -127,7 +130,9 @@
                 <tk:SettingsExpander Description="Expand for more options" HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}">
                     <Button
                         Command="{x:Bind ViewModel.SaveAllIconsCommand}"
-                        IsEnabled="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolInv}}"
+                        IsEnabled="{x:Bind ViewModel.LoadingImages,
+                                           Mode=OneWay,
+                                           Converter={StaticResource BoolInv}}"
                         Style="{StaticResource AccentButtonStyle}">
                         <TextBlock>
                             <Run Text="Save" />
@@ -199,7 +204,9 @@
                 <Button
                     Height="32"
                     Command="{x:Bind ViewModel.RegenPreviewsCommand}"
-                    Style="{x:Bind ViewModel.IsRefreshNeeded, Mode=OneWay, Converter={StaticResource IsPrimary}}">
+                    Style="{x:Bind ViewModel.IsRefreshNeeded,
+                                   Mode=OneWay,
+                                   Converter={StaticResource IsPrimary}}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -218,7 +225,8 @@
                     <ToggleButton
                         x:Name="ZoomPreviewToggleButton"
                         Height="32"
-                        IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
+                        IsChecked="{x:Bind ViewModel.ArePreviewsZoomed,
+                                           Mode=TwoWay}"
                         Tapped="{x:Bind ViewModel.ZoomPreviews}"
                         ToolTipService.ToolTip="Zoom in on icon previews">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -253,7 +261,8 @@
                 <ItemsControl
                     Grid.Row="1"
                     Padding="6"
-                    ItemsSource="{x:Bind ViewModel.Previews, Mode=OneWay}">
+                    ItemsSource="{x:Bind ViewModel.Previews,
+                                         Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Horizontal" />
@@ -266,7 +275,9 @@
         <Grid
             Grid.Row="1"
             Grid.Column="1"
-            Visibility="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolVis}}">
+            Visibility="{x:Bind ViewModel.LoadingImages,
+                                Mode=OneWay,
+                                Converter={StaticResource BoolVis}}">
             <Viewbox
                 MaxWidth="200"
                 MaxHeight="200"
@@ -279,8 +290,10 @@
                         Fill="{StaticResource CardStrokeColorDefaultSolid}" />
                     <ProgressRing
                         x:Name="LoadingImagesProgress"
-                        IsIndeterminate="{x:Bind ViewModel.IsAssessingFolder, Mode=OneWay}"
-                        Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
+                        IsIndeterminate="{x:Bind ViewModel.IsAssessingFolder,
+                                                 Mode=OneWay}"
+                        Value="{x:Bind ViewModel.FileLoadProgress,
+                                       Mode=OneWay}" />
                 </Grid>
             </Viewbox>
             <StackPanel
@@ -297,7 +310,7 @@
                 </TextBlock>
                 <HyperlinkButton
                     HorizontalAlignment="Center"
-                    Command="{x:Bind ViewModel.GoBackCommand}"
+                    Command="{x:Bind ViewModel.CancelLoadingCommand}"
                     Content="Cancel" />
             </StackPanel>
         </Grid>

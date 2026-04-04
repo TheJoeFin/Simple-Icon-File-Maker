@@ -17,10 +17,7 @@
                 <controls:SettingsCard.HeaderIcon>
                     <FontIcon Glyph="&#xE735;" />
                 </controls:SettingsCard.HeaderIcon>
-                <RatingControl
-                    x:Name="AppRatingControl"
-                    PlaceholderValue="4"
-                    ValueChanged="AppRatingControl_ValueChanged" />
+                <RatingControl x:Name="AppRatingControl" ValueChanged="AppRatingControl_ValueChanged" />
             </controls:SettingsCard>
 
             <controls:SettingsExpander Header="Appearance" IsExpanded="True">
