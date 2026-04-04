@@ -4,6 +4,7 @@ using ImageMagick;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Simple_Icon_File_Maker.Constants;
 using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Contracts.ViewModels;
@@ -15,6 +16,7 @@ using System.Timers;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.Storage.Streams;
 using Windows.System;
 using WinRT.Interop;
 
@@ -29,9 +31,10 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     private const int SettingsSaveDelayMs = 300; // Delay before saving settings
     private const int UiInitializationDelayMs = 200; // Delay to allow UI to initialize
     private int _countdownElapsedMs = 0;
-    private System.Timers.Timer _settingsSaveTimer = new();
+    private readonly System.Timers.Timer _settingsSaveTimer = new();
     private readonly UndoRedo _undoRedo = new();
     private CancellationTokenSource? _loadImageCancellationTokenSource;
+    private bool _hasNavigatedOnce;
     private bool _disposed;
 
     private readonly ILocalSettingsService _localSettingsService;
@@ -42,12 +45,16 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     public partial bool IsAutoRefreshEnabled { get; set; } = true;
 
     [ObservableProperty]
+    public partial bool IsCheckerBackgroundVisible { get; set; } = false;
+
+    [ObservableProperty]
     public partial double CountdownProgress { get; set; } = 0;
 
     [ObservableProperty]
     public partial bool IsCountdownActive { get; set; } = false;
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(CropImageCommand))]
     public partial string ImagePath { get; set; } = "";
 
     [ObservableProperty]
@@ -133,6 +140,23 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         _settingsSaveTimer.Start();
     }
 
+    partial void OnIsCheckerBackgroundVisibleChanged(bool value)
+    {
+        if (PreviewsGrid is null)
+            return;
+
+        foreach (UIElement element in PreviewsGrid.Children)
+        {
+            if (element is Controls.PreviewStack stack)
+            {
+                stack.ShowCheckerBackground = value;
+                stack.UpdateSizeAndZoom();
+            }
+        }
+
+        _localSettingsService.SaveSettingAsync(nameof(IsCheckerBackgroundVisible), value);
+    }
+
     private async void SettingsSaveTimer_Elapsed(object? sender, ElapsedEventArgs e)
     {
         _settingsSaveTimer.Stop();
@@ -150,6 +174,15 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             IsAutoRefreshEnabled = true;
         }
 
+        try
+        {
+            IsCheckerBackgroundVisible = await _localSettingsService.ReadSettingAsync<bool>(nameof(IsCheckerBackgroundVisible));
+        }
+        catch (Exception)
+        {
+            IsCheckerBackgroundVisible = false;
+        }
+
         ShowUpgradeToProButton = !_storeService.OwnsPro;
 
         // Load shared image path from share target activation
@@ -158,11 +191,17 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             ImagePath = App.SharedImagePath;
             App.SharedImagePath = null;
         }
-        // Load CLI args if present
-        else if (App.cliArgs?.Length > 1)
+        // Load CLI args if present on first navigation only
+        else if (!_hasNavigatedOnce && App.cliArgs?.Length > 1)
         {
             ImagePath = App.cliArgs[1];
         }
+
+        _hasNavigatedOnce = true;
+
+        // Skip reloading if an image is already loaded (returning from About page)
+        if (IsImageSelected)
+            return;
 
         LoadIconSizes();
 
@@ -177,7 +216,6 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     public void OnNavigatedFrom()
     {
         _loadImageCancellationTokenSource?.Cancel();
-        Dispose();
     }
 
     [RelayCommand]
@@ -206,7 +244,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             StorageFolder folder = await picker.PickSingleFolderAsync();
 
             if (folder is not null)
-                NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, folder);
+                NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, new MultiPageParameter(folder));
         }
         else
         {
@@ -240,6 +278,35 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
         ImagePath = file.Path;
         await LoadFromImagePathAsync(_loadImageCancellationTokenSource.Token);
+    }
+
+    [RelayCommand]
+    public async Task BrowseAndSelectDll()
+    {
+        FileOpenPicker picker = FilePickerHelper.CreateDllPicker();
+
+        StorageFile file = await picker.PickSingleFileAsync();
+        if (file is null)
+            return;
+
+        string tempFolderPath = Path.Combine(
+            ApplicationData.Current.LocalCacheFolder.Path,
+            "dll_extract");
+
+        if (Directory.Exists(tempFolderPath))
+            Directory.Delete(tempFolderPath, recursive: true);
+
+        IReadOnlyList<string> extractedPaths =
+            await DllIconExtractorHelper.ExtractIconsToFolderAsync(file.Path, tempFolderPath);
+
+        if (extractedPaths.Count == 0)
+        {
+            ShowError($"No icons found in {file.Name}.");
+            return;
+        }
+
+        StorageFolder extractFolder = await StorageFolder.GetFolderFromPathAsync(tempFolderPath);
+        NavigationService.NavigateTo(typeof(MultiViewModel).FullName!, new MultiPageParameter(extractFolder, IsFromDllExtraction: true, SourceFilePath: file.Path));
     }
 
     [RelayCommand]
@@ -369,9 +436,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     {
         try
         {
-            FileSavePicker savePicker = CreateSavePicker();
-            await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
-            InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+            FileSavePicker savePicker = await FilePickerHelper.CreateSavePicker(OutputPath, ImagePath);
 
             StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -410,9 +475,7 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
     {
         try
         {
-            FileSavePicker savePicker = CreateSavePicker();
-            await FilePickerHelper.TrySetSuggestedFolderFromSourceImage(savePicker, ImagePath);
-            InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+            FileSavePicker savePicker = await FilePickerHelper.CreateSavePicker(OutputPath, ImagePath);
 
             StorageFile file = await savePicker.PickSaveFileAsync();
 
@@ -624,9 +687,8 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
             if (dialog.ResultImagePath is not null)
             {
-                ImageMagick.MagickImage resultImage = new(dialog.ResultImagePath);
-                if (MainImage != null)
-                    MainImage.Source = resultImage.ToImageSource();
+                MagickImage resultImage = new(dialog.ResultImagePath);
+                MainImage?.Source = resultImage.ToImageSource();
 
                 MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, dialog.ResultImagePath);
                 _undoRedo.AddUndo(undoRedoItem);
@@ -640,6 +702,41 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             Debug.WriteLine($"Failed to remove background: {ex.Message}");
             ShowError($"Failed to remove background: {ex.Message}");
+        }
+    }
+
+    private bool CanCropImage() =>
+        !string.IsNullOrWhiteSpace(ImagePath) &&
+        !Path.GetExtension(ImagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase);
+
+    [RelayCommand(CanExecute = nameof(CanCropImage))]
+    public async Task CropImage()
+    {
+        if (string.IsNullOrWhiteSpace(ImagePath))
+            return;
+
+        try
+        {
+            CropImageDialog dialog = new(ImagePath);
+            await NavigationService.ShowModal(dialog);
+
+            if (dialog.ResultImagePath is not null)
+            {
+                MagickImage resultImage = new(dialog.ResultImagePath);
+                MainImage?.Source = resultImage.ToImageSource();
+
+                MagickImageUndoRedoItem undoRedoItem = new(MainImage!, ImagePath, dialog.ResultImagePath);
+                _undoRedo.AddUndo(undoRedoItem);
+                UpdateUndoRedoState();
+
+                ImagePath = dialog.ResultImagePath;
+                await RefreshPreviews();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to crop image: {ex.Message}");
+            ShowError($"Failed to crop image: {ex.Message}");
         }
     }
 
@@ -788,7 +885,9 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         }
     }
 
+#pragma warning disable CA1822 // Mark members as static
     public void HandleDragOver(DragEventArgs e)
+#pragma warning restore CA1822 // Mark members as static
     {
         DataPackageView dataView = e.DataView;
 
@@ -898,19 +997,42 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            MagickImage? image = await ImageHelper.LoadImageAsync(ImagePath);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (image == null)
+            if (Path.GetExtension(ImagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase))
             {
-                ShowError("Failed to load image");
-                IsLoading = false;
-                IsImageSelected = false;
-                return;
-            }
+                // Use WinUI 3 native SvgImageSource for lossless vector preview
+                StorageFile svgFile = await StorageFile.GetFileFromPathAsync(ImagePath);
+                using IRandomAccessStream stream = await svgFile.OpenReadAsync();
+                SvgImageSource svgSource = new();
+                SvgImageSourceLoadStatus loadStatus = await svgSource.SetSourceAsync(stream);
 
-            MainImageSource = image.ToImageSource();
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (loadStatus != SvgImageSourceLoadStatus.Success)
+                {
+                    ShowError("Failed to load SVG image");
+                    IsLoading = false;
+                    IsImageSelected = false;
+                    return;
+                }
+
+                MainImageSource = svgSource;
+            }
+            else
+            {
+                MagickImage? image = await ImageHelper.LoadImageAsync(ImagePath);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (image == null)
+                {
+                    ShowError("Failed to load image");
+                    IsLoading = false;
+                    IsImageSelected = false;
+                    return;
+                }
+
+                MainImageSource = image.ToImageSource();
+            }
         }
         catch (OperationCanceledException)
         {
@@ -937,7 +1059,8 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             List<IconSize> selectedSizes = [.. SizesControl.ViewModel.IconSizes.Where(x => x.IsSelected)];
             Controls.PreviewStack previewStack = new(ImagePath, selectedSizes)
             {
-                SortOrder = _iconSizesService.SortOrder
+                SortOrder = _iconSizesService.SortOrder,
+                ShowCheckerBackground = IsCheckerBackgroundVisible
             };
 
             PreviewsGrid?.Children.Add(previewStack);
@@ -1029,32 +1152,6 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
             smallerSide = SizesControl.ViewModel.IconSizes.First(x => x.IsSelected).SideLength;
 
         SizesControl.UpdateEnabledSizes(smallerSide);
-    }
-
-    private FileSavePicker CreateSavePicker()
-    {
-        FileSavePicker savePicker = new()
-        {
-            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-        };
-        savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
-        savePicker.DefaultFileExtension = ".ico";
-        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
-
-        if (!string.IsNullOrWhiteSpace(OutputPath) && File.Exists(OutputPath))
-        {
-            try
-            {
-                Task.Run(async () =>
-                {
-                    StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutputPath);
-                    savePicker.SuggestedSaveFile = previousFile;
-                }).Wait();
-            }
-            catch { }
-        }
-
-        return savePicker;
     }
 
     private void ShowError(string message)

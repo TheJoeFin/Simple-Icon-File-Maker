@@ -1,32 +1,55 @@
+using Simple_Icon_File_Maker.Constants;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 namespace Simple_Icon_File_Maker.Helpers;
 
 public static class FilePickerHelper
 {
-    public static async Task TrySetSuggestedFolderFromSourceImage(FileSavePicker savePicker, string imagePath)
+    public static FileOpenPicker CreateDllPicker()
     {
-        if (string.IsNullOrWhiteSpace(imagePath))
-            return;
-
-        try
+        FileOpenPicker picker = new()
         {
-            // Use the source image file itself to suggest the folder
-            // This makes the picker open in the source image's folder
-            if (File.Exists(imagePath))
+            ViewMode = PickerViewMode.List,
+            SuggestedStartLocation = PickerLocationId.ComputerFolder,
+        };
+
+        foreach (string ext in FileTypes.SupportedDllFormats)
+            picker.FileTypeFilter.Add(ext);
+
+        InitializeWithWindow.Initialize(picker, App.MainWindow.WindowHandle);
+
+        return picker;
+    }
+
+    public static async Task<FileSavePicker> CreateSavePicker(string OutputPath, string ImagePath)
+    {
+        FileSavePicker savePicker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+
+            DefaultFileExtension = ".ico",
+            FileTypeChoices =
             {
-                StorageFile sourceFile = await StorageFile.GetFileFromPathAsync(imagePath);
-                savePicker.SuggestedSaveFile = sourceFile;
-
-                // SuggestedSaveFile overrides SuggestedFileName, so re-set
-                // the name without the source extension to avoid names like "file.png.ico"
-                savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(imagePath);
+                { "ICO File", [".ico"] }
             }
-        }
-        catch
+        };
+
+        if (!string.IsNullOrWhiteSpace(OutputPath) && File.Exists(OutputPath))
         {
-            // If file access fails, fall back to default picker behavior
+            try
+            {
+                StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutputPath);
+                savePicker.SuggestedSaveFile = previousFile;
+            }
+            catch { }
         }
+
+        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath) + ".ico";
+
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
+
+        return savePicker;
     }
 }

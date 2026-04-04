@@ -45,11 +45,6 @@
             <ColumnDefinition Width="2*" />
         </Grid.ColumnDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
         <Grid Grid.Row="1" RowSpacing="12">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
@@ -58,17 +53,24 @@
             </Grid.RowDefinitions>
 
             <!--  Folder name and details  -->
-            <Grid Padding="16,8,8,8" Style="{StaticResource CardStyle}">
+            <Grid Padding="16,0,8,8" Style="{StaticResource CardStyle}">
                 <StackPanel
                     Grid.Row="0"
                     Orientation="Vertical"
                     Spacing="12">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <SymbolIcon Symbol="Folder" />
+                        <SymbolIcon Symbol="Folder" Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}" />
+                        <FontIcon
+                            FontSize="16"
+                            Glyph="&#xE8F4;"
+                            Visibility="{x:Bind ViewModel.IsFromDllExtraction,
+                                                Converter={StaticResource BoolVis},
+                                                Mode=OneWay}" />
                         <HyperlinkButton
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.OpenFolderCommand}"
-                            ToolTipService.ToolTip="Open folder...">
+                            ToolTipService.ToolTip="{x:Bind ViewModel.OpenSourceTooltip,
+                                                            Mode=OneWay}">
                             <TextBlock
                                 Text="{x:Bind ViewModel.FolderName}"
                                 TextTrimming="WordEllipsis"
@@ -79,14 +81,14 @@
                         <SymbolIcon Symbol="BrowsePhotos" />
                         <TextBlock TextWrapping="WrapWholeWords">
                             <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
-                            <Run Text="&#160;image files in the folder." />
+                            <Run Text="{x:Bind ViewModel.FilesDescriptionSuffix, Mode=OneWay}" />
                         </TextBlock>
                     </StackPanel>
                     <StackPanel
                         HorizontalAlignment="Right"
                         Orientation="Horizontal"
                         Spacing="8">
-                        <DropDownButton Content="Options">
+                        <DropDownButton Content="Options" Visibility="{x:Bind ViewModel.IsFolderMode, Converter={StaticResource BoolVis}, Mode=OneWay}">
                             <DropDownButton.Flyout>
                                 <MenuFlyout>
                                     <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.SkipIcoFiles, Mode=TwoWay}" Text="Skip .ico files" />
@@ -95,15 +97,14 @@
                             </DropDownButton.Flyout>
                         </DropDownButton>
                         <Button
-                            Width="138"
                             Height="32"
-                            Padding="0"
+                            Padding="12,0"
                             HorizontalAlignment="Left"
                             Command="{x:Bind ViewModel.GoBackCommand}"
-                            ToolTipService.ToolTip="Close folder and return to start page">
+                            ToolTipService.ToolTip="Return to start page">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <FontIcon FontSize="16" Glyph="&#xE894;" />
-                                <TextBlock Text="Close Folder" TextAlignment="Center" />
+                                <TextBlock Text="{x:Bind ViewModel.CloseButtonText, Mode=OneWay}" TextAlignment="Center" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -129,7 +130,9 @@
                 <tk:SettingsExpander Description="Expand for more options" HeaderIcon="{ui:FontIcon Glyph=&#xEA35;}">
                     <Button
                         Command="{x:Bind ViewModel.SaveAllIconsCommand}"
-                        IsEnabled="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolInv}}"
+                        IsEnabled="{x:Bind ViewModel.LoadingImages,
+                                           Mode=OneWay,
+                                           Converter={StaticResource BoolInv}}"
                         Style="{StaticResource AccentButtonStyle}">
                         <TextBlock>
                             <Run Text="Save" />
@@ -201,7 +204,9 @@
                 <Button
                     Height="32"
                     Command="{x:Bind ViewModel.RegenPreviewsCommand}"
-                    Style="{x:Bind ViewModel.IsRefreshNeeded, Mode=OneWay, Converter={StaticResource IsPrimary}}">
+                    Style="{x:Bind ViewModel.IsRefreshNeeded,
+                                   Mode=OneWay,
+                                   Converter={StaticResource IsPrimary}}">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock
                             FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -211,14 +216,42 @@
                     </StackPanel>
                 </Button>
 
-                <ToggleButton
+                <StackPanel
                     Grid.Column="2"
-                    Height="32"
-                    Content="&#xE8A3;"
-                    FontFamily="{StaticResource SymbolThemeFontFamily}"
-                    FontSize="16"
-                    IsChecked="{x:Bind ViewModel.ArePreviewsZoomed, Mode=TwoWay}"
-                    Tapped="{x:Bind ViewModel.ZoomPreviews}" />
+                    Margin="0,0,8,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <ToggleButton
+                        x:Name="ZoomPreviewToggleButton"
+                        Height="32"
+                        IsChecked="{x:Bind ViewModel.ArePreviewsZoomed,
+                                           Mode=TwoWay}"
+                        Tapped="{x:Bind ViewModel.ZoomPreviews}"
+                        ToolTipService.ToolTip="Zoom in on icon previews">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                FontSize="16"
+                                Text="&#xE8A3;" />
+                            <TextBlock Text="Zoom" />
+                        </StackPanel>
+                    </ToggleButton>
+                    <DropDownButton Height="32" ToolTipService.ToolTip="Preview settings">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock
+                                FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                FontSize="16"
+                                Text="&#xE713;" />
+                            <!--<TextBlock Text="Settings" />-->
+                        </StackPanel>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout>
+                                <ToggleMenuFlyoutItem IsChecked="{x:Bind ViewModel.IsCheckerBackgroundVisible, Mode=TwoWay}" Text="Show Checker Background" />
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </StackPanel>
             </Grid>
 
             <ScrollViewer
@@ -228,7 +261,8 @@
                 <ItemsControl
                     Grid.Row="1"
                     Padding="6"
-                    ItemsSource="{x:Bind ViewModel.Previews, Mode=OneWay}">
+                    ItemsSource="{x:Bind ViewModel.Previews,
+                                         Mode=OneWay}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Horizontal" />
@@ -241,7 +275,9 @@
         <Grid
             Grid.Row="1"
             Grid.Column="1"
-            Visibility="{x:Bind ViewModel.LoadingImages, Mode=OneWay, Converter={StaticResource BoolVis}}">
+            Visibility="{x:Bind ViewModel.LoadingImages,
+                                Mode=OneWay,
+                                Converter={StaticResource BoolVis}}">
             <Viewbox
                 MaxWidth="200"
                 MaxHeight="200"
@@ -254,19 +290,29 @@
                         Fill="{StaticResource CardStrokeColorDefaultSolid}" />
                     <ProgressRing
                         x:Name="LoadingImagesProgress"
-                        IsIndeterminate="False"
-                        Value="{x:Bind ViewModel.FileLoadProgress, Mode=OneWay}" />
+                        IsIndeterminate="{x:Bind ViewModel.IsAssessingFolder,
+                                                 Mode=OneWay}"
+                        Value="{x:Bind ViewModel.FileLoadProgress,
+                                       Mode=OneWay}" />
                 </Grid>
             </Viewbox>
-            <TextBlock
+            <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
-                Style="{StaticResource TitleLargeTextBlockStyle}">
-                <Run Text="{x:Bind ViewModel.CurrentImageRendering, Mode=OneWay}" />
-                <Run Text="/" />
-                <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
-            </TextBlock>
+                Spacing="4">
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    Foreground="{StaticResource AccentTextFillColorPrimaryBrush}"
+                    Style="{StaticResource TitleLargeTextBlockStyle}">
+                    <Run Text="{x:Bind ViewModel.CurrentImageRendering, Mode=OneWay}" />
+                    <Run Text="/" />
+                    <Run Text="{x:Bind ViewModel.NumberOfImageFiles, Mode=OneWay}" />
+                </TextBlock>
+                <HyperlinkButton
+                    HorizontalAlignment="Center"
+                    Command="{x:Bind ViewModel.CancelLoadingCommand}"
+                    Content="Cancel" />
+            </StackPanel>
         </Grid>
     </Grid>
 </Page>

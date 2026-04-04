@@ -14,8 +14,25 @@ public static class ImageHelper
         try
         {
             MagickImage image;
+            string extension = Path.GetExtension(imagePath);
+
+            // For .svg files, rasterize at 512px with transparent background for preview
+            if (extension.Equals(".svg", StringComparison.InvariantCultureIgnoreCase))
+            {
+                MagickReadSettings svgSettings = new()
+                {
+                    BackgroundColor = MagickColors.Transparent,
+                    Width = 512,
+                    Height = 512
+                };
+                image = new(imagePath, svgSettings);
+                MagickGeometry squareGeo = new(512u);
+                image.Extent(squareGeo, Gravity.Center, new MagickColor("#00000000"));
+                return image;
+            }
+
             // For .ico files, load the largest frame instead of the first one
-            if (Path.GetExtension(imagePath).Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
             {
                 MagickImageCollection collection = new(imagePath);
                 // Find the largest frame by area (width * height)
@@ -62,6 +79,10 @@ public static class ImageHelper
     {
         try
         {
+            // SVG is vector and can render at any size — treat as effectively unlimited
+            if (Path.GetExtension(imagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase))
+                return int.MaxValue;
+
             MagickImage image = new(imagePath);
             return (int)Math.Min(image.Width, image.Height);
         }
@@ -76,7 +97,9 @@ public static class ImageHelper
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(imagePath);
         string extension = Path.GetExtension(imagePath);
-        string grayFilePath = Path.Combine(sf.Path, $"{fileName}_gray{extension}");
+        // SVG must be rasterized before filters can be applied — save output as PNG
+        string outputExtension = extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ? ".png" : extension;
+        string grayFilePath = Path.Combine(sf.Path, $"{fileName}_gray{outputExtension}");
         MagickImage image = new(imagePath);
 
         image.Grayscale();
@@ -93,7 +116,8 @@ public static class ImageHelper
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(imagePath);
         string extension = Path.GetExtension(imagePath);
-        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw{extension}");
+        string outputExtension = extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ? ".png" : extension;
+        string bwFilePath = Path.Combine(sf.Path, $"{fileName}_bw{outputExtension}");
         MagickImage image = new(imagePath);
 
         image.Grayscale();
@@ -111,7 +135,8 @@ public static class ImageHelper
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(imagePath);
         string extension = Path.GetExtension(imagePath);
-        string bwkFilePath = Path.Combine(sf.Path, $"{fileName}_bwk{extension}");
+        string outputExtension = extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ? ".png" : extension;
+        string bwkFilePath = Path.Combine(sf.Path, $"{fileName}_bwk{outputExtension}");
         MagickImage image = new(imagePath);
 
         image.Grayscale();
@@ -129,7 +154,8 @@ public static class ImageHelper
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
         string fileName = Path.GetFileNameWithoutExtension(imagePath);
         string extension = Path.GetExtension(imagePath);
-        string invFilePath = Path.Combine(sf.Path, $"{fileName}_inv{extension}");
+        string outputExtension = extension.Equals(".svg", StringComparison.OrdinalIgnoreCase) ? ".png" : extension;
+        string invFilePath = Path.Combine(sf.Path, $"{fileName}_inv{outputExtension}");
         MagickImage image = new(imagePath);
 
         image.Negate(Channels.RGB);

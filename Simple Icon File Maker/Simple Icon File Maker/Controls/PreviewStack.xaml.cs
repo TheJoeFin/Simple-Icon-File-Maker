@@ -3,10 +3,14 @@ using ImageMagick.Factories;
 using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Simple_Icon_File_Maker.Contracts.Services;
 using Simple_Icon_File_Maker.Models;
 using System.Diagnostics;
 using System.Drawing;
 using Windows.Storage;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
+using WinUIEx;
 
 namespace Simple_Icon_File_Maker.Controls;
 
@@ -20,6 +24,7 @@ public sealed partial class PreviewStack : UserControl
     public List<IconSize> ChosenSizes { get; private set; }
 
     public bool IsZoomingPreview { get; set; } = false;
+    public bool ShowCheckerBackground { get; set; } = true;
 
     public bool CanRefresh => CheckIfRefreshIsNeeded();
 
@@ -30,16 +35,22 @@ public sealed partial class PreviewStack : UserControl
     public PreviewStack(string path, List<IconSize> sizes, bool showTitle = false)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
-        iconRootString = sf.Path;
+        iconRootString = Path.Combine(sf.Path, Guid.NewGuid().ToString("N"));
 
         ChosenSizes = [.. sizes];
         imagePath = path;
-        mainImage = new(path);
+        bool isSvgSource = Path.GetExtension(path).Equals(".svg", StringComparison.OrdinalIgnoreCase);
+        mainImage = isSvgSource
+            ? new(path, new MagickReadSettings { BackgroundColor = MagickColors.Transparent })
+            : new(path);
 
         InitializeComponent();
 
         if (showTitle)
+        {
             FileNameText.Text = Path.GetFileName(imagePath);
+            SaveColumnButton.Visibility = Visibility.Visible;
+        }
     }
 
     public async Task<bool> InitializeAsync(IProgress<int> progress)
@@ -156,10 +167,6 @@ public sealed partial class PreviewStack : UserControl
 
         ImagesProgressBar.Value = 0;
         progress.Report(0);
-        if (ChosenSizes.Count == 1)
-            LoadingText.Text = $"Generating {ChosenSizes.Count} preview for {name}...";
-        else
-            LoadingText.Text = $"Generating {ChosenSizes.Count} previews for {name}...";
 
         TextAndProgressBar.Visibility = Visibility.Visible;
 
@@ -173,21 +180,6 @@ public sealed partial class PreviewStack : UserControl
 
         progress.Report(10);
         ImagesProgressBar.Value = 10;
-        SourceImageSize ??= new Size((int)mainImage.Width, (int)mainImage.Height);
-
-        SmallerSourceSide = Math.Min((int)mainImage.Width, (int)mainImage.Height);
-
-        int smallerSide = Math.Min(SourceImageSize.Value.Width, SourceImageSize.Value.Height);
-
-        imagePaths.Clear();
-        PreviewStackPanel.Children.Clear();
-
-        foreach (IconSize iconSize in ChosenSizes)
-        {
-            iconSize.IsEnabled = true;
-            if (iconSize.SideLength > smallerSide)
-                iconSize.IsEnabled = false;
-        }
 
         if (string.IsNullOrWhiteSpace(imagePath) == true)
         {
@@ -195,28 +187,79 @@ public sealed partial class PreviewStack : UserControl
             return false;
         }
 
-        try
+        bool isSvg = Path.GetExtension(imagePath).Equals(".svg", StringComparison.OrdinalIgnoreCase);
+        int smallerSide = 0;
+
+        if (isSvg)
         {
-            _ = await imgFactory.CreateAsync(imagePath);
+            // SVG is vector — it can render at any size, so enable all sizes
+            SmallerSourceSide = int.MaxValue;
+            smallerSide = int.MaxValue;
+            SourceImageSize = null;
+
+            imagePaths.Clear();
+            PreviewStackPanel.Children.Clear();
+
+            foreach (IconSize iconSize in ChosenSizes)
+                iconSize.IsEnabled = true;
+
+            int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
+            if (enabledCount == 1)
+                LoadingText.Text = $"Generating {enabledCount} size for {name}...";
+            else
+                LoadingText.Text = $"Generating {enabledCount} sizes for {name}...";
+
+            progress.Report(15);
+            ImagesProgressBar.Value = 15;
         }
-        catch (Exception)
+        else
         {
-            ClearOutputImages();
-            return false;
+            IMagickImage<ushort>? firstPassImage;
+            try
+            {
+                firstPassImage = await imgFactory.CreateAsync(imagePath);
+            }
+            catch (Exception)
+            {
+                ClearOutputImages();
+                return false;
+            }
+
+            using (firstPassImage)
+            {
+                SourceImageSize = new Size((int)firstPassImage.Width, (int)firstPassImage.Height);
+                SmallerSourceSide = Math.Min((int)firstPassImage.Width, (int)firstPassImage.Height);
+                smallerSide = SmallerSourceSide;
+
+                imagePaths.Clear();
+                PreviewStackPanel.Children.Clear();
+
+                foreach (IconSize iconSize in ChosenSizes)
+                {
+                    iconSize.IsEnabled = true;
+                    if (iconSize.SideLength > smallerSide)
+                        iconSize.IsEnabled = false;
+                }
+
+                int enabledCount = ChosenSizes.Count(x => x.IsEnabled);
+                if (enabledCount == 1)
+                    LoadingText.Text = $"Generating {enabledCount} size for {name}...";
+                else
+                    LoadingText.Text = $"Generating {enabledCount} sizes for {name}...";
+
+                progress.Report(15);
+                ImagesProgressBar.Value = 15;
+                IMagickGeometry size = geoFactory.Create(
+                    (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
+                size.IgnoreAspectRatio = false;
+                size.FillArea = true;
+
+                MagickColor transparent = new("#00000000");
+                firstPassImage.Extent(size, Gravity.Center, transparent);
+
+                await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
+            }
         }
-
-        progress.Report(15);
-        ImagesProgressBar.Value = 15;
-        using IMagickImage<ushort> firstPassImage = await imgFactory.CreateAsync(imagePath);
-        IMagickGeometry size = geoFactory.Create(
-            (uint)Math.Max(SourceImageSize.Value.Width, SourceImageSize.Value.Height));
-        size.IgnoreAspectRatio = false;
-        size.FillArea = true;
-
-        MagickColor transparent = new("#00000000");
-        firstPassImage.Extent(size, Gravity.Center, transparent);
-
-        await firstPassImage.WriteAsync(croppedImagePath, MagickFormat.Png32);
 
         MagickImageCollection collection = [];
 
@@ -234,38 +277,76 @@ public sealed partial class PreviewStack : UserControl
 
         foreach (int sideLength in selectedSizes)
         {
-            using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
-            if (smallerSide < sideLength)
-                continue;
-
-            currentLocation++;
-            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
-            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
-            IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
-            iconSize.IgnoreAspectRatio = false;
-
-            if (smallerSide > sideLength)
+            if (isSvg)
             {
-                await Task.Run(() =>
+                // Render the SVG fresh at each target size for lossless quality
+                MagickReadSettings svgSettings = new()
                 {
-                    image.Scale(iconSize);
-                    image.Sharpen();
-                });
+                    BackgroundColor = MagickColors.Transparent,
+                    Width = (uint)sideLength,
+                    Height = (uint)sideLength
+                };
+                using IMagickImage<ushort> image = await imgFactory.CreateAsync(imagePath, svgSettings);
+
+                // Ensure exact square dimensions with transparent fill
+                IMagickGeometry squareGeo = geoFactory.Create((uint)sideLength);
+                MagickColor transparent = new("#00000000");
+                image.Extent(squareGeo, Gravity.Center, transparent);
+
+                // Final scale to exact size in case the SVG rendered at different dimensions
+                IMagickGeometry exactSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
+                exactSize.IgnoreAspectRatio = true;
+                await Task.Run(() => image.Scale(exactSize));
+
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+
+                string iconPathSvg = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+                if (File.Exists(iconPathSvg))
+                    File.Delete(iconPathSvg);
+
+                await image.WriteAsync(iconPathSvg, MagickFormat.Png32);
+                collection.Add(iconPathSvg);
+                imagePaths.Add((sideLength.ToString(), iconPathSvg));
+
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
             }
+            else
+            {
+                using IMagickImage<ushort> image = await imgFactory.CreateAsync(croppedImagePath);
+                if (smallerSide < sideLength)
+                    continue;
 
-            string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+                IMagickGeometry iconSize = geoFactory.Create((uint)sideLength, (uint)sideLength);
+                iconSize.IgnoreAspectRatio = false;
 
-            if (File.Exists(iconPath))
-                File.Delete(iconPath);
+                if (smallerSide > sideLength)
+                {
+                    await Task.Run(() =>
+                    {
+                        image.Scale(iconSize);
+                        image.Sharpen();
+                    });
+                }
 
-            await image.WriteAsync(iconPath, MagickFormat.Png32);
+                string iconPath = $"{iconRootString}\\{Random.Shared.Next()}Image{sideLength}.png";
+                if (File.Exists(iconPath))
+                    File.Delete(iconPath);
 
-            collection.Add(iconPath);
-            imagePaths.Add((sideLength.ToString(), iconPath));
+                await image.WriteAsync(iconPath, MagickFormat.Png32);
+                collection.Add(iconPath);
+                imagePaths.Add((sideLength.ToString(), iconPath));
 
-            currentLocation++;
-            progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
-            ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+                currentLocation++;
+                progress.Report(baseAtThisPoint + (currentLocation * halfChunkPerImage));
+                ImagesProgressBar.Value = baseAtThisPoint + (currentLocation * halfChunkPerImage);
+            }
         }
 
         try
@@ -297,6 +378,8 @@ public sealed partial class PreviewStack : UserControl
         imagePaths.Clear();
         PreviewStackPanel.Children.Clear();
 
+        Directory.CreateDirectory(iconRootString);
+
         MagickImageCollection collection = new(imagePath);
         List<(string, string)> iconImages = [];
 
@@ -327,7 +410,7 @@ public sealed partial class PreviewStack : UserControl
             int sideLength = (int)image.Width;
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(pathForSingleImage);
 
-            PreviewImage previewImage = new(imageSF, sideLength, imageName);
+            PreviewImage previewImage = new(imageSF, sideLength, imageName, ShowCheckerBackground);
             PreviewStackPanel.Children.Add(previewImage);
 
             currentLocation++;
@@ -368,7 +451,7 @@ public sealed partial class PreviewStack : UserControl
 
             StorageFile imageSF = await StorageFile.GetFileFromPathAsync(imagePath);
 
-            PreviewImage image = new(imageSF, sideLength, originalName);
+            PreviewImage image = new(imageSF, sideLength, originalName, ShowCheckerBackground);
 
             PreviewStackPanel.Children.Add(image);
         }
@@ -414,6 +497,41 @@ public sealed partial class PreviewStack : UserControl
             if (!double.IsNaN(ActualWidth) && ActualWidth > 40)
                 img.ZoomedWidthSpace = (int)ActualWidth - 40;
             img.ZoomPreview = IsZoomingPreview;
+            img.ShowCheckerBackground = ShowCheckerBackground;
         }
+    }
+
+    private async void SaveIconMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        await SaveColumnWithPickerAsync(saveAllImages: false);
+    }
+
+    private async void SaveAllImagesMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        await SaveColumnWithPickerAsync(saveAllImages: true);
+    }
+
+    private async Task SaveColumnWithPickerAsync(bool saveAllImages)
+    {
+        FileSavePicker savePicker = new()
+        {
+            SuggestedStartLocation = PickerLocationId.PicturesLibrary,
+            SuggestedFileName = Path.GetFileNameWithoutExtension(imagePath),
+            DefaultFileExtension = ".ico",
+        };
+        savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
+        InitializeWithWindow.Initialize(savePicker, App.MainWindow.GetWindowHandle());
+
+        StorageFile? file = await savePicker.PickSaveFileAsync();
+        if (file is null)
+            return;
+
+        IIconSizesService iconSizesService = App.GetService<IIconSizesService>();
+        IconSortOrder sortOrder = iconSizesService.SortOrder;
+
+        if (saveAllImages)
+            await SaveAllImagesAsync(file.Path, sortOrder);
+        else
+            await SaveIconAsync(file.Path, sortOrder);
     }
 }
