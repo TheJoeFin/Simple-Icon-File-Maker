@@ -131,6 +131,13 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     }
 
     [RelayCommand]
+    public void CancelLoading()
+    {
+        folderLoadCancelled = true;
+
+    }
+
+    [RelayCommand]
     public async Task RegenPreviews()
     {
         if (SizesControl == null)
@@ -352,7 +359,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
     {
         StorageFile[] imageFiles = [.. files.Where(f => f.IsSupportedImageFormat())];
         Task<Windows.Storage.FileProperties.BasicProperties>[] propTasks =
-            imageFiles.Select(f => f.GetBasicPropertiesAsync().AsTask()).ToArray();
+            [.. imageFiles.Select(f => f.GetBasicPropertiesAsync().AsTask())];
         Windows.Storage.FileProperties.BasicProperties[] allProps =
             await Task.WhenAll(propTasks);
 
@@ -405,8 +412,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
                 // Seed .ico default from the current SkipIcoFiles preference
                 FileGroupItem? icoGroup = groups.FirstOrDefault(g =>
                     g.Extension.Equals(".ico", StringComparison.OrdinalIgnoreCase));
-                if (icoGroup is not null)
-                    icoGroup.IsIncluded = !SkipIcoFiles;
+                icoGroup?.IsIncluded = !SkipIcoFiles;
 
                 PreCheckDialog dialog = new() { TotalImageCount = NumberOfImageFiles };
                 foreach (FileGroupItem group in groups)
