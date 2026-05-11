@@ -1,0 +1,84 @@
+<ContentDialog
+    x:Class="Simple_Icon_File_Maker.SetCursorHotspotDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Set Cursor Hotspot"
+    CloseButtonText="Cancel"
+    Loaded="ContentDialog_Loaded"
+    PrimaryButtonText="Apply"
+    mc:Ignorable="d">
+
+    <Grid MinWidth="320" RowSpacing="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="Click the image to position the hotspot — the pixel that registers mouse clicks."
+            TextWrapping="Wrap" />
+
+        <Border
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="12">
+            <Grid
+                x:Name="ImageGrid"
+                Width="256"
+                Height="256"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                PointerMoved="ImageGrid_PointerMoved"
+                PointerPressed="ImageGrid_PointerPressed"
+                PointerReleased="ImageGrid_PointerReleased">
+                <Image
+                    x:Name="PreviewImage"
+                    IsHitTestVisible="False"
+                    Stretch="Uniform" />
+                <Canvas x:Name="CrosshairCanvas" IsHitTestVisible="False">
+                    <Line
+                        x:Name="CrosshairH"
+                        Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                        StrokeDashArray="4 2"
+                        StrokeThickness="1"
+                        X1="0"
+                        X2="256"
+                        Y1="0"
+                        Y2="0" />
+                    <Line
+                        x:Name="CrosshairV"
+                        Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                        StrokeDashArray="4 2"
+                        StrokeThickness="1"
+                        X1="0"
+                        X2="0"
+                        Y1="0"
+                        Y2="256" />
+                    <Ellipse
+                        x:Name="HotspotDot"
+                        Width="8"
+                        Height="8"
+                        Fill="{ThemeResource AccentFillColorDefaultBrush}" />
+                </Canvas>
+            </Grid>
+        </Border>
+
+        <StackPanel
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <TextBlock VerticalAlignment="Center" Text="Hotspot:" />
+            <TextBlock
+                x:Name="HotspotText"
+                VerticalAlignment="Center"
+                Text="X: 0,  Y: 0" />
+        </StackPanel>
+    </Grid>
+</ContentDialog>
