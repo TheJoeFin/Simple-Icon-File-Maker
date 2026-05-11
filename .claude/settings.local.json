@@ -5,7 +5,9 @@
       "Bash(grep -E \"\\\\.\\(cs|xaml\\)$\")",
       "Bash(gh issue view:*)",
       "WebSearch",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "WebFetch(domain:trillian.mit.edu)"
     ]
   }
 }
