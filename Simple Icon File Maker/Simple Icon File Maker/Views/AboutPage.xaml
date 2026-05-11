@@ -114,6 +114,17 @@
                     <SymbolIcon Symbol="List" />
                 </controls:SettingsExpander.HeaderIcon>
                 <controls:SettingsExpander.Items>
+                    <controls:SettingsCard Header="v 1.17">
+                        <controls:SettingsCard.Description>
+                            <TextBlock>
+                                <LineBreak />
+                                ● Save as .cur cursor files<LineBreak />
+                                ● Set cursor hotspot with dialog<LineBreak />
+                                ● Improved file picker behavior<LineBreak />
+                                ● Update packages<LineBreak />
+                            </TextBlock>
+                        </controls:SettingsCard.Description>
+                    </controls:SettingsCard>
                     <controls:SettingsCard Header="v 1.16">
                         <controls:SettingsCard.Description>
                             <TextBlock>
