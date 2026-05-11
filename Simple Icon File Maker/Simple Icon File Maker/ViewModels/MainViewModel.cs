@@ -55,7 +55,17 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CropImageCommand))]
+    [NotifyPropertyChangedFor(nameof(IsCurSource))]
+    [NotifyPropertyChangedFor(nameof(IsNotCurSource))]
+    [NotifyPropertyChangedFor(nameof(SaveButtonLabel))]
     public partial string ImagePath { get; set; } = "";
+
+    public bool IsCurSource =>
+        Path.GetExtension(ImagePath).Equals(".cur", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsNotCurSource => !IsCurSource;
+
+    public string SaveButtonLabel => IsCurSource ? "Save cursor" : "Save icon";
 
     [ObservableProperty]
     public partial string OutputPath { get; set; } = "";
@@ -463,6 +473,64 @@ public partial class MainViewModel : ObservableRecipient, INavigationAware, IDis
         {
             Debug.WriteLine($"Failed to save icon: {ex.Message}");
             ShowError($"Failed to save icon: {ex.Message}");
+        }
+        finally
+        {
+            CanSave = true;
+        }
+    }
+
+    [RelayCommand]
+    public async Task SaveIconAsCursor()
+    {
+        try
+        {
+            int hotspotX = 0, hotspotY = 0, referenceSize = -1;
+
+            Controls.PreviewStack? firstStack = PreviewsGrid?.Children
+                .OfType<Controls.PreviewStack>()
+                .FirstOrDefault();
+
+            if (firstStack?.LargestImagePath is string largestPath)
+            {
+                SetCursorHotspotDialog hotspotDialog = new(largestPath);
+                await NavigationService.ShowModal(hotspotDialog);
+
+                if (!hotspotDialog.Confirmed)
+                    return;
+
+                hotspotX = hotspotDialog.HotspotX;
+                hotspotY = hotspotDialog.HotspotY;
+                referenceSize = hotspotDialog.ReferenceSize;
+            }
+
+            FileSavePicker savePicker = await FilePickerHelper.CreateSavePicker(OutputPath, ImagePath, ".cur");
+
+            StorageFile file = await savePicker.PickSaveFileAsync();
+
+            if (file is null)
+                return;
+
+            OutputPath = file.Path;
+            CanSave = false;
+
+            IconSortOrder sortOrder = _iconSizesService.SortOrder;
+
+            if (PreviewsGrid != null)
+            {
+                foreach (UIElement element in PreviewsGrid.Children)
+                {
+                    if (element is Controls.PreviewStack stack)
+                        await stack.SaveIconAsync(OutputPath, sortOrder, hotspotX, hotspotY, referenceSize);
+                }
+            }
+
+            OpenFolderButtonVisible = true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to save cursor: {ex.Message}");
+            ShowError($"Failed to save cursor: {ex.Message}");
         }
         finally
         {

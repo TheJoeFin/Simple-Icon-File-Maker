@@ -414,6 +414,11 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
                     g.Extension.Equals(".ico", StringComparison.OrdinalIgnoreCase));
                 icoGroup?.IsIncluded = !SkipIcoFiles;
 
+                FileGroupItem? curGroup = groups.FirstOrDefault(g =>
+                    g.Extension.Equals(".cur", StringComparison.OrdinalIgnoreCase));
+                if (curGroup is not null)
+                    curGroup.IsIncluded = !SkipIcoFiles;
+
                 PreCheckDialog dialog = new() { TotalImageCount = NumberOfImageFiles };
                 foreach (FileGroupItem group in groups)
                     dialog.FileGroups.Add(group);
@@ -436,7 +441,7 @@ public partial class MultiViewModel : ObservableRecipient, INavigationAware
 
         // If the dialog was not shown, honour SkipIcoFiles via the exclusion set
         if (!dialogWasShown && SkipIcoFiles)
-            _excludedExtensions = [.. _excludedExtensions.Append(".ico")];
+            _excludedExtensions = [.. _excludedExtensions.Append(".ico").Append(".cur")];
 
         // Recalculate total to match what will actually be processed
         NumberOfImageFiles = tempFiles.Count(f =>

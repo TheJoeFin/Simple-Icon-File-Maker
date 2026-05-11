@@ -191,7 +191,11 @@
                 Margin="24,24,24,24"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
+                RenderTransformOrigin="0.5,0.5"
                 Visibility="Collapsed">
+                <Viewbox.RenderTransform>
+                    <ScaleTransform x:Name="MainImageScale" ScaleX="1" ScaleY="1" />
+                </Viewbox.RenderTransform>
                 <Image
                     x:Name="MainImage"
                     Source="{x:Bind ViewModel.MainImageSource,
@@ -363,6 +367,7 @@
         <Grid
             x:Name="SettingsCard"
             Grid.Row="2"
+            Opacity="0"
             Style="{StaticResource CardStyle}"
             Visibility="{x:Bind ViewModel.IsImageSelected,
                                 Converter={StaticResource BoolVis},
@@ -397,21 +402,42 @@
                         Visibility="{x:Bind ViewModel.OpenFolderButtonVisible,
                                             Converter={StaticResource BoolVis},
                                             Mode=OneWay}" />
-                    <Button
+                    <SplitButton
                         x:Name="SaveBTN"
-                        Command="{x:Bind ViewModel.SaveIconCommand}"
+                        Click="SaveBTN_Click"
                         IsEnabled="{x:Bind ViewModel.CanSave,
                                            Mode=OneWay}"
-                        Style="{StaticResource AccentButtonStyle}"
-                        ToolTipService.ToolTip="Save all images as a combined .ico">
+                        ToolTipService.ToolTip="Save all images as a combined icon file">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <FontIcon FontSize="16" Glyph="&#xE74E;" />
-                            <TextBlock VerticalAlignment="Center" Text="Save icon" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="{x:Bind ViewModel.SaveButtonLabel, Mode=OneWay}" />
                         </StackPanel>
-                        <Button.KeyboardAccelerators>
+                        <SplitButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SaveIconAsCursorCommand}"
+                                    Text="Save as cursor (.cur)"
+                                    Visibility="{x:Bind ViewModel.IsNotCurSource, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE74E;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    Command="{x:Bind ViewModel.SaveIconCommand}"
+                                    Text="Save as icon (.ico)"
+                                    Visibility="{x:Bind ViewModel.IsCurSource, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE74E;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </SplitButton.Flyout>
+                        <SplitButton.KeyboardAccelerators>
                             <KeyboardAccelerator Key="S" Modifiers="Control" />
-                        </Button.KeyboardAccelerators>
-                    </Button>
+                        </SplitButton.KeyboardAccelerators>
+                    </SplitButton>
                     <Button
                         x:Name="SaveAllBTN"
                         Command="{x:Bind ViewModel.SaveAllImagesCommand}"
@@ -432,6 +458,7 @@
             x:Name="PreviewCard"
             Grid.RowSpan="2"
             Grid.Column="1"
+            Opacity="0"
             Style="{StaticResource CardStyle}"
             Visibility="{x:Bind ViewModel.IsImageSelected,
                                 Converter={StaticResource BoolVis},
@@ -576,6 +603,40 @@
                         <Setter Target="errorInfoBar.IsOpen" Value="False" />
                         <Setter Target="MainImageViewbox.Visibility" Value="Visible" />
                     </VisualState.Setters>
+                    <VisualState.Storyboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.3"
+                                Storyboard.TargetName="MainImageViewbox"
+                                Storyboard.TargetProperty="Opacity">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                From="0.85"
+                                To="1"
+                                Duration="0:0:0.3"
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleX">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                From="0.85"
+                                To="1"
+                                Duration="0:0:0.3"
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleY">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </VisualState.Storyboard>
                 </VisualState>
                 <VisualState x:Name="ImageSelectedState">
                     <VisualState.Setters>
@@ -591,6 +652,62 @@
                         <Setter Target="UpgradeProHypBtn.Visibility" Value="Collapsed" />
                         <Setter Target="MainImageViewbox.Visibility" Value="Visible" />
                     </VisualState.Setters>
+                    <VisualState.Storyboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.3"
+                                Storyboard.TargetName="MainImageViewbox"
+                                Storyboard.TargetProperty="Opacity">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                From="0.85"
+                                To="1"
+                                Duration="0:0:0.3"
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleX">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                From="0.85"
+                                To="1"
+                                Duration="0:0:0.3"
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleY">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                BeginTime="0:0:0.05"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.4"
+                                Storyboard.TargetName="PreviewCard"
+                                Storyboard.TargetProperty="Opacity">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation
+                                BeginTime="0:0:0.1"
+                                From="0"
+                                To="1"
+                                Duration="0:0:0.35"
+                                Storyboard.TargetName="SettingsCard"
+                                Storyboard.TargetProperty="Opacity">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </VisualState.Storyboard>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>

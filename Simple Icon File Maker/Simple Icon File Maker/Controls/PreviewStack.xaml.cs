@@ -4,6 +4,7 @@ using ImageMagick.ImageOptimizers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Simple_Icon_File_Maker.Contracts.Services;
+using Simple_Icon_File_Maker.Helpers;
 using Simple_Icon_File_Maker.Models;
 using System.Diagnostics;
 using System.Drawing;
@@ -32,6 +33,11 @@ public sealed partial class PreviewStack : UserControl
 
     public IconSortOrder SortOrder { get; set; } = IconSortOrder.LargestFirst;
 
+    public string? LargestImagePath => imagePaths
+        .OrderByDescending(p => int.TryParse(p.Item1, out int size) ? size : 0)
+        .Select(p => p.Item2)
+        .FirstOrDefault();
+
     public PreviewStack(string path, List<IconSize> sizes, bool showTitle = false)
     {
         StorageFolder sf = ApplicationData.Current.LocalCacheFolder;
@@ -57,7 +63,8 @@ public sealed partial class PreviewStack : UserControl
     {
         string extension = Path.GetExtension(imagePath);
 
-        if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+        if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase)
+            || extension.Equals(".cur", StringComparison.InvariantCultureIgnoreCase))
             return await OpenIconFile(progress);
         else
             return await GeneratePreviewImagesAsync(progress);
@@ -83,7 +90,7 @@ public sealed partial class PreviewStack : UserControl
         PreviewStackPanel.Children.Clear();
     }
 
-    public async Task SaveIconAsync(string outputPath = "", IconSortOrder sortOrder = IconSortOrder.LargestFirst)
+    public async Task SaveIconAsync(string outputPath = "", IconSortOrder sortOrder = IconSortOrder.LargestFirst, int hotspotX = 0, int hotspotY = 0, int referenceSize = -1)
     {
         MagickImageCollection collection = [];
 
@@ -98,22 +105,44 @@ public sealed partial class PreviewStack : UserControl
         foreach ((_, string path) in sortedPaths)
             collection.Add(path);
 
+        bool isCurOutput = outputPath.EndsWith(".cur", StringComparison.OrdinalIgnoreCase);
+
         if (string.IsNullOrWhiteSpace(outputPath))
         {
             outputPath = Path.Combine(Path.GetDirectoryName(imagePath) ?? string.Empty,
                 $"{Path.GetFileNameWithoutExtension(imagePath)}.ico");
         }
 
-        await Task.Run(async () =>
-    {
-        await collection.WriteAsync(outputPath);
-
-        IcoOptimizer icoOpti = new()
+        if (isCurOutput)
         {
-            OptimalCompression = true
-        };
-        icoOpti.Compress(outputPath);
-    });
+            string tempIcoPath = Path.ChangeExtension(outputPath, ".ico.tmp");
+            await Task.Run(async () =>
+            {
+                await collection.WriteAsync(tempIcoPath);
+
+                IcoOptimizer icoOpti = new()
+                {
+                    OptimalCompression = true
+                };
+                icoOpti.Compress(tempIcoPath);
+
+                await CurFileHelper.ConvertIcoToCurAsync(tempIcoPath, outputPath, hotspotX, hotspotY, referenceSize);
+                File.Delete(tempIcoPath);
+            });
+        }
+        else
+        {
+            await Task.Run(async () =>
+            {
+                await collection.WriteAsync(outputPath);
+
+                IcoOptimizer icoOpti = new()
+                {
+                    OptimalCompression = true
+                };
+                icoOpti.Compress(outputPath);
+            });
+        }
     }
 
     public async Task SaveAllImagesAsync(string outputPath = "", IconSortOrder sortOrder = IconSortOrder.LargestFirst)

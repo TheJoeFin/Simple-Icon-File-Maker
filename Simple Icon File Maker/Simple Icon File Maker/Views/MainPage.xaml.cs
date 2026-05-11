@@ -112,6 +112,14 @@ public sealed partial class MainPage : Page
         await ViewModel.PasteFromClipboard();
     }
 
+    private async void SaveBTN_Click(SplitButton sender, SplitButtonClickEventArgs args)
+    {
+        if (ViewModel.IsCurSource)
+            await ViewModel.SaveIconAsCursorCommand.ExecuteAsync(null);
+        else
+            await ViewModel.SaveIconCommand.ExecuteAsync(null);
+    }
+
     private void MenuFlyout_Opening(object sender, object e)
     {
         bool ownsPro = ViewModel.CheckIfProFeatureAllowed();
