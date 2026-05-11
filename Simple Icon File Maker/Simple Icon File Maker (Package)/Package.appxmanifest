@@ -10,7 +10,7 @@
   <Identity
     Name="40087JoeFinApps.SimpleIconFileMaker"
     Publisher="CN=153F3B0F-BA3D-4964-8098-71AC78A1DF6A"
-    Version="1.16.0.0" />
+    Version="1.17.0.0" />
 
     
   <Properties>
@@ -53,9 +53,10 @@
           <uap:FileTypeAssociation Name="simple-icon-file-maker" DesiredView="default">
             <uap:SupportedFileTypes>
               <uap:FileType>.ico</uap:FileType>
+              <uap:FileType>.cur</uap:FileType>
             </uap:SupportedFileTypes>
             <uap:DisplayName>Simple Icon File Maker</uap:DisplayName>
-            <uap:InfoTip>Open icon file and see all sizes</uap:InfoTip>
+            <uap:InfoTip>Open icon or cursor file and see all sizes</uap:InfoTip>
             <uap:Logo>Images\Image128.png</uap:Logo>
           </uap:FileTypeAssociation>
         </uap:Extension>
@@ -67,6 +68,7 @@
               <uap:FileType>.jpeg</uap:FileType>
               <uap:FileType>.bmp</uap:FileType>
               <uap:FileType>.ico</uap:FileType>
+              <uap:FileType>.cur</uap:FileType>
             </uap:SupportedFileTypes>
             <uap:DataFormat>Bitmap</uap:DataFormat>
           </uap:ShareTarget>

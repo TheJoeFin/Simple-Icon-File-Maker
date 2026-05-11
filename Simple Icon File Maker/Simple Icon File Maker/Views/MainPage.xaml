@@ -410,16 +410,16 @@
                         ToolTipService.ToolTip="Save all images as a combined icon file">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <FontIcon FontSize="16" Glyph="&#xE74E;" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Text="{x:Bind ViewModel.SaveButtonLabel, Mode=OneWay}" />
+                            <TextBlock VerticalAlignment="Center" Text="{x:Bind ViewModel.SaveButtonLabel, Mode=OneWay}" />
                         </StackPanel>
                         <SplitButton.Flyout>
                             <MenuFlyout Placement="Bottom">
                                 <MenuFlyoutItem
                                     Command="{x:Bind ViewModel.SaveIconAsCursorCommand}"
                                     Text="Save as cursor (.cur)"
-                                    Visibility="{x:Bind ViewModel.IsNotCurSource, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                                    Visibility="{x:Bind ViewModel.IsNotCurSource,
+                                                        Converter={StaticResource BoolVis},
+                                                        Mode=OneWay}">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xE74E;" />
                                     </MenuFlyoutItem.Icon>
@@ -427,7 +427,9 @@
                                 <MenuFlyoutItem
                                     Command="{x:Bind ViewModel.SaveIconCommand}"
                                     Text="Save as icon (.ico)"
-                                    Visibility="{x:Bind ViewModel.IsCurSource, Converter={StaticResource BoolVis}, Mode=OneWay}">
+                                    Visibility="{x:Bind ViewModel.IsCurSource,
+                                                        Converter={StaticResource BoolVis},
+                                                        Mode=OneWay}">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xE74E;" />
                                     </MenuFlyoutItem.Icon>
@@ -606,31 +608,31 @@
                     <VisualState.Storyboard>
                         <Storyboard>
                             <DoubleAnimation
+                                Storyboard.TargetName="MainImageViewbox"
+                                Storyboard.TargetProperty="Opacity"
                                 From="0"
                                 To="1"
-                                Duration="0:0:0.3"
-                                Storyboard.TargetName="MainImageViewbox"
-                                Storyboard.TargetProperty="Opacity">
+                                Duration="0:0:0.3">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
                             <DoubleAnimation
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleX"
                                 From="0.85"
                                 To="1"
-                                Duration="0:0:0.3"
-                                Storyboard.TargetName="MainImageScale"
-                                Storyboard.TargetProperty="ScaleX">
+                                Duration="0:0:0.3">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
                             <DoubleAnimation
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleY"
                                 From="0.85"
                                 To="1"
-                                Duration="0:0:0.3"
-                                Storyboard.TargetName="MainImageScale"
-                                Storyboard.TargetProperty="ScaleY">
+                                Duration="0:0:0.3">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
@@ -655,53 +657,53 @@
                     <VisualState.Storyboard>
                         <Storyboard>
                             <DoubleAnimation
+                                Storyboard.TargetName="MainImageViewbox"
+                                Storyboard.TargetProperty="Opacity"
                                 From="0"
                                 To="1"
-                                Duration="0:0:0.3"
-                                Storyboard.TargetName="MainImageViewbox"
-                                Storyboard.TargetProperty="Opacity">
+                                Duration="0:0:0.3">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
                             <DoubleAnimation
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleX"
                                 From="0.85"
                                 To="1"
-                                Duration="0:0:0.3"
-                                Storyboard.TargetName="MainImageScale"
-                                Storyboard.TargetProperty="ScaleX">
+                                Duration="0:0:0.3">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
                             <DoubleAnimation
+                                Storyboard.TargetName="MainImageScale"
+                                Storyboard.TargetProperty="ScaleY"
                                 From="0.85"
                                 To="1"
-                                Duration="0:0:0.3"
-                                Storyboard.TargetName="MainImageScale"
-                                Storyboard.TargetProperty="ScaleY">
+                                Duration="0:0:0.3">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
                             <DoubleAnimation
                                 BeginTime="0:0:0.05"
+                                Storyboard.TargetName="PreviewCard"
+                                Storyboard.TargetProperty="Opacity"
                                 From="0"
                                 To="1"
-                                Duration="0:0:0.4"
-                                Storyboard.TargetName="PreviewCard"
-                                Storyboard.TargetProperty="Opacity">
+                                Duration="0:0:0.4">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>
                             </DoubleAnimation>
                             <DoubleAnimation
                                 BeginTime="0:0:0.1"
+                                Storyboard.TargetName="SettingsCard"
+                                Storyboard.TargetProperty="Opacity"
                                 From="0"
                                 To="1"
-                                Duration="0:0:0.35"
-                                Storyboard.TargetName="SettingsCard"
-                                Storyboard.TargetProperty="Opacity">
+                                Duration="0:0:0.35">
                                 <DoubleAnimation.EasingFunction>
                                     <CubicEase EasingMode="EaseOut" />
                                 </DoubleAnimation.EasingFunction>

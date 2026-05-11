@@ -24,11 +24,11 @@
 
         <Border
             Grid.Row="1"
+            Padding="12"
             HorizontalAlignment="Center"
             BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="4"
-            Padding="12">
+            CornerRadius="4">
             <Grid
                 x:Name="ImageGrid"
                 Width="256"
