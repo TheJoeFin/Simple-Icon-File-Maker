@@ -115,7 +115,7 @@ public sealed partial class PreviewStack : UserControl
 
         if (isCurOutput)
         {
-            string tempIcoPath = Path.ChangeExtension(outputPath, ".ico.tmp");
+            string tempIcoPath = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(outputPath) + ".ico");
             await Task.Run(async () =>
             {
                 await collection.WriteAsync(tempIcoPath);

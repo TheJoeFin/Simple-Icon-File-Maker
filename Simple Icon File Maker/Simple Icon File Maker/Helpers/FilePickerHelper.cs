@@ -31,14 +31,20 @@ public static class FilePickerHelper
         FileSavePicker savePicker = new()
         {
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
-
             DefaultFileExtension = defaultExtension,
-            FileTypeChoices =
-            {
-                { "ICO File", [".ico"] },
-                { "CUR File", [".cur"] }
-            }
         };
+
+        // The first entry in FileTypeChoices is pre-selected by the picker, so put the desired type first.
+        if (defaultExtension.Equals(".cur", StringComparison.OrdinalIgnoreCase))
+        {
+            savePicker.FileTypeChoices.Add("CUR File", [".cur"]);
+            savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
+        }
+        else
+        {
+            savePicker.FileTypeChoices.Add("ICO File", [".ico"]);
+            savePicker.FileTypeChoices.Add("CUR File", [".cur"]);
+        }
 
         if (!string.IsNullOrWhiteSpace(OutputPath) && File.Exists(OutputPath))
         {
@@ -59,7 +65,7 @@ public static class FilePickerHelper
             }
         }
 
-        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath) + defaultExtension;
+        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath);
 
         InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
