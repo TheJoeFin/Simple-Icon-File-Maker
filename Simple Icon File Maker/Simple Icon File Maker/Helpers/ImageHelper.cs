@@ -31,8 +31,9 @@ public static class ImageHelper
                 return image;
             }
 
-            // For .ico files, load the largest frame instead of the first one
-            if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase))
+            // For .ico/.cur files, load the largest frame instead of the first one
+            if (extension.Equals(".ico", StringComparison.InvariantCultureIgnoreCase)
+                || extension.Equals(".cur", StringComparison.InvariantCultureIgnoreCase))
             {
                 MagickImageCollection collection = new(imagePath);
                 // Find the largest frame by area (width * height)

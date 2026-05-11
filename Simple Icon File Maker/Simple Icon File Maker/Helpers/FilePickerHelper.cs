@@ -23,30 +23,43 @@ public static class FilePickerHelper
         return picker;
     }
 
-    public static async Task<FileSavePicker> CreateSavePicker(string OutputPath, string ImagePath)
+    public static async Task<FileSavePicker> CreateSavePicker(string OutputPath, string ImagePath, string? forceExtension = null)
     {
+        bool isCurSource = Path.GetExtension(ImagePath).Equals(".cur", StringComparison.OrdinalIgnoreCase);
+        string defaultExtension = forceExtension ?? (isCurSource ? ".cur" : ".ico");
+
         FileSavePicker savePicker = new()
         {
             SuggestedStartLocation = PickerLocationId.PicturesLibrary,
 
-            DefaultFileExtension = ".ico",
+            DefaultFileExtension = defaultExtension,
             FileTypeChoices =
             {
-                { "ICO File", [".ico"] }
+                { "ICO File", [".ico"] },
+                { "CUR File", [".cur"] }
             }
         };
 
         if (!string.IsNullOrWhiteSpace(OutputPath) && File.Exists(OutputPath))
         {
-            try
+            // Only restore the previous file when its extension matches what we want to save as.
+            // If they differ (e.g. previous save was .ico but we're now saving as .cur) skip
+            // SuggestedSaveFile so that DefaultFileExtension controls the active filter.
+            bool extensionMatches = Path.GetExtension(OutputPath)
+                .Equals(defaultExtension, StringComparison.OrdinalIgnoreCase);
+
+            if (extensionMatches)
             {
-                StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutputPath);
-                savePicker.SuggestedSaveFile = previousFile;
+                try
+                {
+                    StorageFile previousFile = await StorageFile.GetFileFromPathAsync(OutputPath);
+                    savePicker.SuggestedSaveFile = previousFile;
+                }
+                catch { }
             }
-            catch { }
         }
 
-        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath) + ".ico";
+        savePicker.SuggestedFileName = Path.GetFileNameWithoutExtension(ImagePath) + defaultExtension;
 
         InitializeWithWindow.Initialize(savePicker, App.MainWindow.WindowHandle);
 
